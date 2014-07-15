@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StaffType group="pitched">
+  <name>New Template 2 copy</name>
+  <noteMappings>
+    <mappings>
+      <note name="Fbb" tpc="-1">
+        <line-offset>0</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="Cbb" tpc="0">
+        <line-offset>-5</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="Gbb" tpc="1">
+        <line-offset>2</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="Dbb" tpc="2">
+        <line-offset>-3</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="Abb" tpc="3">
+        <line-offset>4</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="Ebb" tpc="4">
+        <line-offset>-1</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="Bbb" tpc="5">
+        <line-offset>6</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="Fb" tpc="6">
+        <line-offset>1</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="Cb" tpc="7">
+        <line-offset>-4</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="Gb" tpc="8">
+        <line-offset>3</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="Db" tpc="9">
+        <line-offset>-2</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="Ab" tpc="10">
+        <line-offset>5</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="Eb" tpc="11">
+        <line-offset>0</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="Bb" tpc="12">
+        <line-offset>7</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="F" tpc="13">
+        <line-offset>2</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="C" tpc="14">
+        <line-offset>-3</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="G" tpc="15">
+        <line-offset>4</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="D" tpc="16">
+        <line-offset>-1</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="A" tpc="17">
+        <line-offset>6</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="E" tpc="18">
+        <line-offset>1</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="B" tpc="19">
+        <line-offset>8</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="F#" tpc="20">
+        <line-offset>3</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="C#" tpc="21">
+        <line-offset>-2</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="G#" tpc="22">
+        <line-offset>5</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="D#" tpc="23">
+        <line-offset>0</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="A#" tpc="24">
+        <line-offset>7</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="E#" tpc="25">
+        <line-offset>2</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="B#" tpc="26">
+        <line-offset>9</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="F##" tpc="27">
+        <line-offset>4</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="C##" tpc="28">
+        <line-offset>-1</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="G##" tpc="29">
+        <line-offset>6</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="D##" tpc="30">
+        <line-offset>1</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="A##" tpc="31">
+        <line-offset>8</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="E##" tpc="32">
+        <line-offset>3</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      <note name="B##" tpc="33">
+        <line-offset>10</line-offset>
+        <notehead-group>normal</notehead-group>
+        </note>
+      </mappings>
+    <clefOffsets>
+      <clef name="G">45</clef>
+      <clef name="G8va">52</clef>
+      <clef name="G15ma">59</clef>
+      <clef name="G8vb">38</clef>
+      <clef name="F">33</clef>
+      <clef name="F8vb">26</clef>
+      <clef name="F15mb">19</clef>
+      <clef name="F3">35</clef>
+      <clef name="F5">31</clef>
+      <clef name="C1">43</clef>
+      <clef name="C2">41</clef>
+      <clef name="C3">39</clef>
+      <clef name="C4">37</clef>
+      <clef name="C5">35</clef>
+      <clef name="G1">47</clef>
+      <clef name="F8va">40</clef>
+      <clef name="F15ma">47</clef>
+      </clefOffsets>
+    <octaveDistance>12</octaveDistance>
+    <showAccidentals>1</showAccidentals>
+    </noteMappings>
+  <staffLines>
+    <line>0</line>
+    <line>1</line>
+    <line>2</line>
+    <line>3</line>
+    <line>4</line>
+    </staffLines>
+  </StaffType>

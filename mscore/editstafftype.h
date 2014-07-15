@@ -14,7 +14,7 @@
 #define __EDITSTAFFTYPE_H__
 
 #include "ui_editstafftype.h"
-#include "ui_stafftypetemplates.h"
+#include "ui_stafftypetemplatesold.h"
 #include "libmscore/mscore.h"
 #include "libmscore/stafftype.h"
 
@@ -66,14 +66,14 @@ class EditStaffType : public QDialog, private Ui::EditStaffType {
       };
 
 //---------------------------------------------------------
-//   StaffTypeTemplates
+//   StaffTypeTemplatesOld
 //---------------------------------------------------------
 
-class StaffTypeTemplates : public QDialog, private Ui::StaffTypeTemplates {
+class StaffTypeTemplatesOld : public QDialog, private Ui::StaffTypeTemplatesOld {
       Q_OBJECT
 
    public:
-      StaffTypeTemplates(const StaffType&, QWidget* parent = 0);
+      StaffTypeTemplatesOld(const StaffType&, QWidget* parent = 0);
       StaffType* staffType() const;
       };
 

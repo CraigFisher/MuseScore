@@ -5048,7 +5048,22 @@ void ScoreView::cmdAddPitch(int note, bool addFlag)
             sm->postEvent(new CommandEvent("note-input"));
             qApp->processEvents();
             }
-      _score->cmdAddPitch(octave * 7 + note, addFlag);
+            
+      //cc
+      int step;
+      NoteMappings* altMappings = score()->staff(is.track() / VOICES)->noteMappings();
+      if (altMappings) {
+            static const int noteToTpc[7] = { 14, 16, 18, 13, 15, 17, 19 };
+            int tpc = noteToTpc[note];
+            int octaveDistance = altMappings->octaveDistance();
+            int tpcOffset = altMappings->tpc2Position(tpc);
+            int correction = 5 * (octaveDistance - 7);
+            step = (octave * octaveDistance) + tpcOffset - correction;
+            }
+      else
+            step = octave * 7 + note;
+            
+      _score->cmdAddPitch(step, addFlag); //cc
       adjustCanvasPosition(is.cr(), false);
       }
 

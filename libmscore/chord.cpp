@@ -51,6 +51,7 @@
 #include "sym.h"
 #include "stringdata.h"
 #include "beam.h"
+#include "notemappings.h" //cc
 
 namespace Ms {
 
@@ -645,7 +646,7 @@ void Chord::createLedgerLines(int track, vector<LedgerLineData>& vecLines, bool 
             _ledgerLines = h;
             }
       }
-
+    
 //---------------------------------------------------------
 //   addLedgerLines
 //---------------------------------------------------------
@@ -666,7 +667,14 @@ void Chord::addLedgerLines(int move)
       qreal x;
       // the extra length of a ledger line with respect to note head (half of it on each side)
       qreal extraLen = score()->styleS(StyleIdx::ledgerLineLength).val() * _spatium * 0.5;
-
+      
+      //cc
+      bool useInnerLedgers = this->useInnerLedgers();
+      const std::map<qreal, std::vector<qreal>>* ledgerMap;
+      
+      if (useInnerLedgers)
+            ledgerMap = &staff()->staffType()->innerLedgers();
+      
       // scan chord notes, collecting visibility and x and y extrema
       // NOTE: notes are sorted from bottom to top (line no. decreasing)
       // notes are scanned twice from outside (bottom or top) toward the staff
@@ -688,11 +696,39 @@ void Chord::addLedgerLines(int move)
                   }
             for (int i = from; i < n && i >=0 ; i += delta) {
                   const Note* note = _notes.at(i);
-
                   int l = note->line();
-                  if ( (!j && l < lineBelow) || // if 1st pass and note not below staff
-                       (j && l >= 0) )          // or 2nd pass and note not above staff
-                        break;                  // stop this pass
+                  
+                  //cc
+                  if (useInnerLedgers) {
+                        //TODO: optimize by collecting innerledgers into a map
+                        //      and then adding them all at once at the end
+                        //      (so that no inner ledgers are ever added twice)
+                        qreal ledgerKey = (qreal) l / 2;
+                        //if line position "l" maps to any inner ledger lines
+                        if(ledgerMap->find(ledgerKey) != ledgerMap->end()) {
+                              x = note->pos().x();
+                              if (x-extraLen < minX)
+                                    minX  = x - extraLen;
+                              if (x+hw+extraLen > maxX)
+                                    maxX = x + hw + extraLen;
+                              const vector<qreal>& ledgers = ledgerMap->at(ledgerKey);
+                              for (const qreal& val : ledgers) {
+                                    lld.line = val * 2;
+                                    lld.minX = minX;
+                                    lld.maxX = maxX;
+                                    lld.visible = note->visible();
+                                    lld.accidental = false;
+                                    vecLines.push_back(lld);                                    
+                                    }
+                              }
+                        }
+                                                              // if 1st pass and note not below staff
+                  if ((j && l < lineBelow) || (j && l >= 0)) { // or 2nd pass and note not above staff
+                        if (useInnerLedgers) //cc
+                              continue; //if using innerledgers, there may be more positions to check
+                        else
+                              break;    //otherwise, stop this pass
+                        }
                   // round line number to even number toward 0
                   if (l < 0)        l = (l+1) & ~ 1;
                   else              l = l & ~ 1;
@@ -754,14 +790,13 @@ void Chord::addLedgerLines(int move)
                         maxLine = l;
                         }
                   }
-            if (minLine < 0 || maxLine > lineBelow)
+            if (minLine < 0 || maxLine > lineBelow || useInnerLedgers) //cc
                   createLedgerLines(track, vecLines, !staff()->invisible());
             }
-
+            
             return;                       // no ledger lines for this chord
-
       }
-
+      
 //-----------------------------------------------------------------------------
 //   computeUp
 //    rules:
@@ -1551,6 +1586,7 @@ void Chord::layout2()
                         if (found)
                               break;
                         }
+//                break; cc_temp_temp
                   }
             }
 
@@ -2419,6 +2455,14 @@ void Chord::layoutArpeggio2()
                   }
             }
 #endif
+      }
+
+//-----------------------------------------------------//cc
+//   useInnerLedgers
+//---------------------------------------------------------
+      
+bool Chord::useInnerLedgers() const {
+      return staff() ? staff()->staffType()->useInnerLedgers() : false;
       }
 
 //---------------------------------------------------------

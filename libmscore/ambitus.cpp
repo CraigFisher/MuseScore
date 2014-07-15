@@ -281,8 +281,8 @@ void Ambitus::layout()
       if (_topPitch == INVALID_PITCH || _topTpc == Tpc::TPC_INVALID)
             _topPos.setY(0);                          // if uninitialized, set to top staff line
       else {
-            topLine  = absStep(_topTpc, _topPitch);
-            topLine  = relStep(topLine, clf);
+            topLine  = absStep(_topTpc, _topPitch, noteMappings()); //cc
+            topLine  = relStep(topLine, clf, noteMappings()); //cc
             _topPos.setY(topLine * lineDist * 0.5);
             // compute accidental
             AccidentalType accidType;
@@ -307,8 +307,8 @@ void Ambitus::layout()
       if (_bottomPitch == INVALID_PITCH || _bottomTpc == Tpc::TPC_INVALID)
             _bottomPos.setY( (numOfLines-1) * lineDist);          // if uninitialized, set to last staff line
       else {
-            bottomLine  = absStep(_bottomTpc, _bottomPitch);
-            bottomLine  = relStep(bottomLine, clf);
+            bottomLine  = absStep(_bottomTpc, _bottomPitch, noteMappings()); //cc
+            bottomLine  = relStep(bottomLine, clf, noteMappings()); //cc
             _bottomPos.setY(bottomLine * lineDist * 0.5);
             // compute accidental
             AccidentalType accidType;

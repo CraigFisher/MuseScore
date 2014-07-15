@@ -105,6 +105,8 @@
 #include "startcenter.h"
 #include "help.h"
 #include "awl/aslider.h"
+#include "libmscore/notemappings.h" //cc
+#include "stafftypetemplates.h"           //cc
 
 #ifdef AEOLUS
 extern Ms::Synthesizer* createAeolus();
@@ -753,6 +755,10 @@ MuseScore::MuseScore()
       a = getAction("toggle-mixer");
       a->setCheckable(true);
       menuView->addAction(a);
+      
+      //cc
+      notationId = getAction("stafftype-dialog");
+      menuView->addAction(notationId);
 
       a = getAction("synth-control");
       a->setCheckable(true);
@@ -3866,6 +3872,7 @@ void MuseScore::cmd(QAction* a)
             if (!cv->editMode())
                   cs->startCmd();
             }
+            
       cmd(a, cmdn);
       if (lastShortcut->isCmd())
             cs->endCmd();
@@ -4060,6 +4067,11 @@ void MuseScore::cmd(QAction* a, const QString& cmd)
             showMixer(a->isChecked());
       else if (cmd == "synth-control")
             showSynthControl(a->isChecked());
+      //cc
+      else if (cmd == "stafftype-dialog") {
+            StaffTypeTemplates stt(this);
+            stt.exec();
+            }
       else if (cmd == "toggle-selection-window")
             showSelectionWindow(a->isChecked());
       else if (cmd == "show-keys")
@@ -4749,7 +4761,7 @@ int main(int argc, char* av[])
 
       if (!useFactorySettings)
             preferences.read();
-
+          
       preferences.readDefaultStyle();
 
       if (converterDpi == 0)

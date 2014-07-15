@@ -202,7 +202,6 @@ void Clef::layout()
                   setbbox(QRectF());
                   return;
                   }
-
             lines = staffType->lines();         // init values from staff type
             lineDist = staffType->lineDistance().val();
             }

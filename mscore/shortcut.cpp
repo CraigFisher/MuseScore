@@ -2330,6 +2330,16 @@ Shortcut Shortcut::_sc[] = {
          Icons::Invalid_ICON,
          Qt::ApplicationShortcut
          },
+      {  //cc
+         MsWidget::MAIN_WINDOW,
+         STATE_NORMAL | STATE_NOTE_ENTRY,
+         "stafftype-dialog",
+         QT_TRANSLATE_NOOP("action","Stafftype Templates"),
+         0,
+         0,
+         Icons::Invalid_ICON,
+         Qt::ApplicationShortcut
+         },
       {
          MsWidget::SCORE_TAB,
          STATE_NORMAL | STATE_NOTE_ENTRY_PITCHED | STATE_NOTE_ENTRY_DRUM /*| STATE_NOTE_ENTRY_TAB*/,

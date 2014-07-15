@@ -907,6 +907,82 @@ void MuseScore::saveScoreDialogFilterSelected(const QString& s)
             }
       }
 
+//cc
+//---------------------------------------------------------
+//   getStaffTypeFilename
+//---------------------------------------------------------
+
+QString MuseScore::getStaffTypeFilename(bool open)
+      {
+      if (preferences.nativeDialogs) {
+            QString fn;
+            if (open) {
+                  fn = QFileDialog::getOpenFileName(
+                     this, tr("MuseScore: Load StaffType Template"),
+                     QString(),
+                     tr("StaffType Template File (*.stt);;" "All Files (*)")
+                     );
+                  }
+            else {
+                  fn = QFileDialog::getSaveFileName(
+                     this, tr("MuseScore: Save StaffType Template"),
+                     QString(),
+                     tr("StaffType Template File (*.stt)")
+                     );
+                  }
+            return fn;
+            }
+
+      QFileDialog* dialog;
+      QList<QUrl> urls;
+      QString home = QDir::homePath();
+      urls.append(QUrl::fromLocalFile(home));
+      urls.append(QUrl::fromLocalFile(QString()));
+      urls.append(QUrl::fromLocalFile(QDir::currentPath()));
+
+      if (open) {
+            if (loadStyleDialog == 0) {
+                  loadStaffTypeDialog = new QFileDialog(this);
+                  loadStaffTypeDialog->setFileMode(QFileDialog::ExistingFile);
+                  loadStaffTypeDialog->setOption(QFileDialog::DontUseNativeDialog, true);
+                  loadStaffTypeDialog->setWindowTitle(tr("MuseScore: Load StaffType Template"));
+                  loadStaffTypeDialog->setNameFilter(tr("StaffType File (*.stt)"));
+                  loadStaffTypeDialog->setDirectory(QString());
+
+                  QSettings settings;
+                  loadStaffTypeDialog->restoreState(settings.value("loadStaffTypeDialog").toByteArray());
+                  loadStaffTypeDialog->setAcceptMode(QFileDialog::AcceptOpen);
+                  }
+            urls.append(QUrl::fromLocalFile(mscoreGlobalShare+"/styles"));
+            dialog = loadStyleDialog;
+            }
+      else {
+            if (saveStyleDialog == 0) {
+                  saveStaffTypeDialog = new QFileDialog(this);
+                  saveStaffTypeDialog->setAcceptMode(QFileDialog::AcceptSave);
+                  saveStaffTypeDialog->setFileMode(QFileDialog::AnyFile);
+                  saveStaffTypeDialog->setOption(QFileDialog::DontConfirmOverwrite, false);
+                  saveStaffTypeDialog->setOption(QFileDialog::DontUseNativeDialog, true);
+                  saveStaffTypeDialog->setWindowTitle(tr("MuseScore: Save Staff Type Template"));
+                  saveStaffTypeDialog->setNameFilter(tr("StaffType Template File (*.stt)"));
+                  saveStaffTypeDialog->setDirectory(QString());
+
+                  QSettings settings;
+                  saveStaffTypeDialog->restoreState(settings.value("saveStaffTypeDialog").toByteArray());
+                  saveStaffTypeDialog->setAcceptMode(QFileDialog::AcceptSave);
+                  }
+            dialog = saveStaffTypeDialog;
+            }
+      // setup side bar urls
+      dialog->setSidebarUrls(urls);
+
+      if (dialog->exec()) {
+            QStringList result = dialog->selectedFiles();
+            return result.front();
+            }
+      return QString();
+      }
+
 //---------------------------------------------------------
 //   getStyleFilename
 //---------------------------------------------------------

@@ -358,7 +358,7 @@ void MuseScore::editInstrList()
                               const StaffType* stfType = sli->staffType();
 
                               // use selected staff type
-                              if (stfType->name() != staff->staffType()->name())
+                              if (*stfType != *(staff->staffType())) //cc confirm if stafftypes are equal, not just names
                                     rootScore->undo(new ChangeStaffType(staff, *stfType));
                               }
                         else {

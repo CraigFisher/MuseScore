@@ -83,6 +83,7 @@
 #include "utils.h"
 #include "volta.h"
 #include "xml.h"
+#include "notemappings.h" //cc
 
 namespace Ms {
 
@@ -391,6 +392,14 @@ Part* Element::part() const
       {
       Staff* s = staff();
       return s ? s->part() : 0;
+
+//---------------------------------------------------------
+//   noteMappings
+//-----------------------------------------------------//cc
+
+NoteMappings* Element::noteMappings() const
+      {
+      return staff() && staff()->staffType() ? staff()->staffType()->noteMappings() : 0;
       }
 
 //---------------------------------------------------------
@@ -887,15 +896,28 @@ QPointF StaffLines::canvasPos() const
 
 void StaffLines::layout()
       {
+      _linePositions.clear();   //cc
       StaffType* st = staff() ? staff()->staffType() : 0;
       qreal _spatium = spatium();
-      if (st) {
-            dist  = st->lineDistance().val() * _spatium;
+
+      if (st) {      
+            dist = st->lineDistance().val() * _spatium;
             lines = st->lines();
             }
       else {
             dist  = _spatium;
             lines = 5;
+            }
+      //cc
+      bool alternative = st->useAlternateStaffLines();
+      int size = alternative ? st->alternativeStaffLines().size() : lines;
+      for (int i = 0; i < size; i++) {
+            int nextDistance;
+            if (alternative)
+                  nextDistance = st->alternativeStaffLines().at(i);
+            else
+                  nextDistance = i;
+            _linePositions.push_back(dist * nextDistance);
             }
 
 //      qDebug("StaffLines::layout:: dist %f st %p", dist, st);
@@ -909,20 +931,24 @@ void StaffLines::layout()
 //---------------------------------------------------------
 //   draw
 //---------------------------------------------------------
-
+      
 void StaffLines::draw(QPainter* painter) const
       {
       QPointF _pos(0.0, 0.0);
 
       qreal x1 = _pos.x();
       qreal x2 = x1 + width();
-
-      QVector<QLineF> ll(lines);
-      qreal y = _pos.y();
-      for (int i = 0; i < lines; ++i) {
+      qreal startPos = _pos.y(); //cc
+      qreal y = 0.0;
+      
+      //cc
+      int size = _linePositions.size();
+      QVector<QLineF> ll(size);      
+      for (int i = 0; i < size; ++i) {
+            y = startPos + _linePositions[i];
             ll[i].setLine(x1, y, x2, y);
-            y += dist;
             }
+            
       if (MScore::debugMode) {
             painter->setPen(QPen(Qt::lightGray, lw, Qt::SolidLine, Qt::FlatCap));
             y = _pos.y() - 3 * dist;

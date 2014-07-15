@@ -38,6 +38,7 @@ class MuseScoreView;
 class Segment;
 class TextStyle;
 class Element;
+class NoteMappings;
 enum class SymId;
 
 //---------------------------------------------------------
@@ -441,6 +442,7 @@ class Element : public QObject, public ScoreElement {
       void setVoice(int v)                    { _track = (_track / VOICES) * VOICES + v; }
       Staff* staff() const;
       Part* part() const;
+      NoteMappings* noteMappings() const; //cc
 
       virtual void add(Element*);
       virtual void remove(Element*);
@@ -614,6 +616,7 @@ class StaffLines : public Element {
       qreal dist;
       qreal lw;
       int lines;
+      std::vector<qreal> _linePositions; //cc
 
    public:
       StaffLines(Score*);

@@ -26,6 +26,7 @@
 #include "stafftype.h"
 #include "groups.h"
 #include "scoreElement.h"
+#include "notemappings.h"
 
 namespace Ms {
 
@@ -258,6 +259,9 @@ class Staff : public QObject, public ScoreElement {
       void dumpKeys(const char*) const {}
       void dumpTimeSigs(const char*) const {}
 #endif
+      
+      //cc
+      NoteMappings* noteMappings() { return staffType()->noteMappings(); } //TODO: change name to something like "altNoteMappings"
       };
 
 }     // namespace Ms

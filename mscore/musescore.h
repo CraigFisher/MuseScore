@@ -91,6 +91,9 @@ class Seq;
 class ImportMidiPanel;
 class Startcenter;
 class HelpBrowser;
+=======
+class StaffTypeTemplates; //cc
+class NoteMappings;
 
 struct PluginDescription;
 enum class SelState : char;
@@ -240,6 +243,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       MagBox* mag;
       QComboBox* viewModeCombo;
       QAction* playId;
+      QAction* notationId; //cc
 
       QProgressBar* _progressBar           { 0 };
       PreferenceDialog* preferenceDialog   { 0 };
@@ -276,6 +280,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       Debugger* debugger                   { 0 };
       MeasureListEditor* measureListEdit   { 0 };
       PageSettings* pageSettings           { 0 };
+      StaffTypeTemplates* staffTypeTemplates { 0 }; //cc
 
       QWidget* symbolDialog                { 0 };
 
@@ -325,6 +330,8 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       LoginManager* _loginManager        { 0 };
       QFileDialog* loadScoreDialog       { 0 };
       QFileDialog* saveScoreDialog       { 0 };
+      QFileDialog* loadStaffTypeDialog   { 0 }; //cc
+      QFileDialog* saveStaffTypeDialog   { 0 }; //cc
       QFileDialog* loadStyleDialog       { 0 };
       QFileDialog* saveStyleDialog       { 0 };
       QFileDialog* saveImageDialog       { 0 };
@@ -398,6 +405,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       void showNavigator(bool);
       void showMixer(bool);
       void showSynthControl(bool);
+      void showStaffTypeTemplates(bool); //cc
       void showSelectionWindow(bool);
       void showSearchDialog();
       void splitWindow(bool horizontal);
@@ -568,6 +576,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
 
       QStringList getOpenScoreNames(const QString& filter, const QString& title);
       QString getSaveScoreName(const QString& title, QString& name, const QString& filter, bool folder = false);
+      QString getStaffTypeFilename(bool open); //cc
       QString getStyleFilename(bool open, const QString& title = QString());
       QString getFotoFilename(QString& filter, QString *selectedFilter);
       QString getChordStyleFilename(bool open);
