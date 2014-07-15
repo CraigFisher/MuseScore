@@ -69,6 +69,14 @@ void LedgerLine::layout()
 
 void LedgerLine::draw(QPainter* painter) const
       {
+          
+//          CHECK LEDGER LINE POSITION FOR 0
+          
+          if(          this->pos().y() == 0) {
+              int k = 34;
+              k++;
+          }
+          
       if(chord()->crossMeasure() == CrossMeasure::SECOND)
             return;
       Line::draw(painter);

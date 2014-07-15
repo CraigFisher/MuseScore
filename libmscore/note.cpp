@@ -57,6 +57,8 @@
 
 namespace Ms {
 
+int Note::_temp; 
+
 //---------------------------------------------------------
 //   noteHeads
 //    note head groups
@@ -125,6 +127,8 @@ static const SymId noteHeads[2][int(NoteHead::Group::HEAD_GROUPS)][int(NoteHead:
 SymId Note::noteHead(int direction, NoteHead::Group g, NoteHead::Type t)
       {
       return noteHeads[direction][int(g)][int(t)];
+            // return noteHeads[0][2][1];
+
       };
 
 //---------------------------------------------------------
@@ -1677,6 +1681,16 @@ NoteType Note::noteType() const
       return chord()->noteType();
       }
 
+int Note::line() const {
+          if(_tpc[0] == 22 || _tpc[0] == 22) {
+              Staff* s = score()->staff(staffIdx() + chord()->staffMove());
+              ClefType clef = s->clef(chord()->tick());
+              return relStep(_pitch, 14, clef) + _lineOffset;
+          } else {
+              return _line + _lineOffset;
+          }
+      }
+
 //---------------------------------------------------------
 //   pagePos
 //---------------------------------------------------------
@@ -1864,6 +1878,50 @@ void Note::endEdit()
             score()->setLayoutAll(true);
             }
       }
+    
+//NoteHead::Group Note::headGroup() const {
+//      NoteHead::Group val = NoteHead::Group::HEAD_NORMAL;
+//
+//    if(_temp < 0 || _temp > 15) {
+//        _temp = 0;
+//    }
+//    
+//    switch (_temp) {
+//    case 0: val = NoteHead::Group::HEAD_NORMAL; break;
+//    case 1: val = NoteHead::Group::HEAD_CROSS; break;
+//    case 2: val = NoteHead::Group::HEAD_DIAMOND; break;
+//    case 3: val = NoteHead::Group::HEAD_TRIANGLE; break;
+//    case 4: val = NoteHead::Group::HEAD_MI; break;
+//    case 5: val = NoteHead::Group::HEAD_SLASH; break;
+//    case 6: val = NoteHead::Group::HEAD_XCIRCLE; break;
+//    case 7: val = NoteHead::Group::HEAD_DO; break;
+//    case 8: val = NoteHead::Group::HEAD_RE; break;
+//    case 9: val = NoteHead::Group::HEAD_FA; break;
+//    case 10: val = NoteHead::Group::HEAD_LA; break;
+//    case 11: val = NoteHead::Group::HEAD_TI; break;
+//    case 12: val = NoteHead::Group::HEAD_SOL; break;
+//    case 13: val = NoteHead::Group::HEAD_BREVIS_ALT; break;
+//    case 14: val = NoteHead::Group::HEAD_GROUPS; break;
+//    case 15: val = NoteHead::Group::HEAD_INVALID; break;
+//        default:
+//            break;
+//    }
+//
+//    _temp++;
+//    if(_temp == 16) {
+//        _temp = 0;
+//    }
+//
+//    return val;
+//}
+
+// NoteHead::Type Note::headType() const {
+//       NoteHead::Type val = NoteHead::Type::HEAD_AUTO;
+// }
+
+Ms::Accidental* Note::accidental() const {
+      return new Accidental(score());
+}
 
 //---------------------------------------------------------
 //   updateAccidental
@@ -2038,7 +2096,16 @@ QVariant Note::getProperty(P_ID propertyId) const
             case P_ID::PLAY:
                   return play();
             case P_ID::LINE:
-                  return _line;
+//                  return _line;
+              
+                  if(_tpc[0] == 22 || _tpc[0] == 22) {
+                      Staff* s = score()->staff(staffIdx() + chord()->staffMove());
+                      ClefType clef = s->clef(chord()->tick());
+                      return relStep(_pitch, 14, clef) + _lineOffset;
+                  } else {
+                      return _line;
+                  }
+          
             default:
                   break;
             }

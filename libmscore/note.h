@@ -169,6 +169,7 @@ class Note : public Element {
    private:
       int _subchannel;        ///< articulation
       int _line;              ///< y-Position; 0 - top line.
+      static int _temp;
       int _fret;              ///< for tablature view
       int _string;
       mutable int _tpc[2];    ///< tonal pitch class  (concert/transposing)
@@ -254,6 +255,10 @@ class Note : public Element {
       SymId noteHead() const;
       NoteHead::Group headGroup() const   { return _headGroup; }
       NoteHead::Type headType() const     { return _headType;  }
+
+//      NoteHead::Group headGroup() const;
+//      NoteHead::Type headType() const;
+
       void setHeadGroup(NoteHead::Group val);
       void setHeadType(NoteHead::Type t);
 
@@ -282,10 +287,13 @@ class Note : public Element {
       void undoSetTpc2(int tpc)      { undoChangeProperty(P_ID::TPC2, tpc); }
       int transposeTpc(int tpc);
 
-      Q_INVOKABLE Ms::Accidental* accidental() const    { return _accidental; }
-      void setAccidental(Accidental* a)   { _accidental = a;    }
+//    Q_INVOKABLE Ms::Accidental* accidental() const {return _accidental; }
+    Q_INVOKABLE Ms::Accidental* accidental() const;
+    
+    void setAccidental(Accidental* a)   { _accidental = a;    }
 
-      int line() const                { return _line + _lineOffset;   }
+//      int line() const                { return _line + _lineOffset;   }
+    int line() const;
       void setLine(int n);
 
       int fret() const                { return _fret;   }

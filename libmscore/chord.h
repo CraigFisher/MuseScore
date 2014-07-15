@@ -120,7 +120,9 @@ class Chord : public ChordRest {
       void setStemDirection(MScore::Direction d) { _stemDirection = d; }
       MScore::Direction stemDirection() const    { return _stemDirection; }
 
-      LedgerLine* ledgerLines()                  { return _ledgerLines; }
+          LedgerLine* ledgerLines()                  { return _ledgerLines; }
+    
+//      LedgerLine* ledgerLines()                  { return 0; }
 
       void layoutStem1();
       void layoutHook1();     // create hook if required
