@@ -17,6 +17,7 @@
 
 #include <assert.h>
 
+#include "alternative.h"
 #include "note.h"
 #include "score.h"
 #include "key.h"
@@ -54,10 +55,9 @@
 #include "spanner.h"
 #include "glissando.h"
 #include "bagpembell.h"
+#include "mscore/preferences.h" //cc
 
 namespace Ms {
-
-int Note::_temp; 
 
 //---------------------------------------------------------
 //   noteHeads
@@ -217,7 +217,8 @@ Note::Note(const Note& n)
    : Element(n)
       {
       _subchannel        = n._subchannel;
-      _line              = n._line;
+     // _line              = n._line;
+          setLine(n._line); //cc
       _fret              = n._fret;
       _string            = n._string;
       _fretConflict      = n._fretConflict;
@@ -869,7 +870,8 @@ void Note::read(XmlReader& e)
             else if (tag == "veloType")
                   setProperty(P_ID::VELO_TYPE, Ms::getProperty(P_ID::VELO_TYPE, e));
             else if (tag == "line")
-                  _line = e.readInt();
+                 // _line = e.readInt();
+                    setLine(e.readInt()); //cc
             else if (tag == "Tie") {
                   _tieFor = new Tie(score());
                   _tieFor->setTrack(track());
@@ -1680,16 +1682,34 @@ NoteType Note::noteType() const
       {
       return chord()->noteType();
       }
+   
+    //cc
+    //TODO: move this logic to the equivalent "setter" function
+int Note::line() const {    
+//       IF  NOTES  REMAPPED,  DO  ALTERNATIVE  CHECKING
+//    if(Alternative::newLines) {
+//        lineMapKey key;
+//        Staff* s = score()->staff(staffIdx() + chord()->staffMove());
+//        key.clef = s->clef(chord()->tick());
+//        key.pitch = _pitch;
+//        key.tpc = _tpc[0];
+//        return Alternative::lineMap[key];
 
-int Note::line() const {
-          if(_tpc[0] == 22 || _tpc[0] == 22) {
-              Staff* s = score()->staff(staffIdx() + chord()->staffMove());
-              ClefType clef = s->clef(chord()->tick());
-              return relStep(_pitch, 14, clef) + _lineOffset;
-          } else {
-              return _line + _lineOffset;
-          }
+ // if(_tpc[0] == 22 || _tpc[0] == 22) {
+ //                      Staff* s = score()->staff(staffIdx() + chord()->staffMove());
+ //                      ClefType clef = s->clef(chord()->tick());
+
+            // return Alternative::lineMapping                      
+
+                       // return relStep(_pitch, 14, clef) + _lineOffset;
+    // } else {
+      if(preferences.altNoteMapping) { //cc
+            return _alternativeLine;
+      } else {
+            return _line;
       }
+    // }
+}
 
 //---------------------------------------------------------
 //   pagePos
@@ -1797,6 +1817,23 @@ void Note::setSmall(bool val)
       _small = val;
       }
 
+//---------------------------------------==============//cc
+//   setAlternativeLine
+//---------------------------------------------------------
+
+    //cc
+std::map<int, int> Note::altLineMap;
+
+void Note::setAlternativeLine()
+     {
+      // _alternativeLine = Note::altLineMap[_tpc[0]]; //cc_temp
+      this->_alternativeLine = Note::altLineMap[_tpc[0]]; //cc_temp
+
+
+     // int octave = (_pitch / 12) + 1;
+     // int relStep = tpcToRelstep[_tpc[0]];
+     // _line = (relStep * octave * linesPerOctave) + ; 
+     }
 //---------------------------------------------------------
 //   setLine
 //---------------------------------------------------------
@@ -1805,6 +1842,11 @@ void Note::setLine(int n)
       {
       _line = n;
       rypos() = _line * spatium() * .5;
+
+     if(preferences.altNoteMapping) { //cc
+           setAlternativeLine();
+           } 
+
       }
 
 //---------------------------------------------------------
@@ -1878,47 +1920,7 @@ void Note::endEdit()
             score()->setLayoutAll(true);
             }
       }
-    
-//NoteHead::Group Note::headGroup() const {
-//      NoteHead::Group val = NoteHead::Group::HEAD_NORMAL;
-//
-//    if(_temp < 0 || _temp > 15) {
-//        _temp = 0;
-//    }
-//    
-//    switch (_temp) {
-//    case 0: val = NoteHead::Group::HEAD_NORMAL; break;
-//    case 1: val = NoteHead::Group::HEAD_CROSS; break;
-//    case 2: val = NoteHead::Group::HEAD_DIAMOND; break;
-//    case 3: val = NoteHead::Group::HEAD_TRIANGLE; break;
-//    case 4: val = NoteHead::Group::HEAD_MI; break;
-//    case 5: val = NoteHead::Group::HEAD_SLASH; break;
-//    case 6: val = NoteHead::Group::HEAD_XCIRCLE; break;
-//    case 7: val = NoteHead::Group::HEAD_DO; break;
-//    case 8: val = NoteHead::Group::HEAD_RE; break;
-//    case 9: val = NoteHead::Group::HEAD_FA; break;
-//    case 10: val = NoteHead::Group::HEAD_LA; break;
-//    case 11: val = NoteHead::Group::HEAD_TI; break;
-//    case 12: val = NoteHead::Group::HEAD_SOL; break;
-//    case 13: val = NoteHead::Group::HEAD_BREVIS_ALT; break;
-//    case 14: val = NoteHead::Group::HEAD_GROUPS; break;
-//    case 15: val = NoteHead::Group::HEAD_INVALID; break;
-//        default:
-//            break;
-//    }
-//
-//    _temp++;
-//    if(_temp == 16) {
-//        _temp = 0;
-//    }
-//
-//    return val;
-//}
-
-// NoteHead::Type Note::headType() const {
-//       NoteHead::Type val = NoteHead::Type::HEAD_AUTO;
-// }
-
+//cc
 Ms::Accidental* Note::accidental() const {
       return new Accidental(score());
 }
@@ -2007,6 +2009,7 @@ void Note::updateRelLine(int relLine, bool undoable)
       Staff* s = score()->staff(staffIdx() + chord()->staffMove());
       ClefType clef = s->clef(chord()->tick());
       int line = relStep(relLine, clef);
+      
       if (line != _line) {
             if (undoable)
                   undoChangeProperty(P_ID::LINE, line);
@@ -2096,21 +2099,14 @@ QVariant Note::getProperty(P_ID propertyId) const
             case P_ID::PLAY:
                   return play();
             case P_ID::LINE:
-//                  return _line;
-              
-                  if(_tpc[0] == 22 || _tpc[0] == 22) {
-                      Staff* s = score()->staff(staffIdx() + chord()->staffMove());
-                      ClefType clef = s->clef(chord()->tick());
-                      return relStep(_pitch, 14, clef) + _lineOffset;
-                  } else {
-                      return _line;
-                  }
-          
+                 return line();
             default:
                   break;
             }
       return Element::getProperty(propertyId);
       }
+
+
 
 //---------------------------------------------------------
 //   setProperty
@@ -2136,7 +2132,8 @@ bool Note::setProperty(P_ID propertyId, const QVariant& v)
                         chord()->measure()->cmdUpdateNotes(chord()->staffIdx());
                   break;
             case P_ID::LINE:
-                  _line = v.toInt();
+                 // _line = v.toInt();
+              setLine(v.toInt()); //cc
                   break;
             case P_ID::SMALL:
                   setSmall(v.toBool());

@@ -1054,9 +1054,7 @@ void Line::layout()
       qreal sp = spatium();
       qreal w  = _width.val() * sp;
       qreal l  = _len.val() * sp;
-//      qreal w2 = w * .5;
-          //cc
-      qreal w2 = w * .5 * 10;
+      qreal w2 = w * .5; //cc check to make sure this is correct
           
       if (vertical)
             bbox().setRect(-w2, -w2, w, l + w);

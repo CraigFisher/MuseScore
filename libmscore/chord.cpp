@@ -51,6 +51,7 @@
 #include "sym.h"
 #include "stringdata.h"
 #include "beam.h"
+#include "alternative.h"
 
 namespace Ms {
 
@@ -658,6 +659,10 @@ void Chord::createLedgerLines(int track, vector<LedgerLineData>& vecLines, bool 
             }
       }
 
+
+    //cc static declaration
+    std::vector<int> Alternative::innerLedgers;
+    
 //---------------------------------------------------------
 //   addLedgerLines
 //---------------------------------------------------------
@@ -666,13 +671,13 @@ void Chord::addLedgerLines(int move)
       {
 //cc
           
-          vector<int> innerLedgers;
-          innerLedgers.push_back(2);
-          innerLedgers.push_back(3);
-          innerLedgers.push_back(4);
-          innerLedgers.push_back(8);
-          innerLedgers.push_back(9);
-          innerLedgers.push_back(10);
+          std::vector<int>* innerLedgers = &Alternative::innerLedgers;
+          innerLedgers->push_back(2);
+          innerLedgers->push_back(3);
+          innerLedgers->push_back(4);
+          innerLedgers->push_back(8);
+          innerLedgers->push_back(9);
+          innerLedgers->push_back(10);
           
       LedgerLineData    lld;
       qreal _spatium = spatium();
@@ -712,12 +717,12 @@ void Chord::addLedgerLines(int move)
                   const Note* note = _notes.at(i);
 
                 int l = note->line();
-                if(!Alternative::ACTIVE) { //cc
+                if(innerLedgers->empty()) { //cc
                 
                     if ( (!j && l < lineBelow) || // if 1st pass and note not below staff
                         (j && l >= 0) )          // or 2nd pass and note not above staff
                         break;                  // stop this pass
-//                }
+                }
                 
                 int original_l = l;
                   // round line number to even number toward 0
@@ -756,11 +761,11 @@ void Chord::addLedgerLines(int move)
                                     d.maxX = maxX;
                         }
 
-//                if(Alternative::ACTIVE) { //cc
+                if(!innerLedgers->empty()) { //cc
                 
                 //cc
-                vector<int>::iterator stopItr = innerLedgers.end();
-                for(vector<int>::iterator itr = innerLedgers.begin(); itr != stopItr; itr++) {
+                vector<int>::iterator stopItr = innerLedgers->end();
+                for(vector<int>::iterator itr = innerLedgers->begin(); itr != stopItr; itr++) {
                     //                      TODO: SEE IF minX, maxX can be left as is
                     
                     if(*itr == original_l) { //if our note line is equal to one of the designated ledger lines
@@ -795,7 +800,7 @@ void Chord::addLedgerLines(int move)
                      break;                  // stop this pass
                      }
                     
-//                }
+                }
                 
                   // check if note vert. pos. is outside current range
                   // and, in case, add data for new line(s)
@@ -823,7 +828,7 @@ void Chord::addLedgerLines(int move)
                         }
                   }
           //cc
-//            if (minLine < 0 || maxLine > lineBelow)
+           if (minLine < 0 || maxLine > lineBelow || !innerLedgers->empty())
                   createLedgerLines(track, vecLines, !staff()->invisible());
             }
 
@@ -1232,7 +1237,6 @@ void Chord::scanElements(void* data, void (*func)(void*, Element*), bool all)
             func(data, _glissando);
       if (staff() && staff()->showLedgerLines())
             for (LedgerLine* ll = _ledgerLines; ll; ll = ll->next())
-            // for (LedgerLine* ll = _ledgerLines; false; ll = ll->next())
                   func(data, ll);
       int n = _notes.size();
       for (int i = 0; i < n; ++i)

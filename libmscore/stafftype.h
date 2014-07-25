@@ -225,13 +225,10 @@ class StaffType {
 
       void setLines(int val);
       int lines() const                        { return _lines;           }
-//          int lines() const                        { return 6;           }
       void setStepOffset(int v)                { _stepOffset = v;         }
       int stepOffset() const                   { return _stepOffset;      }
       void setLineDistance(const Spatium& val) { _lineDistance = val;     }
       Spatium lineDistance() const             { return _lineDistance;    }
-      // Spatium lineDistance() const             { return Spatium(2);    }
-
       void setGenClef(bool val)                { _genClef = val;          }
       bool genClef() const                     { return _genClef;         }
       void setShowBarlines(bool val)           { _showBarlines = val;     }

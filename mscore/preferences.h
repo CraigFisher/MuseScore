@@ -177,6 +177,8 @@ struct Preferences {
 
       QList<PluginDescription> pluginList;
 
+      bool altNoteMapping;        //cc
+
       bool readPluginList();
       void writePluginList();
       void updatePluginList();
