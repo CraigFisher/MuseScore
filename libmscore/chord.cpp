@@ -51,7 +51,6 @@
 #include "sym.h"
 #include "stringdata.h"
 #include "beam.h"
-#include "alternative.h"
 
 namespace Ms {
 
@@ -641,7 +640,7 @@ void Chord::createLedgerLines(int track, vector<LedgerLineData>& vecLines, bool 
 
 
     //cc static declaration
-    std::vector<int> Alternative::innerLedgers;
+//    std::vector<int> Alternative::innerLedgers;
     
 //---------------------------------------------------------
 //   addLedgerLines
@@ -650,8 +649,8 @@ void Chord::createLedgerLines(int track, vector<LedgerLineData>& vecLines, bool 
 void Chord::addLedgerLines(int move)
       {
 //cc
-          
-          std::vector<int>* innerLedgers = &Alternative::innerLedgers;
+      std::vector<int> _innerLedgers;
+          std::vector<int>* innerLedgers = &_innerLedgers;
           innerLedgers->push_back(2);
           innerLedgers->push_back(3);
           innerLedgers->push_back(4);

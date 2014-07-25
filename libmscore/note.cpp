@@ -17,7 +17,6 @@
 
 #include <assert.h>
 
-#include "alternative.h"
 #include "note.h"
 #include "score.h"
 #include "key.h"
