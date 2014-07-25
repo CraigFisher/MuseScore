@@ -937,6 +937,11 @@ void StaffLines::layout()
             dist  = _spatium;
             lines = 5;
             }
+          
+//dist = dist / 2;
+//lines = 9;
+          
+          
 
 //      qDebug("StaffLines::layout:: dist %f st %p", dist, st);
 
@@ -959,10 +964,19 @@ void StaffLines::draw(QPainter* painter) const
 
       QVector<QLineF> ll(lines);
       qreal y = _pos.y();
-      for (int i = 0; i < lines; ++i) {
-            ll[i].setLine(x1, y, x2, y);
-            y += dist;
+          
+//          bool hiddens[8] = {true, false, true, false, true, true, false, false};
+          
+          for (int i = 0; i < lines; ++i) {
+//              if(hiddens[i]) {
+                  ll[i].setLine(x1, y, x2, y);
+//              }
+              y += dist;
             }
+          
+    
+          
+          
       if (MScore::debugMode) {
             painter->setPen(QPen(Qt::lightGray, lw, Qt::SolidLine, Qt::FlatCap));
             y = _pos.y() - 3 * dist;
@@ -1047,7 +1061,8 @@ void Line::layout()
       qreal sp = spatium();
       qreal w  = _width.val() * sp;
       qreal l  = _len.val() * sp;
-      qreal w2 = w * .5;
+      qreal w2 = w * .5; //cc check to make sure this is correct
+          
       if (vertical)
             bbox().setRect(-w2, -w2, w, l + w);
       else

@@ -210,7 +210,7 @@ class StaffType {
                   const QString& fretFontName, qreal fretFontSize, qreal fretFontUserY,
                   bool linesThrough, TablatureMinimStyle minimStyle, bool onLines, bool showRests,
                   bool stemsDown, bool stemThrough, bool upsideDown, bool useNumbers);
-
+ 
       virtual ~StaffType() {}
       bool operator==(const StaffType&) const;
       bool isSameStructure(const StaffType&) const;

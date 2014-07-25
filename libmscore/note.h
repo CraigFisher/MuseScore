@@ -22,6 +22,7 @@
 #include "symbol.h"
 #include "noteevent.h"
 #include "pitchspelling.h"
+#include <map>
 
 class QPainter;
 
@@ -235,6 +236,9 @@ class Note : public Element {
       int concertPitchIdx() const;
       void updateRelLine(int relLine, bool undoable);
 
+      void setAlternativeLine();
+      int _alternativeLine; //cc
+
    public:
       Note(Score* s = 0);
       Note(const Note&, bool link = false);
@@ -296,10 +300,12 @@ class Note : public Element {
       void undoSetTpc2(int tpc)      { undoChangeProperty(P_ID::TPC2, tpc); }
       int transposeTpc(int tpc);
 
-      Accidental* accidental() const    { return _accidental; }
-      void setAccidental(Accidental* a)   { _accidental = a;    }
+//    Q_INVOKABLE Ms::Accidental* accidental() const    {return _accidental; }
+      Q_INVOKABLE Ms::Accidental* accidental() const; //cc
+      void setAccidental(Accidental* a)   { _accidental = a;    } 
 
-      int line() const                { return _line + _lineOffset;   }
+//      int line() const                { return _line + _lineOffset;   }
+      int line() const; //cc
       void setLine(int n);
 
       int fret() const                { return _fret;   }
@@ -420,6 +426,9 @@ class Note : public Element {
 
       static SymId noteHead(int direction, NoteHead::Group, NoteHead::Type);
       NoteVal noteVal() const;
+    
+    static std::map<int, int> altLineMap; //cc_temp
+    static bool altNoteMapping;
       };
 
 // extern const SymId noteHeads[2][int(NoteHead::Group::HEAD_GROUPS)][int(NoteHead::Type::HEAD_TYPES)];
