@@ -1225,9 +1225,6 @@ void PreferenceDialog::buttonBoxClicked(QAbstractButton* button)
 //   apply
 //---------------------------------------------------------
 
-    //cc
-// std::map<int, int> Note::altLineMap; //cc_temp
-
 void PreferenceDialog::apply()
       {
       QSettings s;
@@ -1434,44 +1431,6 @@ void PreferenceDialog::apply()
       emit preferencesChanged();
       preferences.write();
       mscore->startAutoSave();
-
-      //cc
-      preferences.altNoteMapping = true;
-          Note::altLineMap[31] = 0;
-          Note::altLineMap[19] = 0;
-          Note::altLineMap[7] = 0;
-          Note::altLineMap[24] = 1;
-          Note::altLineMap[12] = 2;
-          Note::altLineMap[0] = 2;
-          Note::altLineMap[29] = 3;
-          Note::altLineMap[17] = 3;
-          Note::altLineMap[5] = 3;
-          Note::altLineMap[22] = 4;
-          Note::altLineMap[10] = 4;
-          Note::altLineMap[27] = 4;
-          Note::altLineMap[15] = 5;
-          Note::altLineMap[3] = 5;
-          Note::altLineMap[32] = 5;
-          Note::altLineMap[20] = 6;
-          Note::altLineMap[8] = 6;
-          Note::altLineMap[25] = 6;
-          Note::altLineMap[13] = 7;
-          Note::altLineMap[1] = 7;
-          Note::altLineMap[30] = 7;
-          Note::altLineMap[18] = 8;
-          Note::altLineMap[6] = 8;
-          Note::altLineMap[23] = 8;
-          Note::altLineMap[11] = 9;
-          Note::altLineMap[-1] = 9;
-          Note::altLineMap[28] = 9;
-          Note::altLineMap[16] = 10;
-          Note::altLineMap[4] = 10;
-          Note::altLineMap[33] = 10;
-          Note::altLineMap[21] = 11;
-          Note::altLineMap[9] = 11;
-          Note::altLineMap[26] = 11;
-          Note::altLineMap[14] = 12;
-          Note::altLineMap[2] = 12; //cc_temp
       }
 
 //---------------------------------------------------------

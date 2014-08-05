@@ -18,7 +18,7 @@ if (SCRIPT_INTERFACE)
       clef.h duration.h dynamic.h element.h figuredbass.h fingering.h fret.h
       glissando.h hairpin.h harmony.h hook.h icon.h image.h instrchange.h
       keysig.h lasso.h layoutbreak.h line.h lyrics.h measurebase.h measure.h
-      notedot.h note.h ossia.h ottava.h page.h pedal.h rehearsalmark.h repeat.h
+      notationsetter.h notedot.h note.h ossia.h ottava.h page.h pedal.h rehearsalmark.h repeat.h
       rest.h segment.h shadownote.h slur.h tie.h spacer.h spanner.h
       stafftext.h stem.h symbol.h system.h tempotext.h textframe.h text.h
       textline.h timesig.h tremolobar.h tremolo.h trill.h tuplet.h volta.h
@@ -60,7 +60,7 @@ add_library (
       instrtemplate.cpp instrument.cpp interval.cpp
       key.cpp keyfinder.cpp keysig.cpp lasso.cpp
       layoutbreak.cpp layout.cpp line.cpp lyrics.cpp measurebase.cpp
-      measure.cpp navigate.cpp note.cpp noteevent.cpp ottava.cpp
+      measure.cpp navigate.cpp notationsetter.cpp note.cpp noteevent.cpp ottava.cpp
       page.cpp part.cpp pedal.cpp pitch.cpp pitchspelling.cpp
       rendermidi.cpp repeat.cpp repeatlist.cpp rest.cpp
       score.cpp segment.cpp select.cpp shadownote.cpp slur.cpp tie.cpp

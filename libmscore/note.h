@@ -213,6 +213,7 @@ class Note : public Element {
 
 
       Accidental* _accidental;
+      Accidental* _altAccidental; //cc
 
       ElementList _el;        ///< fingering, other text, symbols or images
       Tie* _tieFor;
@@ -236,8 +237,9 @@ class Note : public Element {
       int concertPitchIdx() const;
       void updateRelLine(int relLine, bool undoable);
 
-      void setAlternativeLine();
-      int _alternativeLine; //cc
+      int computeAlternativeLine() const; //cc //TODO: possibly make this void function that just sets alternative line
+      mutable int _alternativeLine; //cc
+
 
    public:
       Note(Score* s = 0);
@@ -300,9 +302,11 @@ class Note : public Element {
       void undoSetTpc2(int tpc)      { undoChangeProperty(P_ID::TPC2, tpc); }
       int transposeTpc(int tpc);
 
-//    Q_INVOKABLE Ms::Accidental* accidental() const    {return _accidental; }
-      Q_INVOKABLE Ms::Accidental* accidental() const; //cc
+      //cc
+      // Q_INVOKABLE Ms::Accidental* accidental() const    {return _accidental; } 
+      Q_INVOKABLE Ms::Accidental* accidental() const; 
       void setAccidental(Accidental* a)   { _accidental = a;    } 
+      // void setAccidental(Accidental* a); 
 
 //      int line() const                { return _line + _lineOffset;   }
       int line() const; //cc
@@ -427,12 +431,10 @@ class Note : public Element {
       static SymId noteHead(int direction, NoteHead::Group, NoteHead::Type);
       NoteVal noteVal() const;
     
-    static std::map<int, int> altLineMap; //cc_temp
-    static bool altNoteMapping;
+    static std::map<int, int> altNotePositions; //cc
+    static std::map<int, NoteHead::Group> altNoteHeadGroups; //cc
+    static int altOctaveDistance;         //cc
       };
-
-// extern const SymId noteHeads[2][int(NoteHead::Group::HEAD_GROUPS)][int(NoteHead::Type::HEAD_TYPES)];
-
 
 }     // namespace Ms
 

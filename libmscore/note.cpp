@@ -131,9 +131,7 @@ static const char* noteHeadNames[] = {
 
 SymId Note::noteHead(int direction, NoteHead::Group g, NoteHead::Type t)
       {
-      return noteHeads[direction][int(g)][int(t)];
-            // return noteHeads[0][2][1];
-
+      return noteHeads[direction][int(g)][int(t)]; 
       };
 
 //---------------------------------------------------------
@@ -183,6 +181,7 @@ Note::Note(Score* s)
       _small             = false;
       _userDotPosition   = MScore::Direction::AUTO;
       _line              = 0;
+      _alternativeLine   = 0; //cc
       _fret              = -1;
       _string            = -1;
       _fretConflict      = false;
@@ -206,11 +205,14 @@ Note::Note(Score* s)
       _dots[2]           = 0;
       _playEvents.append(NoteEvent());    // add default play event
       _mark             = 0;
+
+      _altAccidental     = new Accidental(score()); //cc
       }
 
 Note::~Note()
       {
       delete _accidental;
+      delete _altAccidental; //cc
       qDeleteAll(_el);
       delete _tieFor;
       delete _dots[0];
@@ -275,6 +277,8 @@ Note::Note(const Note& n, bool link)
             }
       _lineOffset = n._lineOffset;
       _mark      = n._mark;
+          
+      _altAccidental     = new Accidental(score()); //cc
       }
 
 //---------------------------------------------------------
@@ -444,7 +448,14 @@ SymId Note::noteHead() const
       if (_headType != NoteHead::Type::HEAD_AUTO)
             ht = _headType;
 
-      SymId t = noteHead(up, _headGroup, ht);
+      //cc
+      SymId t;
+      if(preferences.altNoteHeadGroups) {
+            t = noteHead(up, Note::altNoteHeadGroups[_tpc[0]], ht);
+      } else {      
+            t = noteHead(up, _headGroup, ht);
+      }
+
       if (t == SymId::noSym) {
             qDebug("invalid note head %hhd/%hhd", _headGroup, ht);
             t = noteHead(up, NoteHead::Group::HEAD_NORMAL, ht);
@@ -1718,33 +1729,25 @@ NoteType Note::noteType() const
       return chord()->noteType();
       }
    
-    //cc
-    //TODO: move this logic to the equivalent "setter" function
+//cc
+//TODO: DECIDE WHETHER _lineOffset should be included for alternative line
 int Note::line() const {    
-//       IF  NOTES  REMAPPED,  DO  ALTERNATIVE  CHECKING
-//    if(Alternative::newLines) {
-//        lineMapKey key;
-//        Staff* s = score()->staff(staffIdx() + chord()->staffMove());
-//        key.clef = s->clef(chord()->tick());
-//        key.pitch = _pitch;
-//        key.tpc = _tpc[0];
-//        return Alternative::lineMap[key];
-
- // if(_tpc[0] == 22 || _tpc[0] == 22) {
- //                      Staff* s = score()->staff(staffIdx() + chord()->staffMove());
- //                      ClefType clef = s->clef(chord()->tick());
-
-            // return Alternative::lineMapping                      
-
-                       // return relStep(_pitch, 14, clef) + _lineOffset;
-    // } else {
-      if(preferences.altNoteMapping) { //cc
-            return _alternativeLine;
+      if(preferences.altNotePositions) {
+          return _alternativeLine + _lineOffset;
       } else {
-            return _line;
+          return _line + _lineOffset;
       }
-    // }
 }
+
+//cc
+Q_INVOKABLE Ms::Accidental* Note::accidental() const {
+      if(preferences.altNoAccidentals) {
+            return _altAccidental;
+      } else {
+            return _accidental;
+      }
+}
+
 
 //---------------------------------------------------------
 //   pagePos
@@ -1853,21 +1856,19 @@ void Note::setSmall(bool val)
       }
 
 //---------------------------------------==============//cc
-//   setAlternativeLine
-//---------------------------------------------------------
+//   computeAlternativeLine
+//---------------------------------------------------------       
 
-    //cc
-std::map<int, int> Note::altLineMap;
+//cc
+std::map<int, int> Note::altNotePositions;
+std::map<int, NoteHead::Group> Note::altNoteHeadGroups;
+int Note::altOctaveDistance;  
 
-void Note::setAlternativeLine()
+//cc
+int Note::computeAlternativeLine() const
      {
-      // _alternativeLine = Note::altLineMap[_tpc[0]]; //cc_temp
-      this->_alternativeLine = Note::altLineMap[_tpc[0]]; //cc_temp
-
-
-     // int octave = (_pitch / 12) + 1;
-     // int relStep = tpcToRelstep[_tpc[0]];
-     // _line = (relStep * octave * linesPerOctave) + ; 
+     int octave = ((_pitch / 12) * -1) + 5;
+     return Note::altNotePositions[_tpc[0]] + (octave * Note::altOctaveDistance);
      }
 //---------------------------------------------------------
 //   setLine
@@ -1878,8 +1879,8 @@ void Note::setLine(int n)
       _line = n;
       rypos() = _line * spatium() * .5;
 
-     if(preferences.altNoteMapping) { //cc
-           setAlternativeLine();
+     if(preferences.altNotePositions) { //cc
+           _alternativeLine = computeAlternativeLine();
            } 
 
       }
@@ -1955,10 +1956,6 @@ void Note::endEdit()
             score()->setLayoutAll(true);
             }
       }
-//cc
-Ms::Accidental* Note::accidental() const {
-      return new Accidental(score());
-}
 
 //---------------------------------------------------------
 //   updateAccidental

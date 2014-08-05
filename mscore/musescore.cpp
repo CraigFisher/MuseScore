@@ -96,6 +96,8 @@
 #include "fluid/fluid.h"
 #include "qmlplugin.h"
 
+#include "libmscore/notationsetter.h"
+
 #ifdef AEOLUS
 extern Ms::Synthesizer* createAeolus();
 #endif
@@ -4688,6 +4690,15 @@ int main(int argc, char* av[])
 
       Shortcut::init();
       preferences.init();
+          
+      //cc
+      preferences.altNotePositions 	= true;
+      preferences.altNoteHeadGroups = true;
+      preferences.altNoAccidentals	= true;
+      preferences.altStaffLines	= true;
+      preferences.altInnerLedgers 	= true;
+      NotationSetter::setNotation(); //TODO: have these currently-hardcoded preferences loaded
+                                     //      from QSettings
 
       QNetworkProxyFactory::setUseSystemConfiguration(true);
 
@@ -4953,6 +4964,7 @@ int main(int argc, char* av[])
                         break;
                   }
             }
+
       return qApp->exec();
       }
 
