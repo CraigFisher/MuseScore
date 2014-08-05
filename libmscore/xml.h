@@ -16,10 +16,13 @@
 #include "thirdparty/xmlstream/xmlstream.h"
 #include "stafftype.h"
 #include "interval.h"
+#include "element.h"
+#include "select.h"
 
 namespace Ms {
 
 enum class PlaceText : char;
+enum class ClefType : signed char;
 class Spanner;
 class Beam;
 class Tuplet;
@@ -43,10 +46,11 @@ class XmlReader : public XmlStreamReader {
       QString docName;  // used for error reporting
 
       // Score read context (for read optimizations):
-      int _tick  = 0;
-      int _tickOffset = 0;
-      int _track = 0;
-      Measure* _lastMeasure = 0;
+      int _tick             { 0       };
+      int _tickOffset       { 0       };
+      int _track            { 0       };
+      bool _pasteMode       { false   };        // modifies read behaviour on paste operation
+      Measure* _lastMeasure { nullptr };
       QList<Beam*>    _beams;
       QList<Tuplet*>  _tuplets;
       QList<SpannerValues> _spannerValues;
@@ -54,6 +58,7 @@ class XmlReader : public XmlStreamReader {
       QList<StaffType> _staffTypes;
       void htmlToString(int level, QString*);
       Interval _transpose;
+      QList<QList<std::pair<int, ClefType>>> _clefs;   // for 1.3 scores
 
    public:
       XmlReader(QFile* f) : XmlStreamReader(f), docName(f->fileName()) {}
@@ -93,6 +98,9 @@ class XmlReader : public XmlStreamReader {
       void setTickOffset(int val) { _tickOffset = val; }
       int track() const           { return _track;     }
       void setTrack(int val)      { _track = val;      }
+      bool pasteMode() const      { return _pasteMode; }
+      void setPasteMode(bool v)   { _pasteMode = v;    }
+
       void addTuplet(Tuplet* s);
       void addBeam(Beam* s)       { _beams.append(s); }
 
@@ -116,6 +124,8 @@ class XmlReader : public XmlStreamReader {
       Interval transpose() const { return _transpose; }
       void setTransposeChromatic(int v) { _transpose.chromatic = v; }
       void setTransposeDiatonic(int v) { _transpose.diatonic = v; }
+
+      QList<std::pair<int, ClefType>>& clefs(int idx);
       };
 
 //---------------------------------------------------------
@@ -130,6 +140,7 @@ class Xml : public QTextStream {
       void putLevel();
       QList<std::pair<int,const Spanner*>> _spanner;
       int _spannerId = 1;
+      SelectionFilter _filter;
 
    public:
       int curTick   =  0;           // used to optimize output
@@ -175,6 +186,9 @@ class Xml : public QTextStream {
 
       void writeXml(const QString&, QString s);
       void dump(int len, const unsigned char* p);
+
+      void setFilter(SelectionFilter f) { _filter = f; }
+      bool canWrite(const Element*) const;
 
       static QString xmlString(const QString&);
       };

@@ -250,6 +250,7 @@ void Articulation::read(XmlReader& e)
 
 void Articulation::write(Xml& xml) const
       {
+      if (!xml.canWrite(this)) return;
       xml.stag("Articulation");
       if (!_channelName.isEmpty())
             xml.tagE(QString("channel name=\"%1\"").arg(_channelName));
@@ -493,6 +494,13 @@ bool Articulation::setProperty(P_ID propertyId, const QVariant& v)
                   setTimeStretch(v.toDouble());
                   score()->fixTicks();
                   break;
+            case P_ID::USER_OFF:
+                  setUserOff(v.toPointF());
+                  if (_articulationType == ArticulationType::Tenuto) {
+                        // moving a tenuto may move slurs:
+                        score()->setLayoutAll(true);
+                        }
+                  return true;
             default:
                   return Element::setProperty(propertyId, v);
             }

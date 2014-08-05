@@ -31,7 +31,7 @@ class QPainter;
 
 namespace Ms {
 
-class Interval;
+struct Interval;
 class TempoMap;
 struct TEvent;
 class SigEvent;
@@ -366,6 +366,7 @@ class Score : public QObject {
       bool _defaultsRead;            ///< defaults were read at MusicXML import, allow export of defaults in convertermode
 
       Selection _selection;
+      SelectionFilter _selectionFilter;
       QList<KeySig*> customKeysigs;
       Omr* _omr;
       Audio* _audio;
@@ -522,7 +523,6 @@ class Score : public QObject {
       void undoRemoveStaff(Staff* staff, int idx);
       void undoInsertStaff(Staff* staff, int idx);
       void undoChangeInvisible(Element*, bool);
-      void undoMove(Element* e, const QPointF& pt);
       void undoChangeBracketSpan(Staff* staff, int column, int span);
       void undoChangeTuning(Note*, qreal);
       void undoChangePageFormat(PageFormat*, qreal spatium, int);
@@ -545,7 +545,8 @@ class Score : public QObject {
       void changeCRlen(ChordRest* cr, const TDuration&);
 
       Fraction makeGap(Segment*, int track, const Fraction&, Tuplet*, bool keepChord = false);
-      bool makeGap1(int tick, int staffIdx, Fraction len);
+      bool makeGap1(int tick, int staffIdx, Fraction len, int voices);
+      bool makeGapVoice(Segment* seg, int track, Fraction len, int tick);
 
       Rest* addRest(int tick, int track, TDuration, Tuplet*);
       Rest* addRest(Segment* seg, int track, TDuration d, Tuplet*);
@@ -641,6 +642,7 @@ class Score : public QObject {
       Element* getSelectedElement() const   { return _selection.element(); }
       const Selection& selection() const    { return _selection; }
       Selection& selection()                { return _selection; }
+      SelectionFilter& selectionFilter()     { return _selectionFilter; }
       void setSelection(const Selection& s);
 
       int pos();
@@ -969,8 +971,9 @@ class Score : public QObject {
       void layoutSpanner();
       void insertTime(int tickPos, int tickLen);
 
-      ScoreFont* scoreFont() const    { return _scoreFont; }
-      void setScoreFont(ScoreFont* f) { _scoreFont = f;    }
+      ScoreFont* scoreFont() const            { return _scoreFont;     }
+      void setScoreFont(ScoreFont* f)         { _scoreFont = f;        }
+
       qreal noteHeadWidth() const     { return _noteHeadWidth; }
       void setNoteHeadWidth( qreal n) { _noteHeadWidth = n; }
 
@@ -983,6 +986,8 @@ class Score : public QObject {
       Note* upAltCtrl(Note*) const;
       Element* downAlt(Element*);
       Note* downAltCtrl(Note*) const;
+
+      void cmdInsertClef(Clef* clef, ChordRest* cr);
 
       friend class ChangeSynthesizerState;
       friend class Chord;

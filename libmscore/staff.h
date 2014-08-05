@@ -19,7 +19,6 @@
 */
 
 #include "mscore.h"
-// #include "key.h"
 #include "velo.h"
 #include "pitch.h"
 #include "cleflist.h"
@@ -93,22 +92,22 @@ class Staff : public QObject {
       int _rstaff;                  ///< Index in Part.
 
       ClefList clefs;
-      std::map<int,TimeSig*> timesigs;
       KeyList _keys;
+      std::map<int,TimeSig*> timesigs;
 
       QList <BracketItem> _brackets;
-      int _barLineSpan;       ///< 0 - no bar line, 1 - span this staff, ...
-      int _barLineFrom;       ///< line of start staff to draw the barline from (0 = staff top line, ...)
-      int _barLineTo;         ///< line of end staff to draw the bar line to (0= staff top line, ...)
-      bool _small;
-      bool _invisible;
-      QColor _color;
-
-      qreal _userDist;        ///< user edited extra distance
+      int _barLineSpan   { 1     };    ///< 0 - no bar line, 1 - span this staff, ...
+      int _barLineFrom   { 0     };    ///< line of start staff to draw the barline from (0 = staff top line, ...)
+      int _barLineTo;                  ///< line of end staff to draw the bar line to (0= staff top line, ...)
+      bool _small        { false };
+      bool _invisible    { false };
+      bool _neverHide    { false };
+      QColor _color      { MScore::defaultColor };
+      qreal _userDist    { 0.0   };        ///< user edited extra distance
 
       StaffType _staffType;
 
-      LinkedStaves* _linkedStaves;
+      LinkedStaves* _linkedStaves { nullptr };
 
       QMap<int,int> _channelList[VOICES];
 
@@ -142,13 +141,15 @@ class Staff : public QObject {
       QList <BracketItem> brackets() const { return _brackets; }
       void cleanupBrackets();
 
-      ClefList* clefList()           { return &clefs; }
       ClefTypeList clefTypeList(int tick) const;
       ClefType clef(int tick) const;
-      void setClef(int, const ClefTypeList&);
-      void setClef(int tick, const ClefType& ct) { setClef(tick, ClefTypeList(ct, ct)); }
-      void removeClef(int);
-      void undoSetClef(int, const ClefTypeList&);
+
+      void setInitialClef(ClefType);
+      void setInitialClef(const ClefTypeList&);
+      ClefTypeList initialClefTypeList() const;
+
+      void setClef(Clef*);
+      void removeClef(Clef*);
 
       void addTimeSig(TimeSig*);
       void removeTimeSig(TimeSig*);
@@ -164,8 +165,6 @@ class Staff : public QObject {
       Key prevKey(int tick) const;
       void setKey(int tick, Key);
       void removeKey(int tick);
-      void clearKeys()               { _keys.clear(); }
-      void updateKeys();
 
       bool show() const;
       bool slashStyle() const;
@@ -173,6 +172,9 @@ class Staff : public QObject {
       void setSmall(bool val)        { _small = val;        }
       bool invisible() const         { return _invisible;   }
       void setInvisible(bool val)    { _invisible = val;    }
+      bool neverHide() const         { return _neverHide;   }
+      void setNeverHide(bool val)    { _neverHide = val;    }
+
       void setSlashStyle(bool val);
       int lines() const;
       void setLines(int);
@@ -200,17 +202,17 @@ class Staff : public QObject {
       bool isDrumStaff() const         { return staffGroup() == StaffGroup::PERCUSSION; }
 
       VeloList& velocities()           { return _velocities;     }
-//      PitchList& pitchOffsets()        { return _pitchOffsets;   }
       int pitchOffset(int tick)        { return _pitchOffsets.pitchOffset(tick);   }
       void updateOttava();
 
       LinkedStaves* linkedStaves() const    { return _linkedStaves; }
       void setLinkedStaves(LinkedStaves* l) { _linkedStaves = l;    }
       QList<Staff*> staffList() const;
-
       void linkTo(Staff* staff);
       bool isLinked(Staff* staff);
+      void unlink(Staff* staff);
       bool primaryStaff() const;
+
       qreal userDist() const        { return _userDist;  }
       void setUserDist(qreal val)   { _userDist = val;  }
       void spatiumChanged(qreal /*oldValue*/, qreal /*newValue*/);

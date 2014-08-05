@@ -132,6 +132,7 @@
             <pitch>65</pitch>
             <tpc>13</tpc>
             </Note>
+          <Slur type="start" id="2"/>
           </Chord>
         </Measure>
       <Measure number="2">
@@ -142,6 +143,7 @@
             <tpc>15</tpc>
             </Note>
           <Slur type="stop" id="2"/>
+          <Slur type="stop" id="3"/>
           </Chord>
         <Chord>
           <durationType>quarter</durationType>

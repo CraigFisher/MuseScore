@@ -167,6 +167,7 @@ void TextLineSegment::setText(Text* t)
                   }
             else {
                   _text->setTextStyleType(t->textStyleType());
+                  _text->setTextStyle(t->textStyle());
                   _text->setText(t->text());
                   }
             }
@@ -183,6 +184,11 @@ void TextLineSegment::setText(Text* t)
 void TextLineSegment::layout1()
       {
       TextLine* tl = textLine();
+      if (parent() && tl && tl->type() != Element::Type::OTTAVA
+                  && tl->type() != Element::Type::PEDAL
+                  && tl->type() != Element::Type::VOLTA)
+            rypos() += -5.0 * spatium();
+
       if (!tl->diagonal())
             _userOff2.setY(0);
       switch (spannerSegmentType()) {
@@ -530,6 +536,7 @@ void TextLine::setEndText(const QString& s)
 
 void TextLine::write(Xml& xml) const
       {
+      if (!xml.canWrite(this)) return;
       xml.stag(QString("%1 id=\"%2\"").arg(name()).arg(xml.spannerId(this)));
       writeProperties(xml);
       xml.etag();

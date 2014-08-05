@@ -217,7 +217,7 @@ void StaffListItem::staffTypeChanged(int idx)
       int staffTypeIdx = _staffTypeCombo->itemData(idx).toInt();
       const StaffType* stfType = StaffType::preset(StaffTypes(staffTypeIdx));
       if (stfType->group() != ClefInfo::staffGroup(_clef._transposingClef)) {
-            ClefType clefType = ClefType::INVALID;
+            ClefType clefType;
             switch (stfType->group()) {
                   case StaffGroup::STANDARD:
                         clefType = _defaultClef._transposingClef;
@@ -855,288 +855,6 @@ void InstrumentsDialog::accept()
       }
 
 //---------------------------------------------------------
-//   editInstrList
-//---------------------------------------------------------
-
-void MuseScore::editInstrList()
-      {
-      if (cs == 0)
-            return;
-      if (!instrList)
-            instrList = new InstrumentsDialog(this);
-      else if (instrList->isVisible()) {
-            instrList->done(0);
-            return;
-            }
-      Score* rootScore = cs->rootScore();
-      instrList->setScore(rootScore);
-      instrList->genPartList();
-      rootScore->startCmd();
-        rootScore->deselectAll();
-      int rv = instrList->exec();
-
-      if (rv == 0) {
-            rootScore->endCmd();
-            return;
-            }
-      rootScore->inputState().setTrack(-1);
-
-      // keep the keylist of the first staff to apply it to new ones
-      KeyList tmpKeymap;
-      Staff* firstStaff = nullptr;
-      for (Staff* s : rootScore->staves()) {
-            KeyList* km = s->keyList();
-            if (!s->isDrumStaff()) {
-                  tmpKeymap.insert(km->begin(), km->end());
-                  firstStaff = s;
-                  break;
-                  }
-            }
-      //normalize the keyevent to concert pitch if necessary
-      if (firstStaff && !rootScore->styleB(StyleIdx::concertPitch) && firstStaff->part()->instr()->transpose().chromatic ) {
-            int interval = firstStaff->part()->instr()->transpose().chromatic;
-            for (auto i = tmpKeymap.begin(); i != tmpKeymap.end(); ++i) {
-                  int tick = i->first;
-                  Key oKey = i->second;
-                  tmpKeymap[tick] = transposeKey(oKey, interval);
-                  }
-            }
-
-      //
-      // process modified partitur list
-      //
-      QTreeWidget* pl = instrList->partiturList;
-      Part* part   = 0;
-      int staffIdx = 0;
-      int rstaff   = 0;
-
-      QTreeWidgetItem* item = 0;
-      for (int idx = 0; (item = pl->topLevelItem(idx)); ++idx) {
-            PartListItem* pli = static_cast<PartListItem*>(item);
-            // check if the part contains any remaining staves
-            // mark to remove part if not
-            QTreeWidgetItem* ci = 0;
-            int staves = 0;
-            for (int cidx = 0; (ci = pli->child(cidx)); ++cidx) {
-                  StaffListItem* sli = static_cast<StaffListItem*>(ci);
-                  if (sli->op != ListItemOp::I_DELETE)
-                        ++staves;
-                  }
-            if (staves == 0)
-                  pli->op = ListItemOp::I_DELETE;
-            }
-
-      item = 0;
-      for (int idx = 0; (item = pl->topLevelItem(idx)); ++idx) {
-            rstaff = 0;
-            PartListItem* pli = static_cast<PartListItem*>(item);
-            if (pli->op == ListItemOp::I_DELETE)
-                  rootScore->cmdRemovePart(pli->part);
-            else if (pli->op == ListItemOp::ADD) {
-                  const InstrumentTemplate* t = ((PartListItem*)item)->it;
-                  part = new Part(rootScore);
-                  part->initFromInstrTemplate(t);
-
-                  pli->part = part;
-                  QTreeWidgetItem* ci = 0;
-                  rstaff = 0;
-                  QList<Staff*> linked;
-                  QList<Staff*> nonLinked;
-                  for (int cidx = 0; (ci = pli->child(cidx)); ++cidx) {
-                        StaffListItem* sli = static_cast<StaffListItem*>(ci);
-                        Staff* staff       = new Staff(rootScore, part, rstaff);
-                        sli->staff         = staff;
-                        staff->setRstaff(rstaff);
-
-                        staff->init(t, sli->staffType(), cidx);
-                        staff->setClef(0, sli->clef());
-
-                        rootScore->undoInsertStaff(staff, staffIdx + rstaff);
-                        Staff* linkedStaff = part->staves()->front();
-                        if (sli->linked() && linkedStaff != staff) {
-                              linkedStaff->linkTo(staff);
-                              cloneStaff(linkedStaff, staff);
-                              linked.append(staff);
-                              }
-                        else {
-                              nonLinked.append(staff);
-                              }
-                        ++rstaff;
-                        }
-                  if (linked.size() == 0)
-                        part->staves()->front()->setBarLineSpan(part->nstaves());
-                  //equivalent to cmdInsertPart(part, staffIdx)
-                  // but we donnt add rests for linked parts
-                  rootScore->undoInsertPart(part, staffIdx);
-                  for (Staff* s : nonLinked) {
-                        int si = rootScore->staffIdx(s);
-                        for (Measure* m = rootScore->firstMeasure(); m; m = m->nextMeasure()) {
-                              m->cmdAddStaves(si, si + 1, true);
-                              if (m->hasMMRest())
-                                    //m->mmRest()->cmdAddStaves(si, si + 1, true);
-                                    m->mmRest()->cmdAddStaves(si, si + 1, false);
-                              }
-                        }
-                  for (Staff* s : linked) {
-                        int si = rootScore->staffIdx(s);
-                        for (Measure* m = rootScore->firstMeasure(); m; m = m->nextMeasure()) {
-                              m->cmdAddStaves(si, si + 1, false);
-                              if (m->hasMMRest())
-                                    m->mmRest()->cmdAddStaves(si, si + 1, true);
-                              }
-                        }
-                  int sidx = rootScore->staffIdx(part);
-                  int eidx = sidx + part->nstaves();
-                  rootScore->adjustBracketsIns(sidx, eidx);
-                  //insert keysigs
-                  if(firstStaff)
-                        rootScore->adjustKeySigs(sidx, eidx, tmpKeymap);
-                  staffIdx += rstaff;
-                  }
-            else {
-                  part = pli->part;
-                  if (part->show() != pli->visible()) {
-                        part->score()->undo()->push(new ChangePartProperty(part, 0, pli->visible()));
-                        }
-                  QTreeWidgetItem* ci = 0;
-                  for (int cidx = 0; (ci = pli->child(cidx)); ++cidx) {
-                        StaffListItem* sli = (StaffListItem*)ci;
-                        if (sli->op == ListItemOp::I_DELETE) {
-                              rootScore->systems()->clear();
-                              Staff* staff = sli->staff;
-                              int sidx = staff->idx();
-                              int eidx = sidx + 1;
-                              for (Measure* m = rootScore->firstMeasure(); m; m = m->nextMeasure()) {
-                                    m->cmdRemoveStaves(sidx, eidx);
-                                    if (m->hasMMRest())
-                                          m->mmRest()->cmdRemoveStaves(sidx, eidx);
-                                    }
-                              rootScore->cmdRemoveStaff(sidx);
-                              }
-                        else if (sli->op == ListItemOp::ADD) {
-                              Staff* staff = new Staff(rootScore, part, rstaff);
-                              sli->staff   = staff;
-                              staff->setRstaff(rstaff);
-
-                              rootScore->undoInsertStaff(staff, staffIdx);
-
-                              for (Measure* m = rootScore->firstMeasure(); m; m = m->nextMeasure()) {
-                                    // do not create whole measure rests for linked staves
-                                    m->cmdAddStaves(staffIdx, staffIdx+1, !sli->linked());
-                                    if (m->hasMMRest())
-                                          m->mmRest()->cmdAddStaves(staffIdx, staffIdx+1, !sli->linked());
-                                    }
-
-                              rootScore->adjustBracketsIns(staffIdx, staffIdx+1);
-                              staff->initFromStaffType(sli->staffType());
-                              staff->setClef(0, sli->clef());
-                              Key nKey = part->staff(0)->key(0);
-                              staff->setKey(0, nKey);
-
-                              if (sli->linked() && rstaff > 0) {
-                                    // link to top staff of same part
-                                    Staff* linkedStaff = part->staves()->front();
-                                    linkedStaff->linkTo(staff);
-                                    cloneStaff(linkedStaff, staff);
-                                    }
-                              if(firstStaff && !sli->linked())
-                                    rootScore->adjustKeySigs(staffIdx, staffIdx+1, tmpKeymap);
-                              ++staffIdx;
-                              ++rstaff;
-                              }
-                        else if (sli->op == ListItemOp::UPDATE) {
-                              // check changes in staff type
-                              Staff* staff = sli->staff;
-                              const StaffType* stfType = sli->staffType();
-                              // before changing staff type, check if notes need to be updated
-                              // (true if changing into or away from TAB)
-                              StaffGroup ng = stfType->group();         // new staff group
-                              StaffGroup og = staff->staffGroup();      // old staff group
-                              bool updateNeeded = (ng == StaffGroup::TAB) != (og == StaffGroup::TAB);
-
-                              // use selected staff type
-                              if (stfType->name() != staff->staffType()->name())
-                                    rootScore->undo(new ChangeStaffType(staff, *stfType));
-
-                              if (updateNeeded)
-                                    rootScore->cmdUpdateNotes();
-                              }
-                        else {
-                              ++staffIdx;
-                              ++rstaff;
-                              }
-                        }
-                  }
-            }
-
-      //
-      //    sort staves
-      //
-      QList<Staff*> dst;
-      for (int idx = 0; idx < pl->topLevelItemCount(); ++idx) {
-            PartListItem* pli = (PartListItem*)pl->topLevelItem(idx);
-            if (pli->op == ListItemOp::I_DELETE)
-                  continue;
-            QTreeWidgetItem* ci = 0;
-            for (int cidx = 0; (ci = pli->child(cidx)); ++cidx) {
-                  StaffListItem* sli = (StaffListItem*) ci;
-                  if (sli->op == ListItemOp::I_DELETE)
-                        continue;
-                  dst.push_back(sli->staff);
-                  }
-            }
-
-      QList<int> dl;
-      for(Staff* staff : dst) {
-            int idx = rootScore->staves().indexOf(staff);
-            if (idx == -1)
-                  qDebug("staff in dialog(%p) not found in score", staff);
-            else
-                  dl.push_back(idx);
-            }
-
-      rootScore->undo(new SortStaves(rootScore, dl));
-
-      //
-      // check for valid barLineSpan and bracketSpan
-      // in all staves
-      //
-
-      int n = rootScore->nstaves();
-      for (int i = 0; i < n; ++i) {
-            Staff* staff = rootScore->staff(i);
-            if (staff->barLineSpan() > (n - i))
-                  rootScore->undoChangeBarLineSpan(staff, n - i, 0, rootScore->staff(n-1)->lines()-1);
-            QList<BracketItem> brackets = staff->brackets();
-            int nn = brackets.size();
-            for (int ii = 0; ii < nn; ++ii) {
-                  if ((brackets[ii]._bracket != BracketType::NO_BRACKET) && (brackets[ii]._bracketSpan > (n - i)))
-                        rootScore->undoChangeBracketSpan(staff, ii, n - i);
-                  }
-            }
-      //
-      // there should be at least one measure
-      //
-      if (rootScore->measures()->size() == 0)
-            rootScore->insertMeasure(Element::Type::MEASURE, 0, false);
-
-      QList<Score*> toDelete;
-      for (Excerpt* excpt : rootScore->excerpts()) {
-            if (excpt->score()->staves().size() == 0)
-                  toDelete.append(excpt->score());
-            }
-      for(Score* s: toDelete)
-            rootScore->undo(new RemoveExcerpt(s));
-
-      rootScore->setLayoutAll(true);
-      rootScore->cmdUpdateNotes();  // do it before global layout or layout of chords will not
-      rootScore->endCmd();          // find notes in right positions for stems, ledger lines, etc
-      rootScore->rebuildMidiMapping();
-//      rootScore->updateNotes();
-      seq->initInstruments();
-      }
-
-//---------------------------------------------------------
 //   on_saveButton_clicked
 //---------------------------------------------------------
 
@@ -1253,6 +971,7 @@ void InstrumentsDialog::on_clearSearch_clicked()
       search->clear();
       filterInstruments (instrumentList);
       }
+
 //---------------------------------------------------------
 //   on_instrumentGenreFilter_currentTextChanged
 //---------------------------------------------------------
@@ -1307,4 +1026,267 @@ void InstrumentsDialog::writeSettings()
       settings.setValue("pos", pos());
       settings.endGroup();
       }
+
+//---------------------------------------------------------
+//   editInstrList
+//---------------------------------------------------------
+
+void MuseScore::editInstrList()
+      {
+      if (cs == 0)
+            return;
+      if (!instrList)
+            instrList = new InstrumentsDialog(this);
+      else if (instrList->isVisible()) {
+            instrList->done(0);
+            return;
+            }
+      Score* rootScore = cs->rootScore();
+      instrList->setScore(rootScore);
+      instrList->genPartList();
+      rootScore->startCmd();
+        rootScore->deselectAll();
+      int rv = instrList->exec();
+
+      if (rv == 0) {
+            rootScore->endCmd();
+            return;
+            }
+      rootScore->inputState().setTrack(-1);
+
+      // keep the keylist of the first staff to apply it to new ones
+      KeyList tmpKeymap;
+      Staff* firstStaff = nullptr;
+      for (Staff* s : rootScore->staves()) {
+            KeyList* km = s->keyList();
+            if (!s->isDrumStaff()) {
+                  tmpKeymap.insert(km->begin(), km->end());
+                  firstStaff = s;
+                  break;
+                  }
+            }
+      //normalize the keyevent to concert pitch if necessary
+      if (firstStaff && !rootScore->styleB(StyleIdx::concertPitch) && firstStaff->part()->instr()->transpose().chromatic ) {
+            int interval = firstStaff->part()->instr()->transpose().chromatic;
+            for (auto i = tmpKeymap.begin(); i != tmpKeymap.end(); ++i) {
+                  int tick = i->first;
+                  Key oKey = i->second;
+                  tmpKeymap[tick] = transposeKey(oKey, interval);
+                  }
+            }
+
+      //
+      // process modified partitur list
+      //
+      QTreeWidget* pl = instrList->partiturList;
+      Part* part   = 0;
+      int staffIdx = 0;
+      int rstaff   = 0;
+
+      QTreeWidgetItem* item = 0;
+      for (int idx = 0; (item = pl->topLevelItem(idx)); ++idx) {
+            PartListItem* pli = static_cast<PartListItem*>(item);
+            // check if the part contains any remaining staves
+            // mark to remove part if not
+            QTreeWidgetItem* ci = 0;
+            int staves = 0;
+            for (int cidx = 0; (ci = pli->child(cidx)); ++cidx) {
+                  StaffListItem* sli = static_cast<StaffListItem*>(ci);
+                  if (sli->op != ListItemOp::I_DELETE)
+                        ++staves;
+                  }
+            if (staves == 0)
+                  pli->op = ListItemOp::I_DELETE;
+            }
+
+      item = 0;
+      for (int idx = 0; (item = pl->topLevelItem(idx)); ++idx) {
+            rstaff = 0;
+            PartListItem* pli = static_cast<PartListItem*>(item);
+            if (pli->op == ListItemOp::I_DELETE)
+                  rootScore->cmdRemovePart(pli->part);
+            else if (pli->op == ListItemOp::ADD) {
+                  const InstrumentTemplate* t = ((PartListItem*)item)->it;
+                  part = new Part(rootScore);
+                  part->initFromInstrTemplate(t);
+
+                  pli->part = part;
+                  QTreeWidgetItem* ci = 0;
+                  rstaff = 0;
+                  QList<Staff*> linked;
+                  QList<Staff*> nonLinked;
+                  for (int cidx = 0; (ci = pli->child(cidx)); ++cidx) {
+                        StaffListItem* sli = static_cast<StaffListItem*>(ci);
+                        Staff* staff       = new Staff(rootScore, part, rstaff);
+                        sli->staff         = staff;
+                        staff->setRstaff(rstaff);
+
+                        staff->init(t, sli->staffType(), cidx);
+                        staff->setInitialClef(sli->clef());
+
+                        rootScore->undoInsertStaff(staff, staffIdx + rstaff);
+                        Staff* linkedStaff = part->staves()->front();
+                        if (sli->linked() && linkedStaff != staff) {
+                              cloneStaff(linkedStaff, staff);
+                              linked.append(staff);
+                              }
+                        else {
+                              nonLinked.append(staff);
+                              }
+                        ++rstaff;
+                        }
+                  if (linked.size() == 0)
+                        part->staves()->front()->setBarLineSpan(part->nstaves());
+
+                  rootScore->cmdInsertPart(part, staffIdx);
+
+                  //insert keysigs
+                  int sidx = rootScore->staffIdx(part);
+                  int eidx = sidx + part->nstaves();
+                  if (firstStaff)
+                        rootScore->adjustKeySigs(sidx, eidx, tmpKeymap);
+                  staffIdx += rstaff;
+                  }
+            else {
+                  part = pli->part;
+                  if (part->show() != pli->visible()) {
+                        part->score()->undo()->push(new ChangePartProperty(part, 0, pli->visible()));
+                        }
+                  QTreeWidgetItem* ci = 0;
+                  for (int cidx = 0; (ci = pli->child(cidx)); ++cidx) {
+                        StaffListItem* sli = (StaffListItem*)ci;
+                        if (sli->op == ListItemOp::I_DELETE) {
+                              rootScore->systems()->clear();
+                              Staff* staff = sli->staff;
+                              int sidx = staff->idx();
+                              int eidx = sidx + 1;
+                              for (Measure* m = rootScore->firstMeasure(); m; m = m->nextMeasure()) {
+                                    m->cmdRemoveStaves(sidx, eidx);
+                                    if (m->hasMMRest())
+                                          m->mmRest()->cmdRemoveStaves(sidx, eidx);
+                                    }
+                              rootScore->cmdRemoveStaff(sidx);
+                              }
+                        else if (sli->op == ListItemOp::ADD) {
+                              Staff* staff = new Staff(rootScore, part, rstaff);
+                              sli->staff   = staff;
+                              staff->setRstaff(rstaff);
+
+                              rootScore->undoInsertStaff(staff, staffIdx);
+
+                              for (Measure* m = rootScore->firstMeasure(); m; m = m->nextMeasure()) {
+                                    // do not create whole measure rests for linked staves
+                                    m->cmdAddStaves(staffIdx, staffIdx+1, !sli->linked());
+                                    if (m->hasMMRest())
+                                          m->mmRest()->cmdAddStaves(staffIdx, staffIdx+1, !sli->linked());
+                                    }
+
+                              rootScore->adjustBracketsIns(staffIdx, staffIdx+1);
+                              staff->initFromStaffType(sli->staffType());
+                              staff->setInitialClef(sli->clef());
+                              Key nKey = part->staff(0)->key(0);
+                              staff->setKey(0, nKey);
+
+                              if (sli->linked() && rstaff > 0) {
+                                    // link to top staff of same part
+                                    Staff* linkedStaff = part->staves()->front();
+                                    cloneStaff(linkedStaff, staff);
+                                    }
+                              if(firstStaff && !sli->linked())
+                                    rootScore->adjustKeySigs(staffIdx, staffIdx+1, tmpKeymap);
+                              ++staffIdx;
+                              ++rstaff;
+                              }
+                        else if (sli->op == ListItemOp::UPDATE) {
+                              // check changes in staff type
+                              Staff* staff = sli->staff;
+                              const StaffType* stfType = sli->staffType();
+                              // before changing staff type, check if notes need to be updated
+                              // (true if changing into or away from TAB)
+                              StaffGroup ng = stfType->group();         // new staff group
+                              StaffGroup og = staff->staffGroup();      // old staff group
+                              bool updateNeeded = (ng == StaffGroup::TAB) != (og == StaffGroup::TAB);
+
+                              // use selected staff type
+                              if (stfType->name() != staff->staffType()->name())
+                                    rootScore->undo(new ChangeStaffType(staff, *stfType));
+
+                              if (updateNeeded)
+                                    rootScore->cmdUpdateNotes();
+                              }
+                        else {
+                              ++staffIdx;
+                              ++rstaff;
+                              }
+                        }
+                  }
+            }
+
+      //
+      //    sort staves
+      //
+      QList<Staff*> dst;
+      for (int idx = 0; idx < pl->topLevelItemCount(); ++idx) {
+            PartListItem* pli = (PartListItem*)pl->topLevelItem(idx);
+            if (pli->op == ListItemOp::I_DELETE)
+                  continue;
+            QTreeWidgetItem* ci = 0;
+            for (int cidx = 0; (ci = pli->child(cidx)); ++cidx) {
+                  StaffListItem* sli = (StaffListItem*) ci;
+                  if (sli->op == ListItemOp::I_DELETE)
+                        continue;
+                  dst.push_back(sli->staff);
+                  }
+            }
+
+      QList<int> dl;
+      for(Staff* staff : dst) {
+            int idx = rootScore->staves().indexOf(staff);
+            if (idx == -1)
+                  qDebug("staff in dialog(%p) not found in score", staff);
+            else
+                  dl.push_back(idx);
+            }
+
+      rootScore->undo(new SortStaves(rootScore, dl));
+
+      //
+      // check for valid barLineSpan and bracketSpan
+      // in all staves
+      //
+
+      int n = rootScore->nstaves();
+      for (int i = 0; i < n; ++i) {
+            Staff* staff = rootScore->staff(i);
+            if (staff->barLineSpan() > (n - i))
+                  rootScore->undoChangeBarLineSpan(staff, n - i, 0, rootScore->staff(n-1)->lines()-1);
+            QList<BracketItem> brackets = staff->brackets();
+            int nn = brackets.size();
+            for (int ii = 0; ii < nn; ++ii) {
+                  if ((brackets[ii]._bracket != BracketType::NO_BRACKET) && (brackets[ii]._bracketSpan > (n - i)))
+                        rootScore->undoChangeBracketSpan(staff, ii, n - i);
+                  }
+            }
+      //
+      // there should be at least one measure
+      //
+      if (rootScore->measures()->size() == 0)
+            rootScore->insertMeasure(Element::Type::MEASURE, 0, false);
+
+      QList<Score*> toDelete;
+      for (Excerpt* excpt : rootScore->excerpts()) {
+            if (excpt->score()->staves().size() == 0)
+                  toDelete.append(excpt->score());
+            }
+      for(Score* s: toDelete)
+            rootScore->undo(new RemoveExcerpt(s));
+
+      rootScore->setLayoutAll(true);
+      rootScore->cmdUpdateNotes();  // do it before global layout or layout of chords will not
+      rootScore->endCmd();          // find notes in right positions for stems, ledger lines, etc
+      rootScore->rebuildMidiMapping();
+//      rootScore->updateNotes();
+      seq->initInstruments();
+      }
+
 }

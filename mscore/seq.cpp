@@ -224,9 +224,9 @@ void Seq::setScoreView(ScoreView* v)
 //    return false on error
 //---------------------------------------------------------
 
-bool Seq::init()
+bool Seq::init(bool hotPlug)
       {
-      if (!_driver || !_driver->start()) {
+      if (!_driver || !_driver->start(hotPlug)) {
             qDebug("Cannot start I/O");
             return false;
             }
@@ -489,7 +489,7 @@ void Seq::seqMessage(int msg, int arg)
 //    send one event to the synthesizer
 //---------------------------------------------------------
 
-void Seq::playEvent(const NPlayEvent& event)
+void Seq::playEvent(const NPlayEvent& event, unsigned framePos)
       {
       int type = event.type();
       if (type == ME_NOTEON) {
@@ -505,10 +505,10 @@ void Seq::playEvent(const NPlayEvent& event)
                   mute = false;
 
             if (!mute)
-                  putEvent(event);
+                  putEvent(event, framePos);
             }
       else if (type == ME_CONTROLLER)
-            putEvent(event);
+            putEvent(event, framePos);
       }
 
 //---------------------------------------------------------
@@ -532,7 +532,7 @@ void Seq::processMessages()
                               cs->tempomap()->setRelTempo(msg.realVal);
                               cs->repeatList()->update();
                               playTime = cs->utick2utime(utick) * MScore::sampleRate;
-                              if (preferences.JackTimebaseMaster && preferences.useJackTransport)
+                              if (preferences.jackTimebaseMaster && preferences.useJackTransport)
                                     _driver->seekTransport(utick + 2 * cs->utime2utick(qreal((_driver->bufferSize()) + 1) / qreal(MScore::sampleRate)));
                               }
                         else
@@ -839,7 +839,7 @@ void Seq::process(unsigned n, float* buffer)
                               }
                         }
                   const NPlayEvent& event = (*pPlayPos)->second;
-                  playEvent(event);
+                  playEvent(event, framePos);
                   if (event.type() == ME_TICK1)
                         tickRest = tickLength;
                   else if (event.type() == ME_TICK2)
@@ -1336,7 +1336,7 @@ SeqMsg SeqMsgFifo::dequeue()
 //   putEvent
 //---------------------------------------------------------
 
-void Seq::putEvent(const NPlayEvent& event)
+void Seq::putEvent(const NPlayEvent& event, unsigned framePos)
       {
       if (!cs)
             return;
@@ -1348,7 +1348,7 @@ void Seq::putEvent(const NPlayEvent& event)
       int syntiIdx= _synti->index(cs->midiMapping(channel)->articulation->synti);
       _synti->play(event, syntiIdx);
       if (preferences.useJackMidi && _driver != 0)
-            _driver->putEvent(event,0);
+            _driver->putEvent(event, framePos);
       }
 
 //---------------------------------------------------------
@@ -1456,7 +1456,7 @@ void Seq::updateSynthesizerState(int tick1, int tick2)
 
       for (; i1 != i2; ++i1) {
             if (i1->second.type() == ME_CONTROLLER)
-                  playEvent(i1->second);
+                  playEvent(i1->second, 0);
             }
       }
 

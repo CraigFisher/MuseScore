@@ -165,24 +165,44 @@ Palette* MuseScore::newFramePalette()
 //   newDynamicsPalette
 //---------------------------------------------------------
 
-Palette* MuseScore::newDynamicsPalette()
+Palette* MuseScore::newDynamicsPalette(bool master)
       {
       Palette* sp = new Palette;
       sp->setName(QT_TRANSLATE_NOOP("Palette", "Dynamics"));
       sp->setMag(.8);
-      sp->setGrid(42, 28);
+      if (master)
+            sp->setGrid(60, 28);
+      else
+            sp->setGrid(42, 28);
       sp->setDrawGrid(true);
 
-      const char* array[] = {
-            "ppp", "pp", "p", "mp", "mf", "f", "ff", "fff",
-            "fp", "sf", "sfz", "sff", "sffz", "sfp", "sfpp",
-            "rfz", "rf", "fz", "m", "r", "s", "z", "n"
-            };
-      for (const char* c : array) {
-            Dynamic* dynamic = new Dynamic(gscore);
-            dynamic->setDynamicType(c);
-            sp->append(dynamic, dynamic->dynamicTypeName());
+      if (master) {
+            const char* array[] = {
+                  "pppppp", "ppppp", "pppp",
+                  "ppp", "pp", "p", "mp", "mf", "f", "ff", "fff",
+                  "ffff", "fffff", "ffffff",
+                  "fp", "sf", "sfz", "sff", "sffz", "sfp", "sfpp",
+                  "rfz", "rf", "fz", "m", "r", "s", "z", "n"
+                  };
+            for (const char* c : array) {
+                  Dynamic* dynamic = new Dynamic(gscore);
+                  dynamic->setDynamicType(c);
+                  sp->append(dynamic, dynamic->dynamicTypeName());
+                  }
             }
+      else {
+            const char* array[] = {
+                  "ppp", "pp", "p", "mp", "mf", "f", "ff", "fff",
+                  "fp", "sf", "sfz", "sff", "sffz", "sfp", "sfpp",
+                  "rfz", "rf", "fz", "m", "r", "s", "z", "n"
+                  };
+            for (const char* c : array) {
+                  Dynamic* dynamic = new Dynamic(gscore);
+                  dynamic->setDynamicType(c);
+                  sp->append(dynamic, dynamic->dynamicTypeName());
+                  }
+            }
+            
       return sp;
       }
 
@@ -277,10 +297,10 @@ Palette* MuseScore::newBarLinePalette()
             const char* name;
             } t[] = {
             { BarLineType::NORMAL,       QT_TRANSLATE_NOOP("Palette", "Normal") },
-            { BarLineType::BROKEN,       QT_TRANSLATE_NOOP("Palette", "Dashed") },
-            { BarLineType::DOTTED,       QT_TRANSLATE_NOOP("Palette", "Dotted") },
-            { BarLineType::END,          QT_TRANSLATE_NOOP("Palette", "End Bar") },
-            { BarLineType::DOUBLE,       QT_TRANSLATE_NOOP("Palette", "Double Bar") },
+            { BarLineType::BROKEN,       QT_TRANSLATE_NOOP("Palette", "Dashed style") },
+            { BarLineType::DOTTED,       QT_TRANSLATE_NOOP("Palette", "Dotted style") },
+            { BarLineType::END,          QT_TRANSLATE_NOOP("Palette", "End Bar style") },
+            { BarLineType::DOUBLE,       QT_TRANSLATE_NOOP("Palette", "Double Bar style") },
             { BarLineType::START_REPEAT,     QT_TRANSLATE_NOOP("Palette", "Start Repeat") },
             { BarLineType::END_REPEAT,       QT_TRANSLATE_NOOP("Palette", "End Repeat") },
             { BarLineType::END_START_REPEAT, QT_TRANSLATE_NOOP("Palette", "End-Start Repeat") },
@@ -296,10 +316,10 @@ Palette* MuseScore::newBarLinePalette()
             int         from, to;
             const char* name;
             } span[] = {
-            { -1, 1, QT_TRANSLATE_NOOP("Palette", "Tick 1") },
-            { -2, 2, QT_TRANSLATE_NOOP("Palette", "Tick 2") },
-            { 2,  6, QT_TRANSLATE_NOOP("Palette", "Short 1") },
-            { 1,  7, QT_TRANSLATE_NOOP("Palette", "Short 2") },
+            { BARLINE_SPAN_TICK1_FROM, BARLINE_SPAN_TICK1_TO, QT_TRANSLATE_NOOP("Palette", "Tick 1 span") },
+            { BARLINE_SPAN_TICK2_FROM, BARLINE_SPAN_TICK2_TO, QT_TRANSLATE_NOOP("Palette", "Tick 2 span") },
+            { BARLINE_SPAN_SHORT1_FROM,BARLINE_SPAN_SHORT1_TO,QT_TRANSLATE_NOOP("Palette", "Short 1 span") },
+            { BARLINE_SPAN_SHORT2_FROM,BARLINE_SPAN_SHORT2_TO,QT_TRANSLATE_NOOP("Palette", "Short 2 span") },
             };
       for (unsigned i = 0; i < sizeof(span)/sizeof(*span); ++i) {
             BarLine* b  = new BarLine(gscore);
@@ -919,8 +939,8 @@ Palette* MuseScore::newTempoPalette()
             TempoPattern("<sym>noteHalfUp</sym> = 80", 80.0/30.0),                        // 1/2
             TempoPattern("<sym>noteQuarterUp</sym> = 80", 80.0/60.0),                     // 1/4
             TempoPattern("<sym>note8thUp</sym> = 80", 80.0/120.0),                    // 1/8
-            TempoPattern("<sym>noteHalfUp</sym><sym>textAugmentationDot</sym> = 80", 120/30.0),       // dotted 1/2
-            TempoPattern("<sym>noteQuarterUp</sym><sym>textAugmentationDot</sym> = 80", 120/60.0),    // dotted 1/4
+            TempoPattern("<sym>noteHalfUp</sym><sym>space</sym><sym>textAugmentationDot</sym> = 80", 120/30.0),       // dotted 1/2
+            TempoPattern("<sym>noteQuarterUp</sym><sym>space</sym><sym>textAugmentationDot</sym> = 80", 120/60.0),    // dotted 1/4
             TempoPattern("<sym>note8thUp</sym><sym>textAugmentationDot</sym> = 80", 120/120.0),   // dotted 1/8
             };
       for (unsigned i = 0; i < sizeof(tp)/sizeof(*tp); ++i) {
@@ -971,9 +991,6 @@ Palette* MuseScore::newTextPalette()
       text->setText(tr("1."));
       sp->append(text, tr("Lyrics Verse Number"));
 
-      Harmony* harmony = new Harmony(gscore);
-      harmony->setText("C7");
-      sp->append(harmony, tr("Chord Symbol"));
       return sp;
       }
 
@@ -1245,7 +1262,7 @@ void MuseScore::addTempo()
                   break;
             case 8:
                   if(f.numerator() % 3 == 0)
-                        text = "<sym>noteQuarterUp</sym><sym>textAugmentationDot</sym> = 80";
+                        text = "<sym>noteQuarterUp</sym><sym>space</sym><sym>textAugmentationDot</sym> = 80";
                   else
                         text = "<sym>note8thUp</sym> = 80";
                   break;

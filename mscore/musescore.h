@@ -52,6 +52,7 @@ class PageSettings;
 class PaletteBox;
 class Palette;
 class PaletteScrollArea;
+class SelectionWindow;
 class Xml;
 class MagBox;
 class NewWizard;
@@ -253,6 +254,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       MasterPalette* masterPalette;
       PluginCreator* pluginCreator;
       PluginManager* pluginManager;
+      SelectionWindow* selectionWindow;
 
       QMenu* _fileMenu;
       QMenu* menuEdit;
@@ -385,6 +387,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       void showNavigator(bool);
       void showMixer(bool);
       void showSynthControl(bool);
+      void showSelectionWindow(bool);
       void showSearchDialog();
       void helpBrowser(const QUrl&) const;
       void splitWindow(bool horizontal);
@@ -620,7 +623,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       void midiPanelOnSwitchToFile(const QString &file);
       void midiPanelOnCloseFile(const QString &file);
       void allowShowMidiPanel(const QString &file);
-      void setMidiPrefOperations(const QString &file);
+      void setMidiReopenInProgress(const QString &file);
 
       static Palette* newTempoPalette();
       static Palette* newTextPalette();
@@ -628,7 +631,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       static Palette* newRepeatsPalette();
       static Palette* newBreaksPalette();
       static Palette* newBeamPalette();
-      static Palette* newDynamicsPalette();
+      static Palette* newDynamicsPalette(bool master = false);
       static Palette* newFramePalette();
       static Palette* newFingeringPalette();
       static Palette* newTremoloPalette();

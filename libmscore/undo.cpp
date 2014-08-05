@@ -496,20 +496,15 @@ void Score::undoChangeKeySig(Staff* ostaff, int tick, Key key)
 
 void Score::undoChangeClef(Staff* ostaff, Segment* seg, ClefType st)
       {
-      QList<Staff*> staffList;
-      LinkedStaves* linkedStaves = ostaff->linkedStaves();
-      if (linkedStaves)
-            staffList = linkedStaves->staves();
-      else
-            staffList.append(ostaff);
-
       bool firstSeg = seg->measure()->first() == seg;
 
-      foreach(Staff* staff, staffList) {
-            Score* score = staff->score();
+      Clef* gclef = 0;
+      foreach (Staff* staff, ostaff->staffList()) {
             if (staff->staffType()->group() != ClefInfo::staffGroup(st))
                   continue;
-            int tick = seg->tick();
+
+            Score* score = staff->score();
+            int tick     = seg->tick();
             Measure* measure = score->tick2measure(tick);
             if (!measure) {
                   qDebug("measure for tick %d not found!", tick);
@@ -527,25 +522,7 @@ void Score::undoChangeClef(Staff* ostaff, Segment* seg, ClefType st)
                   destSeg = measure->findSegment(Segment::Type::Clef, tick);
                   }
 
-            if (destSeg) {
-                  // if destSeg not a Clef seg...
-                  if (destSeg->segmentType() != Segment::Type::Clef) {
-                        // ...check prev seg is Clef seg: if yes, prev seg is our dest seg
-                        if (destSeg->prev() && destSeg->prev()->segmentType() == Segment::Type::Clef) {
-                              destSeg = destSeg->prev();
-                             }
-                        // if no Clef seg (current or previous), create a new Clef seg
-                        else {
-                              Segment* s = new Segment(measure, Segment::Type::Clef, seg->tick());
-                              s->setNext(destSeg);
-                              s->setPrev(destSeg->prev());
-                              score->undoAddElement(s);
-                              destSeg = s;
-                              }
-                        }
-                  }
-            // if no dest seg, create a new Clef seg
-            else {
+            if (!destSeg) {
                   destSeg = new Segment(measure, Segment::Type::Clef, seg->tick());
                   score->undoAddElement(destSeg);
                   }
@@ -579,13 +556,19 @@ void Score::undoChangeClef(Staff* ostaff, Segment* seg, ClefType st)
                   score->undo(new ChangeClefType(clef, cp, tp));
                   }
             else {
-                  clef = new Clef(score);
+                  if (gclef) {
+                        clef = static_cast<Clef*>(gclef->linkedClone());
+                        clef->setScore(score);
+                        }
+                  else {
+                        clef = new Clef(score);
+                        gclef = clef;
+                        }
                   clef->setTrack(track);
                   clef->setClefType(st);
                   clef->setParent(destSeg);
                   score->undo(new AddElement(clef));
                   }
-            undo(new SetClefType(clef->staff(), tick, clef->clefTypeList()));
             cmdUpdateNotes();
             }
       }
@@ -727,15 +710,6 @@ void Score::undoRemoveStaff(Staff* staff, int idx)
 void Score::undoInsertStaff(Staff* staff, int idx)
       {
       undo(new InsertStaff(staff, idx));
-      }
-
-//---------------------------------------------------------
-//   undoMove
-//---------------------------------------------------------
-
-void Score::undoMove(Element* e, const QPointF& pt)
-      {
-      undo(new MoveElement(e, pt));
       }
 
 //---------------------------------------------------------
@@ -937,6 +911,7 @@ void Score::undoAddElement(Element* element)
          && et != Element::Type::TREMOLO
          && et != Element::Type::ARPEGGIO
          && et != Element::Type::SYMBOL
+         && et != Element::Type::FRET_DIAGRAM
          && et != Element::Type::HARMONY)
             ) {
             undo(new AddElement(element));
@@ -955,6 +930,7 @@ void Score::undoAddElement(Element* element)
                               // exclude certain element types except on corresponding staff in part
                               // this should be same list excluded in cloneStaff()
                               case Element::Type::STAFF_TEXT:
+                              case Element::Type::FRET_DIAGRAM:
                               case Element::Type::HARMONY:
                               case Element::Type::FIGURED_BASS:
                               case Element::Type::LYRICS:
@@ -1031,6 +1007,7 @@ void Score::undoAddElement(Element* element)
                || element->type() == Element::Type::IMAGE
                || element->type() == Element::Type::DYNAMIC
                || element->type() == Element::Type::STAFF_TEXT
+               || element->type() == Element::Type::FRET_DIAGRAM
                || element->type() == Element::Type::HARMONY) {
                   Segment* segment = static_cast<Segment*>(element->parent());
                   int tick         = segment->tick();
@@ -1192,20 +1169,16 @@ void Score::undoAddCR(ChordRest* cr, Measure* measure, int tick)
       {
       Q_ASSERT(cr->type() != Element::Type::CHORD || !(static_cast<Chord*>(cr)->notes()).isEmpty());
 
-      QList<Staff*> staffList;
       Staff* ostaff = cr->staff();
-      LinkedStaves* linkedStaves = ostaff->linkedStaves();
-      if (linkedStaves)
-            staffList = linkedStaves->staves();
-      else
-            staffList.append(ostaff);
       Segment::Type segmentType = Segment::Type::ChordRest;
 
       Tuplet* t = cr->tuplet();
-      foreach (Staff* staff, staffList) {
+      foreach (Staff* staff, ostaff->staffList()) {
             Score* score = staff->score();
             Measure* m   = (score == this) ? measure : score->tick2measure(tick);
             Segment* seg = m->undoGetSegment(segmentType, tick);
+
+            Q_ASSERT(seg->segmentType() == segmentType);
 
             ChordRest* newcr = (staff == ostaff) ? cr : static_cast<ChordRest*>(cr->linkedClone());
             newcr->setScore(score);
@@ -1396,8 +1369,8 @@ void AddElement::undo()
 
 void AddElement::redo()
       {
-//      qDebug("AddElement::redo: %s %p parent %s %p", element->name(), element,
-//         element->parent() ? element->parent()->name() : "nil", element->parent());
+//      qDebug("AddElement::redo: %s %p parent %s %p, score %p", element->name(), element,
+//         element->parent() ? element->parent()->name() : "nil", element->parent(), element->score());
 
       element->score()->addElement(element);
       endUndoRedo(false);
@@ -1427,25 +1400,35 @@ RemoveElement::RemoveElement(Element* e)
 
       Score* score = element->score();
       if (element->isChordRest()) {
-            // remove any slurs pointing to this chor/rest
-            QList<Spanner*> sl;
-            for (auto i : score->spanner()) {     // TODO: dont search whole list
-                  Spanner* s = i.second;
-                  // do not delete slur if in note entry mode
-                  if (e->score()->inputState().noteEntryMode() && e->score()->inputState().slur() == s) {
-                        if (s->startElement() == e)
-                              s->setStartElement(nullptr);
-                        else if (s->endElement() == e)
-                              s->setEndElement(nullptr);
-                        continue;
-                        }
-                  if (s->type() == Element::Type::SLUR && (s->startElement() == e || s->endElement() == e)) {
-                        sl.append(s);
+            bool noteEntryMode = false;
+            Slur* slur = 0;
+            for (Score* sc : score->scoreList()) {
+                  if (sc->noteEntryMode()) {
+                        noteEntryMode = true;
+                        slur = sc->inputState().slur();
+                        break;
                         }
                   }
-            for (auto s : sl)
-                  score->undoRemoveElement(s);
-
+            // remove any slurs pointing to this chor/rest
+            if (slur) {
+                  QList<Spanner*> sl;
+                  for (auto i : score->spanner()) {     // TODO: dont search whole list
+                        Spanner* s = i.second;
+                        // do not delete slur if in note entry mode
+                        if (noteEntryMode && slur->linkList().contains(s)) {
+                              if (s->startElement() == e)
+                                    s->setStartElement(nullptr);
+                              else if (s->endElement() == e)
+                                    s->setEndElement(nullptr);
+                              continue;
+                              }
+                        if (s->type() == Element::Type::SLUR && (s->startElement() == e || s->endElement() == e)) {
+                              sl.append(s);
+                              }
+                        }
+                  for (auto s : sl)
+                        score->undoRemoveElement(s);
+                  }
             ChordRest* cr = static_cast<ChordRest*>(element);
             if (cr->tuplet() && cr->tuplet()->elements().empty())
                   score->undoRemoveElement(cr->tuplet());
@@ -2043,7 +2026,7 @@ void ChangeSingleBarLineSpan::flip()
       barLine->setSpan(span);
       barLine->setSpanFrom(spanFrom);
       barLine->setSpanTo(spanTo);
-      barLine->setCustomSpan(true);
+//      barLine->setCustomSpan(true);     // let setSpan(), setSpanFrom() and setSpanTo() determine if it is custom or not
       span        = nspan;
       spanFrom    = nspanFrom;
       spanTo      = nspanTo;
@@ -2060,19 +2043,6 @@ void ChangeSingleBarLineSpan::flip()
                   meas->createEndBarLines();
             }
       barLine->score()->addRefresh(barLine->abbox()); // new area of this bar line needs redraw
-      }
-
-//---------------------------------------------------------
-//   ChangeSlurOffsets
-//---------------------------------------------------------
-
-void ChangeSlurOffsets::flip()
-      {
-      for (int i = 0; i < 4; ++i) {
-            QPointF f = slur->slurOffset(i);
-            slur->setSlurOffset(i, off[i]);
-            off[i] = f;
-            }
       }
 
 //---------------------------------------------------------
@@ -2198,27 +2168,6 @@ void ChangeChordRestDuration::flip()
       Fraction od = cr->duration();
       cr->setDuration(f);
       f   = od;
-      }
-
-//---------------------------------------------------------
-//   MoveElement
-//---------------------------------------------------------
-
-MoveElement::MoveElement(Element* e, const QPointF& o)
-      {
-      element = e;
-      offset = o;
-      }
-
-void MoveElement::flip()
-      {
-      QPointF po = element->userOff();
-      element->score()->addRefresh(element->canvasBoundingRect());
-      element->setUserOff(offset);
-      if (element->type() == Element::Type::REST)
-            element->layout();            // ledgerline could change
-      element->score()->addRefresh(element->canvasBoundingRect());
-      offset = po;
       }
 
 //---------------------------------------------------------
@@ -2369,13 +2318,15 @@ void ChangePageFormat::flip()
 //   ChangeStaff
 //---------------------------------------------------------
 
-ChangeStaff::ChangeStaff(Staff* _staff, bool _small, bool _invisible, qreal _userDist, QColor _color)
+ChangeStaff::ChangeStaff(Staff* _staff, bool _small, bool _invisible,
+   qreal _userDist, QColor _color, bool _neverHide)
       {
       staff     = _staff;
       small     = _small;
       invisible = _invisible;
       userDist  = _userDist;
       color     = _color;
+      neverHide = _neverHide;
       }
 
 //---------------------------------------------------------
@@ -2401,16 +2352,19 @@ void ChangeStaff::flip()
       bool oldInvisible = staff->invisible();
       qreal oldUserDist = staff->userDist();
       QColor oldColor   = staff->color();
+      bool oldNeverHide = staff->neverHide();
 
       staff->setSmall(small);
       staff->setInvisible(invisible);
       staff->setUserDist(userDist);
       staff->setColor(color);
+      staff->setNeverHide(neverHide);
 
       small     = oldSmall;
       invisible = oldInvisible;
       userDist  = oldUserDist;
       color     = oldColor;
+      neverHide = oldNeverHide;
 
       Score* score = staff->score();
       if (invisibleChanged) {
@@ -2453,7 +2407,7 @@ void ChangeStaffType::undo()
       staffType = st;
 
       // restore initial clef, both in the staff clef map...
-      staff->setClef(0, initialClef);
+      // staff->setClef(0, initialClef);
 
       // ...and in the score itself (code mostly copied from undoChangeClef() )
       // TODO : add a single function adding/setting a clef change in score?
@@ -2674,10 +2628,21 @@ ChangeChordStaffMove::ChangeChordStaffMove(Chord* c, int v)
 
 void ChangeChordStaffMove::flip()
       {
+      const LinkedElements* l = chord->links();
       int v = chord->staffMove();
-      chord->setStaffMove(staffMove);
-      chord->measure()->cmdUpdateNotes(chord->staffIdx());
-      chord->score()->setLayoutAll(true);
+      if (l) {
+            for (Element* e : *l) {
+                  Chord* c = static_cast<Chord*>(e);
+                  c->setStaffMove(staffMove);
+                  c->measure()->cmdUpdateNotes(c->staffIdx());
+                  c->score()->setLayoutAll(true);
+                  }
+            }
+      else {
+            chord->setStaffMove(staffMove);
+            chord->measure()->cmdUpdateNotes(chord->staffIdx());
+            chord->score()->setLayoutAll(true);
+            }
       staffMove = v;
       }
 
@@ -2771,6 +2736,128 @@ void ChangeTimesig::flip()
       }
 
 //---------------------------------------------------------
+//   undoInsertTime
+//   acts on the linked scores as well
+//---------------------------------------------------------
+
+void Score::undoInsertTime(int tick, int len)
+      {
+//      qDebug("insertTime %d at %d, spanner %d", len, tick, _spanner.map().size());
+      if (len == 0)
+            return;
+
+      QList<Spanner*> sl;
+      for (auto i : _spanner.map()) {
+            Spanner* s = i.second;
+            if (s->tick2() < tick)
+                  continue;
+            bool append = false;
+            if (len > 0) {
+                  if (tick > s->tick() && tick < s->tick2())
+                        append = true;
+                  else if (tick <= s->tick())
+                        append = true;
+                  }
+            else {
+                  int tick2 = tick - len;
+                  if (s->tick() >= tick2)
+                        append = true;
+                  else if ((s->tick() < tick) && (s->tick2() > tick2)) {
+                        int t2 = s->tick2() + len;
+                        if (t2 > s->tick())
+                              append = true;
+                        }
+                  else if (s->tick() >= tick && s->tick2() < tick2)
+                        append = true;
+                  else if (s->tick() > tick && s->tick2() > tick2)
+                        append = true;
+                  }
+            for (Spanner* ss : sl) {
+                  if (ss->linkList().contains(s)) {
+                        append = false;
+                        break;
+                        }
+                  }
+            if (append)
+                  sl.append(s);
+            }
+      for (Spanner* s : sl) {
+            if (len > 0) {
+                  if (tick > s->tick() && tick < s->tick2()) {
+                        //
+                        //  case a:
+                        //  +----spanner--------+
+                        //    +---add---
+                        //
+                        undoChangeProperty(s, P_ID::SPANNER_TICK2, s->tick2() + len);
+                        }
+                  else if (tick <= s->tick()) {
+                        //
+                        //  case b:
+                        //       +----spanner--------
+                        //  +---add---
+                        // and
+                        //            +----spanner--------
+                        //  +---add---+
+                        undoChangeProperty(s, P_ID::SPANNER_TICK, s->tick() + len);
+                        undoChangeProperty(s, P_ID::SPANNER_TICK2, s->tick2() + len);
+                        }
+                  }
+            else {
+                  int tick2 = tick - len;
+                  if (s->tick() >= tick2) {
+                        //
+                        //  case A:
+                        //  +----remove---+ +---spanner---+
+                        //
+                        int t = s->tick() + len;
+                        if (t < 0)
+                              t = 0;
+                        undoChangeProperty(s, P_ID::SPANNER_TICK, t);
+                        undoChangeProperty(s, P_ID::SPANNER_TICK2, s->tick2() + len);
+                        }
+                  else if ((s->tick() < tick) && (s->tick2() > tick2)) {
+                        //
+                        //  case B:
+                        //  +----spanner--------+
+                        //    +---remove---+
+                        //
+                        int t2 = s->tick2() + len;
+                        if (t2 > s->tick())
+                              undoChangeProperty(s, P_ID::SPANNER_TICK2, t2);
+                        }
+                  else if (s->tick() >= tick && s->tick2() < tick2) {
+                        //
+                        //  case C:
+                        //    +---spanner---+
+                        //  +----remove--------+
+                        //
+                        undoRemoveElement(s);
+                        }
+                  else if (s->tick() > tick && s->tick2() > tick2) {
+                        //
+                        //  case D:
+                        //       +----spanner--------+
+                        //  +---remove---+
+                        //
+                        int d1 = s->tick() - tick;
+                        int d2 = tick2 - s->tick();
+                        int len = s->tickLen() - d2;
+                        if (len == 0)
+                             undoRemoveElement(s);
+                        else {
+                              undoChangeProperty(s, P_ID::SPANNER_TICK, s->tick() - d1);
+                              undoChangeProperty(s, P_ID::SPANNER_TICK2, s->tick2() - (tick2-tick));
+                              }
+                        }
+                  }
+            }
+      // insert time in (key, clef) maps
+//      undo(new InsertTime(this, tick, len));
+      }
+
+
+//---------------------------------------------------------
 //   undoRemoveMeasures
 //---------------------------------------------------------
 
@@ -2779,8 +2866,9 @@ void Score::undoRemoveMeasures(Measure* m1, Measure* m2)
       int tick1 = m1->tick();
       int tick2 = m2->endTick();
 
-      for (auto i : _spanner.findContained(tick1, tick2))
-            undoRemoveElement(i.value);
+//      for (auto i : _spanner.findContained(tick1, tick2)) {
+//            undo(new RemoveElement(i.value));
+//            }
 
       //
       //  handle ties which start before m1 and end in (m1-m2)
@@ -2805,12 +2893,7 @@ void Score::undoRemoveMeasures(Measure* m1, Measure* m2)
             }
       undo(new RemoveMeasures(m1, m2));
 
-      int ticks = 0;
-      for (Measure* m = m1; m; m = m->nextMeasure()) {
-            ticks += m->ticks();
-            if (m == m2)
-                  break;
-            }
+      int ticks = tick2 - tick1;
       undoInsertTime(m1->tick(), -ticks);
       }
 
@@ -2830,10 +2913,27 @@ RemoveMeasures::RemoveMeasures(Measure* m1, Measure* m2)
 
 void RemoveMeasures::undo()
       {
-      fm->score()->measures()->insert(fm, lm);
-      fm->score()->fixTicks();
-      fm->score()->connectTies();
-      fm->score()->setLayoutAll(true);
+      Score* score = fm->score();
+      QList<Clef*> clefs;
+      for (Segment* s = fm->first(); s != lm->last(); s = s->next1()) {
+            if (s->segmentType() != Segment::Type::Clef)
+                  continue;
+            for (int track = 0; track < score->ntracks(); track += VOICES) {
+                  Clef* c = static_cast<Clef*>(s->element(track));
+                  if (c == 0 || c->generated())
+                        continue;
+                  clefs.append(c);
+                  }
+            }
+      score->measures()->insert(fm, lm);
+      score->fixTicks();
+      score->insertTime(fm->tick(), lm->endTick() - fm->tick());
+      for (Clef* clef : clefs)
+            clef->staff()->setClef(clef);
+      if (!clefs.empty())
+            score->cmdUpdateNotes();
+      score->connectTies();
+      score->setLayoutAll(true);
       }
 
 //---------------------------------------------------------
@@ -2843,9 +2943,25 @@ void RemoveMeasures::undo()
 
 void RemoveMeasures::redo()
       {
-      fm->score()->measures()->remove(fm, lm);
-      fm->score()->fixTicks();
-      fm->score()->setLayoutAll(true);
+      Score* score = fm->score();
+      bool updateNotesNeeded = false;
+      for (Segment* s = fm->first(); s != lm->last(); s = s->next1()) {
+            if (s->segmentType() != Segment::Type::Clef)
+                  continue;
+            for (int track = 0; track < score->ntracks(); track += VOICES) {
+                  Clef* clef = static_cast<Clef*>(s->element(track));
+                  if (clef == 0 || clef->generated())
+                        continue;
+                  clef->staff()->removeClef(clef);
+                  updateNotesNeeded = true;
+                  }
+            }
+      score->measures()->remove(fm, lm);
+      score->fixTicks();
+      score->insertTime(fm->tick(), -(lm->endTick() - fm->tick()));
+      if (updateNotesNeeded)
+            score->cmdUpdateNotes();
+      score->setLayoutAll(true);
       }
 
 //---------------------------------------------------------
@@ -3147,8 +3263,9 @@ void ChangeClefType::flip()
 
       clef->setConcertClef(concertClef);
       clef->setTransposingClef(transposingClef);
-      clef->setClefType(clef->concertPitch() ? concertClef : transposingClef);
+//??      clef->setClefType(clef->concertPitch() ? concertClef : transposingClef);
 
+      clef->staff()->setClef(clef);
       Segment* segment = clef->segment();
       updateNoteLines(segment, clef->track());
       clef->score()->setLayoutAll(true);
@@ -3223,7 +3340,7 @@ void ChangeProperty::flip()
             << property
             ;
 #endif
-      if (id == P_ID::SPANNER_TICK)
+      if (id == P_ID::SPANNER_TICK || id == P_ID::SPANNER_TICK2)
             element->score()->removeSpanner(static_cast<Spanner*>(element));
 
       QVariant v       = element->getProperty(id);
@@ -3233,7 +3350,7 @@ void ChangeProperty::flip()
       else
             element->setProperty(id, property);
 
-      if (id == P_ID::SPANNER_TICK)
+      if (id == P_ID::SPANNER_TICK || id == P_ID::SPANNER_TICK2)
             element->score()->addSpanner(static_cast<Spanner*>(element));
       property = v;
       propertyStyle = ps;
@@ -3413,17 +3530,6 @@ void ChangeNoteEvent::flip()
       }
 
 //---------------------------------------------------------
-//   SetClefType
-//---------------------------------------------------------
-
-void SetClefType::flip()
-      {
-      ClefTypeList ol = staff->clefTypeList(tick);
-      staff->setClef(tick, ctl);
-      ctl = ol;
-      }
-
-//---------------------------------------------------------
 //   Unlink
 //---------------------------------------------------------
 
@@ -3460,6 +3566,42 @@ void Unlink::redo()
             }
       Q_ASSERT(le);
       e->unlink();
+      }
+
+//---------------------------------------------------------
+//   Link::redo
+//---------------------------------------------------------
+
+void Link::redo()
+      {
+      e1->linkTo(e2);
+      }
+
+//---------------------------------------------------------
+//   Link::redo
+//---------------------------------------------------------
+
+void Link::undo()
+      {
+      e2->unlink();
+      }
+
+//---------------------------------------------------------
+//   LinkStaff::redo
+//---------------------------------------------------------
+
+void LinkStaff::redo()
+      {
+      s1->linkTo(s2);
+      }
+
+//---------------------------------------------------------
+//   LinkStaff::redo
+//---------------------------------------------------------
+
+void LinkStaff::undo()
+      {
+      s1->unlink(s2);
       }
 
 //---------------------------------------------------------

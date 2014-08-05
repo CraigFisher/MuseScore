@@ -73,10 +73,13 @@ Rest::Rest(const Rest& r, bool link)
 
 void Rest::draw(QPainter* painter) const
       {
-      if ( (staff() && staff()->isTabStaff()
-            // in tab staff, do not draw rests is rests are off OR if dur. symbols are on
-            && (!staff()->staffType()->showRests() || staff()->staffType()->genDurations()))
-            || generated())
+      if (
+         (staff() && staff()->isTabStaff()
+         // in tab staff, do not draw rests is rests are off OR if dur. symbols are on
+         && (!staff()->staffType()->showRests() || staff()->staffType()->genDurations())
+         && !measure()->isMMRest())        // show multi measure rest always
+         || generated()
+            )
             return;
       qreal _spatium = spatium();
 
@@ -404,7 +407,10 @@ void Rest::layout()
                + dots() * score()->styleS(StyleIdx::dotDotDistance));
             }
       setbbox(symBbox(_sym));
-      _space.setRw(width() + point(rs));
+      qreal symOffset = bbox().x();
+      if (symOffset < 0.0)
+            _space.setLw(-symOffset);
+      _space.setRw(width() + point(rs) + symOffset);
       }
 
 //---------------------------------------------------------

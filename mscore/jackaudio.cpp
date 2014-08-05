@@ -172,8 +172,12 @@ void JackAudio::disconnect(void* src, void* dst)
 //    return false on error
 //---------------------------------------------------------
 
-bool JackAudio::start()
+bool JackAudio::start(bool hotPlug)
       {
+      bool oldremember = preferences.rememberLastConnections;
+      if (hotPlug)
+            preferences.rememberLastConnections = true;
+
       if (jack_activate(client)) {
             qDebug("JACK: cannot activate client");
             return false;
@@ -187,6 +191,9 @@ bool JackAudio::start()
             restoreAudioConnections();
       if (preferences.useJackMidi)
             restoreMidiConnections();
+
+      if (hotPlug)
+            preferences.rememberLastConnections = oldremember;
       return true;
       }
 
@@ -419,7 +426,7 @@ bool JackAudio::init(bool hot)
       jack_set_port_registration_callback(client, registration_callback, this);
       jack_set_graph_order_callback(client, graph_callback, this);
       jack_set_freewheel_callback (client, freewheel_callback, this);
-      if (preferences.JackTimebaseMaster)
+      if (preferences.jackTimebaseMaster)
             setTimebaseCallback();
       if (jack_set_buffer_size_callback (client, bufferSizeCallback, this) != 0)
             qDebug("Can not set bufferSizeCallback");
@@ -621,7 +628,7 @@ void JackAudio::checkTransportSeek(int cur_frame, int nframes, bool inCountIn)
             }
 
       // Tempo
-      if (!preferences.JackTimebaseMaster  && (pos.valid & JackPositionBBT)) {
+      if (!preferences.jackTimebaseMaster  && (pos.valid & JackPositionBBT)) {
             if (!seq->score()->tempomap())
                   return;
 
@@ -664,7 +671,7 @@ void JackAudio::setTimebaseCallback()
                   qDebug("Registered as JACK Timebase Master.");
             }
       else {
-            preferences.JackTimebaseMaster = false;
+            preferences.jackTimebaseMaster = false;
             qDebug("Unable to take over JACK Timebase, error code: %i",errCode);
             }
       }
@@ -693,6 +700,8 @@ void JackAudio::rememberAudioConnections()
       if (MScore::debugMode)
             qDebug("Saving audio connections...");
       QSettings settings;
+      settings.setValue(QString("audio-0-connections"), 0);
+      settings.setValue(QString("audio-1-connections"), 0);
       int port = 0;
       foreach(jack_port_t* mp, ports) {
             const char** cc = jack_port_get_connections(mp);
@@ -856,9 +865,8 @@ void JackAudio::hotPlug()
       bool oldremember = preferences.rememberLastConnections;
       preferences.rememberLastConnections = true;
       // Remember connections before calling jack_deactivate() - it disconnects all ports
-      if (preferences.useJackMidi && midiOutputPorts.size() != 0 && midiInputPorts.size() != 0)
-            rememberMidiConnections();
-      if (preferences.useJackAudio && ports.size() != 0)
+      rememberMidiConnections();
+      if (ports.size() != 0)
             rememberAudioConnections();
 
       // We must set callbacks only on inactive client
@@ -882,9 +890,8 @@ void JackAudio::hotPlug()
       // Midi connections
       if (preferences.useJackMidi) {
             if (midiOutputPorts.size()<preferences.midiPorts) {
-                  for (int i = midiOutputPorts.size(); i < preferences.midiPorts; ++i) {
+                  for (int i = midiOutputPorts.size(); i < preferences.midiPorts; ++i)
                         registerPort(QString("mscore-midi-%1").arg(i+1), false, true);
-                        }
                   }
             else if (midiOutputPorts.size()>preferences.midiPorts) {
                   for(int i = midiOutputPorts.size()-1; i>=preferences.midiPorts; --i) {
@@ -908,19 +915,11 @@ void JackAudio::hotPlug()
             }
 
       // Timebase Master callback
-      if (preferences.JackTimebaseMaster)
+      if (preferences.jackTimebaseMaster)
             setTimebaseCallback();
       else
             releaseTimebaseCallback();
 
-      if (jack_activate(client)) {
-            qDebug("JACK: cannot activate client");
-            }
-
-      if (preferences.useJackAudio)
-            restoreAudioConnections();
-      if (preferences.useJackMidi)
-            restoreMidiConnections();
       preferences.rememberLastConnections = oldremember;
       }
 }

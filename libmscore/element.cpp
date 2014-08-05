@@ -396,7 +396,7 @@ void Element::undoUnlink()
 Element* Element::linkedClone()
       {
       Element* e = clone();
-      linkTo(e);
+      score()->undo(new Link(this, e));
       return e;
       }
 

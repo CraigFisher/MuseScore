@@ -117,7 +117,7 @@ extern MasterSynthesizer* synti;
 
 static void paintElements(QPainter& p, const QList<const Element*>& el)
       {
-      foreach(const Element* e, el) {
+      foreach (const Element* e, el) {
             if (!e->visible())
                   continue;
             QPointF pos(e->pagePos());
@@ -125,6 +125,7 @@ static void paintElements(QPainter& p, const QList<const Element*>& el)
             e->draw(&p);
             p.translate(-pos);
             }
+
       }
 
 //---------------------------------------------------------
@@ -313,7 +314,7 @@ Score* MuseScore::readScore(const QString& name)
             return 0;
 
       Score* score = new Score(MScore::baseStyle());  // start with built-in style
-      setMidiPrefOperations(name);
+      setMidiReopenInProgress(name);
       Score::FileError rv = Ms::readScore(score, name, false);
       if (rv == Score::FileError::FILE_TOO_OLD || rv == Score::FileError::FILE_TOO_NEW) {
             if (readScoreError(name, rv, true))
@@ -1849,7 +1850,6 @@ Score::FileError readScore(Score* score, QString name, bool ignoreVersionError)
             uint i;
             for (i = 0; i < n; ++i) {
                   if (imports[i].extension == csl) {
-                        // if (!(this->*imports[i].importF)(score, name))
                         Score::FileError rv = (*imports[i].importF)(score, name);
                         if (rv != Score::FileError::FILE_NO_ERROR)
                               return rv;
@@ -1865,37 +1865,6 @@ Score::FileError readScore(Score* score, QString name, bool ignoreVersionError)
             }
       score->rebuildMidiMapping();
       score->setSaved(false);
-
-#if 0
-      int staffIdx = 0;
-      foreach(Staff* st, score->staves()) {
-            if (st->updateKeymap())
-                  st->clearKeys();
-            int track = staffIdx * VOICES;
-            KeySig* key1 = 0;
-            for (Measure* m = score->firstMeasure(); m; m = m->nextMeasure()) {
-                  for (Segment* s = m->first(); s; s = s->next()) {
-                        if (!s->element(track))
-                              continue;
-                        Element* e = s->element(track);
-                        if (e->generated())
-                              continue;
-                        if ((s->segmentType() == Segment::Type::KeySig) && st->updateKeymap()) {
-                              KeySig* ks = static_cast<KeySig*>(e);
-                              int naturals = key1 ? key1->keySigEvent().accidentalType() : 0;
-                              ks->setOldSig(naturals);
-                              st->setKey(s->tick(), ks->key());
-                              key1 = ks;
-                              }
-                        }
-                  if (m->sectionBreak())
-                        key1 = 0;
-                  }
-            st->setUpdateKeymap(false);
-            ++staffIdx;
-            }
-#endif
-
       score->updateNotes();
       return Score::FileError::FILE_NO_ERROR;
       }
@@ -2087,7 +2056,9 @@ bool MuseScore::savePng(Score* score, const QString& name, bool screenshot, bool
             p.setRenderHint(QPainter::TextAntialiasing, true);
             p.scale(mag, mag);
 
-            paintElements(p, page->elements());
+            QList<const Element*> pel = page->elements();
+            qStableSort(pel.begin(), pel.end(), elementLessThan);
+            paintElements(p, pel);
 
             if (format == QImage::Format_Indexed8) {
                   //convert to grayscale & respect alpha
@@ -2264,7 +2235,9 @@ bool MuseScore::saveSvg(Score* score, const QString& saveName)
       p.scale(mag, mag);
 
       foreach (Page* page, score->pages()) {
-            paintElements(p, page->elements());
+            QList<const Element*> pel = page->elements();
+            qStableSort(pel.begin(), pel.end(), elementLessThan);
+            paintElements(p, pel);
             p.translate(QPointF(pf->width() * MScore::DPI, 0.0));
             }
 

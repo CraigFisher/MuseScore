@@ -175,7 +175,6 @@ Rest* Score::addRest(Segment* s, int track, TDuration d, Tuplet* tuplet)
       rest->setTrack(track);
       rest->setParent(s);
       rest->setTuplet(tuplet);
-//      undoAddElement(rest);
       undoAddCR(rest, tick2measure(s->tick()), s->tick());
       return rest;
       }
@@ -264,6 +263,7 @@ Rest* Score::setRest(int tick, int track, Fraction l, bool useDots, Tuplet* tupl
       {
       Measure* measure = tick2measure(tick);
       Rest* r = 0;
+      Staff* staff = Score::staff(track / VOICES);
 
       while (!l.isZero()) {
             //
@@ -286,6 +286,8 @@ Rest* Score::setRest(int tick, int track, Fraction l, bool useDots, Tuplet* tupl
                   f = Fraction::fromTicks(measure->tick() + measure->ticks() - tick);
             else
                   f = measure->len();
+            f *= staff->timeStretch(tick);
+            f.reduce();
 
             if (f > l)
                   f = l;
@@ -301,10 +303,10 @@ Rest* Score::setRest(int tick, int track, Fraction l, bool useDots, Tuplet* tupl
 
             if ((measure->timesig() == measure->len())   // not in pickup measure
                && (measure->tick() == tick)
-               && (measure->timesig() == f)
+               && (measure->stretchedLen(staff) == f)
                && (useFullMeasureRest)) {
                   Rest* rest = addRest(tick, track, TDuration(TDuration::DurationType::V_MEASURE), tuplet);
-                  tick += measure->timesig().ticks();
+                  tick += rest->actualTicks();
                   if (r == 0)
                         r = rest;
                   }
@@ -338,6 +340,7 @@ Rest* Score::setRest(int tick, int track, Fraction l, bool useDots, Tuplet* tupl
                         }
                   }
             l -= f;
+
             measure = measure->nextMeasure();
             if (!measure)
                   break;
@@ -499,6 +502,7 @@ void Score::cmdAddTimeSig(Measure* fm, int staffIdx, TimeSig* ts, bool local)
       Fraction ns  = ts->sig();
       int tick     = fm->tick();
       TimeSig* lts = staff(staffIdx)->timeSig(tick);
+
       Fraction stretch;
       Fraction lsig;                // last signature
       if (lts) {
@@ -530,7 +534,7 @@ void Score::cmdAddTimeSig(Measure* fm, int staffIdx, TimeSig* ts, bool local)
       if (local) {
             ts->setParent(seg);
             ts->setTrack(track);
-            ts->setStretch(ts->sig() / lsig);
+            ts->setStretch((ns / fm->timesig()).reduced());
             undoAddElement(ts);
             timesigStretchChanged(ts, fm, staffIdx);
             return;
@@ -590,6 +594,7 @@ void Score::cmdAddTimeSig(Measure* fm, int staffIdx, TimeSig* ts, bool local)
                               nsig->setTrack(staffIdx * VOICES);
                               nsig->setParent(seg);
                               nsig->setSig(ts->sig(), ts->timeSigType());
+                              nsig->setGroups(ts->groups());
                               undoAddElement(nsig);
                               }
                         else {
@@ -1206,33 +1211,6 @@ void Score::cmdAddTie()
       }
 
 //---------------------------------------------------------
-//   cmdAddHairpin
-//    'H' typed on keyboard
-//---------------------------------------------------------
-
-void Score::cmdAddHairpin(bool decrescendo)
-      {
-      ChordRest* cr1;
-      ChordRest* cr2;
-      getSelectedChordRest2(&cr1, &cr2);
-      if (!cr1)
-            return;
-      if (cr2 == 0)
-            cr2 = nextChordRest(cr1);
-      if (cr2 == 0)
-            return;
-
-      Hairpin* pin = new Hairpin(this);
-      pin->setHairpinType(decrescendo ? Hairpin::Type::DECRESCENDO : Hairpin::Type::CRESCENDO);
-      pin->setTrack(cr1->track());
-      pin->setTick(cr1->segment()->tick());
-      pin->setTick2(cr2->segment()->tick());
-      undoAddElement(pin);
-      if (!noteEntryMode())
-            select(pin, SelectType::SINGLE, 0);
-      }
-
-//---------------------------------------------------------
 //   cmdAddOttava
 //---------------------------------------------------------
 
@@ -1368,7 +1346,6 @@ void Score::deleteItem(Element* el)
       {
       if (!el)
             return;
-//      qDebug("deleteItem %s", el->name());
       switch (el->type()) {
             case Element::Type::INSTRUMENT_NAME: {
                   Part* part = el->staff()->part();
@@ -1538,7 +1515,6 @@ void Score::deleteItem(Element* el)
             case Element::Type::CLEF:
                   {
                   Clef* clef = static_cast<Clef*>(el);
-                  int tick = clef->segment()->tick();
                   Measure* m = clef->measure();
                   if (m->isMMRest()) {
                         // propagate to original measure
@@ -1547,14 +1523,12 @@ void Score::deleteItem(Element* el)
                         if (s && s->element(clef->track())) {
                               Clef* c = static_cast<Clef*>(s->element(clef->track()));
                               undoRemoveElement(c);
-                              undo(new SetClefType(c->staff(), tick, c->staff()->clefTypeList(tick-1)));
                               }
                         }
                   else {
                         undoRemoveElement(clef);
-                        undo(new SetClefType(clef->staff(), tick, clef->staff()->clefTypeList(tick-1)));
                         }
-                  cmdUpdateNotes();
+                  // cmdUpdateNotes();
                   }
                   break;
 
@@ -1790,7 +1764,10 @@ void Score::cmdDeleteSelection()
                               // handle this as special case to be able to
                               // fix broken measures:
                               for (Measure* m = s1->measure(); m; m = m->nextMeasure()) {
-                                    setRest(m->tick(), track, Fraction(m->len()), false, 0);
+                                    Staff* staff = Score::staff(track / VOICES);
+                                    int tick = m->tick();
+                                    Fraction f = staff->timeSig(tick)->sig();
+                                    setRest(tick, track, f, false, 0);
                                     if (s2 && (m == s2->measure()))
                                           break;
                                     }
@@ -2319,10 +2296,13 @@ MeasureBase* Score::insertMeasure(Element::Type type, MeasureBase* measure, bool
                   score->fixTicks();
                   }
             else {
+                  if (mb != omb)
+                        mb->linkTo(omb);
                   undo(new InsertMeasure(mb, im));
                   }
             }
       undoInsertTime(tick, ticks);
+      undo(new InsertTime(this, tick, ticks));
 
       if (omb && type == Element::Type::MEASURE && !createEmptyMeasures) {
             //

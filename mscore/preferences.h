@@ -100,7 +100,7 @@ struct Preferences {
       bool usePulseAudio;
       bool useJackMidi;
       bool useJackTransport;
-      bool JackTimebaseMaster;
+      bool jackTimebaseMaster;
       int midiPorts;
       bool rememberLastConnections;
 
@@ -147,7 +147,7 @@ struct Preferences {
       QString importCharsetGP;
       QString importStyleFile;
       int shortestNote;             // for midi input
-      MidiImportOperations midiImportOperations;
+      MidiOperations::Data midiImportOperations;
 
       bool useOsc;
       int oscPort;

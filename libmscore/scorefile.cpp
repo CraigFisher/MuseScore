@@ -72,12 +72,11 @@ static void writeMeasure(Xml& xml, MeasureBase* m, int staffIdx, bool writeSyste
       if (m->type() == Element::Type::MEASURE || staffIdx == 0)
             m->write(xml, staffIdx, writeSystemElements);
 
-      if (mm) {
-            if (mm->mmRest()) {
-                  mm->mmRest()->write(xml, staffIdx, writeSystemElements);
-                  xml.tag("tick", mm->tick() + mm->ticks());         // rewind tick
-                  }
+      if (mm && mm->mmRest()) {
+            mm->mmRest()->write(xml, staffIdx, writeSystemElements);
+            xml.tag("tick", mm->tick() + mm->ticks());         // rewind tick
             }
+
       if (m->type() == Element::Type::MEASURE)
             xml.curTick = m->tick() + m->ticks();
       }
@@ -88,6 +87,27 @@ static void writeMeasure(Xml& xml, MeasureBase* m, int staffIdx, bool writeSyste
 
 void Score::write(Xml& xml, bool selectionOnly)
       {
+      // if we have multi measure rests and some parts are hidden,
+      // then some layout information is missing:
+      // relayout with all parts set visible
+
+      bool unhide = false;
+      QList<bool> partsVisible;
+      if (styleB(StyleIdx::createMultiMeasureRests)) {
+            for (Part* part : _parts) {
+                  partsVisible.append(part->show());
+                  if (!part->show()) {
+                        unhide = true;
+                        part->setShow(true);
+                        }
+                  }
+            }
+      if (unhide) {
+            doLayout();
+            for (int i = 0; i < partsVisible.size(); ++i)
+                  _parts[i]->setShow(partsVisible[i]);
+            }
+
       xml.stag("Score");
 
 #ifdef OMR
@@ -197,6 +217,9 @@ void Score::write(Xml& xml, bool selectionOnly)
       if (parentScore())
             xml.tag("name", name());
       xml.etag();
+
+      if (unhide)
+            doLayout();
       }
 
 //---------------------------------------------------------
@@ -1277,13 +1300,14 @@ void Score::writeSegments(Xml& xml, int strack, int etrack,
                   Measure* m = segment->measure();
                   // don't write spanners for multi measure rests
                   if ((!(m && m->isMMRest())) && (segment->segmentType() & Segment::Type::ChordRest)) {
-                        for (auto i : _spanner.map()) {     // TODO: dont search whole list
-                              Spanner* s = i.second;
-                              if (s->generated())
+                        int endTick = ls == 0 ? lastMeasure()->endTick() : ls->tick();
+                        auto endIt = spanner().upper_bound(endTick);
+                        for (auto i = spanner().begin(); i != endIt; ++i) {
+                              Spanner* s = i->second;
+                              if (s->generated() || !xml.canWrite(s))
                                     continue;
 
                               if (s->track() == track) {
-                                    int endTick = ls == 0 ? lastMeasure()->endTick() : ls->tick();
                                     if (s->tick() == segment->tick() && (!clip || s->tick2() < endTick)) {
                                           if (needTick) {
                                                 xml.tag("tick", segment->tick() - xml.tickDiff);
@@ -1308,7 +1332,7 @@ void Score::writeSegments(Xml& xml, int strack, int etrack,
                               }
                         }
 
-                  if (!e)
+                  if (!e || !xml.canWrite(e))
                         continue;
 
                   if (e->generated()) {

@@ -441,20 +441,28 @@ SLine::SLine(const SLine& s)
 
 QPointF SLine::linePos(GripLine grip, System** sys)
       {
-      qreal _spatium = spatium();
       qreal x = 0.0;
       switch (anchor()) {
             case Spanner::Anchor::SEGMENT:
                   {
-                  Measure* m;
-                  int t;
+                  ChordRest* cr;
                   if (grip == GripLine::START)
-                        t = tick();
+                        cr = static_cast<ChordRest*>(startElement());
+                  else {
+                        cr = static_cast<ChordRest*>(endElement());
+                        if (cr)
+                              x += cr->width();
+                        }
+
+                  int t = grip == GripLine::START ? tick() : tick2();
+                  Measure* m = cr ? cr->measure() : score()->tick2measure(t);
+
+                  if (m) {
+                        x += cr ? cr->pos().x() + cr->segment()->pos().x() + m->pos().x() : m->tick2pos(t);
+                        *sys = m->system();
+                        }
                   else
-                        t = tick2() - 1;
-                  m    = score()->tick2measure(t);
-                  x   += m->tick2pos(t);
-                  *sys = m->system();
+                        *sys = 0;
                   }
                   break;
 
@@ -471,6 +479,8 @@ QPointF SLine::linePos(GripLine grip, System** sys)
                               }
                         }
                   else {
+                        qreal _spatium = spatium();
+
                         Q_ASSERT(endElement()->type() == Element::Type::MEASURE);
                         m = static_cast<Measure*>(endElement());
                         x = m->pos().x() + m->bbox().right();
@@ -526,7 +536,7 @@ QPointF SLine::linePos(GripLine grip, System** sys)
 
 void SLine::layout()
       {
-      if (score() == gscore || tick() == -1) {
+      if (score() == gscore || tick() == -1 || tick2() == -1) {
             //
             // when used in a palette, SLine has no parent and
             // tick and tick2 has no meaning so no layout is
@@ -573,6 +583,8 @@ void SLine::layout()
                         // set user offset to previous segment's offset
                         if (segCount > 0)
                               ls->setUserOff(QPointF(0, segmentAt(segCount+i-1)->userOff().y()));
+                        else
+                              ls->setUserOff(QPointF(0, userOff().y()));
                         }
                   }
             else {

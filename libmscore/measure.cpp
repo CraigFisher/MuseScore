@@ -1107,30 +1107,49 @@ void Measure::cmdAddStaves(int sStaff, int eStaff, bool createRest)
             // ms->lines->setLines(staff->lines());
             ms->lines->setParent(this);
             ms->lines->setVisible(!staff->invisible());
-
             _score->undo(new InsertMStaff(this, ms, i));
+            }
 
-            if (createRest) {
-                  if (_timesig != len()) {
-                        score()->setRest(tick(), i * VOICES, len(), false, 0, false);
+      if (!createRest && !ts)
+            return;
+
+
+      // create list of unique staves (only one instance for linked staves):
+
+      QList<int> sl;
+      for (int staffIdx = sStaff; staffIdx < eStaff; ++staffIdx) {
+            Staff* s = _score->staff(staffIdx);
+            if (s->linkedStaves()) {
+                  bool alreadyInList = false;
+                  for (int idx : sl) {
+                        if (s->linkedStaves()->staves().contains(_score->staff(idx))) {
+                              alreadyInList = true;
+                              break;
+                              }
                         }
-                  else {
-                        score()->setRest(tick(), i * VOICES, len(), false, 0, true);
-                        }
+                  if (alreadyInList)
+                        continue;
                   }
+            sl.append(staffIdx);
+            }
+
+      for (int staffIdx : sl) {
+            if (createRest)
+                  score()->setRest(tick(), staffIdx * VOICES, len(), false, 0, _timesig == len());
 
             // replicate time signature
             if (ts) {
                   TimeSig* ots = 0;
                   for (int track = 0; track < staves.size() * VOICES; ++track) {
                         if (ts->element(track)) {
-                              ots = (TimeSig*)ts->element(track);
+                              ots = static_cast<TimeSig*>(ts->element(track));
                               break;
                               }
                         }
                   if (ots) {
                         TimeSig* timesig = new TimeSig(*ots);
-                        timesig->setTrack(i * VOICES);
+                        timesig->setTrack(staffIdx * VOICES);
+                        timesig->setParent(ts);
                         timesig->setSig(ots->sig(), ots->timeSigType());
                         score()->undoAddElement(timesig);
                         }
@@ -1521,6 +1540,7 @@ void Measure::adjustToLen(Fraction nf)
             startTick += diff;
 
       score()->undoInsertTime(startTick, diff);
+      score()->undo(new InsertTime(score(), startTick, diff));
 
       for (Score* s : score()->scoreList()) {
             Measure* m = s->tick2measure(tick());
@@ -1734,8 +1754,6 @@ void Measure::read(XmlReader& e, int staffIdx)
       // tick is obsolete
       if (e.hasAttribute("tick"))
             e.initTick(score()->fileDivision(e.intAttribute("tick")));
-      // setTick(e.tick());
-      // e.setTick(tick());
 
       bool irregular;
       if (e.hasAttribute("len")) {
@@ -1799,7 +1817,6 @@ void Measure::read(XmlReader& e, int staffIdx)
                   segment->add(barLine);
                   }
             else if (tag == "Chord") {
-
                   Chord* chord = new Chord(score());
                   chord->setTrack(e.track());
                   chord->read(e);
@@ -1817,9 +1834,7 @@ void Measure::read(XmlReader& e, int staffIdx)
                               chord->add(gc);
                               }
                         graceNotes.clear();
-
-                        Fraction ts(timeStretch * chord->globalDuration());
-                        int crticks = ts.ticks();
+                        int crticks = chord->actualTicks();
 
                         if (chord->tremolo() && chord->tremolo()->tremoloType() < TremoloType::R8) {
                               //
@@ -1880,14 +1895,13 @@ void Measure::read(XmlReader& e, int staffIdx)
                   rest->setDuration(timesig()/timeStretch);
                   rest->setTrack(e.track());
                   rest->read(e);
-
                   segment = getSegment(rest, e.tick());
                   segment->add(rest);
+
                   if (!rest->duration().isValid())     // hack
                         rest->setDuration(timesig()/timeStretch);
-                  Fraction ts(timeStretch * rest->globalDuration());
 
-                  e.incTick(ts.ticks());
+                  e.incTick(rest->actualTicks());
                   }
             else if (tag == "Breath") {
                   Breath* breath = new Breath(score());
@@ -1971,8 +1985,8 @@ void Measure::read(XmlReader& e, int staffIdx)
                   clef->read(e);
                   clef->setGenerated(false);
                   // in some 1.3 scores, clefs can be in score but not in cleflist
-                  if (score()->mscVersion() > 114)
-                        staff->setClef(e.tick(), clef->clefTypeList());
+                  // if (score()->mscVersion() > 114)
+                  //      staff->setClef(e.tick(), clef->clefTypeList());
 
                   // there may be more than one clef segment for same tick position
                   if (!segment) {
@@ -2024,14 +2038,15 @@ void Measure::read(XmlReader& e, int staffIdx)
                         // if courtesy sig., just add it without map processing
                         segment = getSegment(Segment::Type::TimeSigAnnounce, currTick);
                         segment->add(ts);
-                  }
+                        }
                   else {
                         // if 'real' time sig., do full process
                         segment = getSegment(Segment::Type::TimeSig, currTick);
                         segment->add(ts);
                         timeStretch = ts->stretch().reduced();
 
-                        _timesig = ts->sig() * timeStretch;
+                        if (_timesig != ts->sig() / timeStretch)
+                              _timesig = ts->sig() / timeStretch;
 
                         if (score()->mscVersion() > 114) {
                               if (irregular) {
@@ -2075,6 +2090,10 @@ void Measure::read(XmlReader& e, int staffIdx)
                   // previous versions stored measure number, delete it
                   if ((score()->mscVersion() <= 114) && (t->textStyleType() == TextStyleType::MEASURE_NUMBER))
                         delete t;
+                  else if (t->isEmpty()) {
+                        qDebug("reading empty text: deleted");
+                        delete t;
+                        }
                   else {
                         segment = getSegment(Segment::Type::ChordRest, e.tick());
                         segment->add(t);
@@ -2962,10 +2981,10 @@ void Measure::layoutX(qreal stretch)
       if (nstaves == 0 || segs == 0)
             return;
 
-      qreal _spatium           = spatium();
-      int tracks               = nstaves * VOICES;
-      qreal clefKeyRightMargin = score()->styleS(StyleIdx::clefKeyRightMargin).val() * _spatium;
-      qreal minHarmonyDistance = score()->styleS(StyleIdx::minHarmonyDistance).val() * _spatium;
+      qreal _spatium              = spatium();
+      int tracks                  = nstaves * VOICES;
+      qreal clefKeyRightMargin    = score()->styleS(StyleIdx::clefKeyRightMargin).val() * _spatium;
+      qreal minHarmonyDistance    = score()->styleS(StyleIdx::minHarmonyDistance).val() * _spatium;
       qreal maxHarmonyBarDistance = score()->styleS(StyleIdx::maxHarmonyBarDistance).val() * _spatium;
 
       qreal rest[nstaves];    // fixed space needed from previous segment
@@ -3023,11 +3042,11 @@ void Measure::layoutX(qreal stretch)
             bool rest2[nstaves];
             bool hRest2[nstaves];
             bool spaceHarmony     = false;
-            Segment::Type segType   = s->segmentType();
+            Segment::Type segType = s->segmentType();
             qreal segmentWidth    = 0.0;
             qreal harmonyWidth    = 0.0;
             qreal stretchDistance = 0.0;
-            Segment::Type pt        = pSeg ? pSeg->segmentType() : Segment::Type::BarLine;
+            Segment::Type pt      = pSeg ? pSeg->segmentType() : Segment::Type::BarLine;
 #if 0
             qreal firstHarmonyDistance = 0.0;
 #endif
@@ -3126,9 +3145,14 @@ void Measure::layoutX(qreal stretch)
                               qreal cxu = cr->userOff().x();
                               qreal lx = qMax(cxu, 0.0); // nudge left shouldn't require more leading space
                               qreal rx = qMin(cxu, 0.0); // nudge right shouldn't require more trailing space
-                              Space crSpace = cr->space();
-                              Space segRelSpace(crSpace.lw()-lx, crSpace.rw()+rx);
-                              space.max(segRelSpace);
+                              // Score::computeMinWidth already allocated enough space for full measure rests
+                              // but do not account for them when spacing within the measure
+                              // because they do not need to align with the other elements in segment
+                              if (cr->durationType() != TDuration::DurationType::V_MEASURE) {
+                                    Space crSpace = cr->space();
+                                    Space segRelSpace(crSpace.lw()-lx, crSpace.rw()+rx);
+                                    space.max(segRelSpace);
+                                    }
 
                               // lyrics
                               int n = cr->lyricsList().size();
@@ -3146,6 +3170,7 @@ void Measure::layoutX(qreal stretch)
                               }
                         if (lyrics) {
                               qreal y = lyrics->ipos().y() + score()->styleS(StyleIdx::lyricsMinBottomDistance).val() * _spatium;
+                              y -= score()->staff(staffIdx)->height();
                               if (y > staves[staffIdx]->distanceDown)
                                  staves[staffIdx]->distanceDown = y;
                               space.max(Space(llw, rrw));
@@ -3672,7 +3697,7 @@ void Measure::cmdUpdateNotes(int staffIdx)
 
 Fraction Measure::stretchedLen(Staff* staff) const
       {
-      return len() / staff->timeStretch(tick());
+      return len() * staff->timeStretch(tick());
       }
 
 //---------------------------------------------------------

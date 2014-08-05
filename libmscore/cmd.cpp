@@ -129,6 +129,8 @@ void Score::endCmd()
                   }
             }
 
+      if (MScore::debugMode)
+            qDebug("===endCmd() %d", undo()->current()->childCount());
       bool noUndo = undo()->current()->childCount() <= 1;
       if (!noUndo)
             setDirty(true);
@@ -234,7 +236,7 @@ void Score::cmdAddSpanner(Spanner* spanner, const QPointF& pos)
       if (spanner->anchor() == Spanner::Anchor::SEGMENT) {
             spanner->setTick(segment->tick());
             int lastTick = lastMeasure()->tick() + lastMeasure()->ticks();
-            int tick2 = qMin(segment->tick() + segment->measure()->ticks(), lastTick);
+            int tick2 = qMin(segment->measure()->tick() + segment->measure()->ticks(), lastTick);
             spanner->setTick2(tick2);
             }
       else {      // Anchor::MEASURE
@@ -553,20 +555,16 @@ Segment* Score::setNoteRest(Segment* segment, int track, NoteVal nval, Fraction 
                   //
                   // extend slur
                   //
-                  Chord* e = static_cast<Note*>(nr)->chord();
-                  int stick = 0;
-                  Element* ee = _is.slur()->startElement();
-                  if (ee->isChordRest())
-                        stick = static_cast<ChordRest*>(ee)->tick();
-                  else if (ee->type() == Element::Type::NOTE)
-                        stick = static_cast<Note*>(ee)->chord()->tick();
-                  if (stick == e->tick()) {
-                        _is.slur()->setTick(stick);
-                        _is.slur()->setStartElement(e);
-                        }
-                  else {
-                        _is.slur()->setTick2(e->tick());
-                        _is.slur()->setEndElement(e);
+                  Chord* chord = static_cast<Note*>(nr)->chord();
+                  _is.slur()->undoChangeProperty(P_ID::SPANNER_TICK2, chord->tick());
+                  for (Element* e : _is.slur()->linkList()) {
+                        Slur* slur = static_cast<Slur*>(e);
+                        for (Element* e : chord->linkList()) {
+                              if (e->score() == slur->score() && e->track() == slur->track2()) {
+                                    slur->score()->undo(new ChangeSpannerElements(slur, slur->startElement(), e));
+                                    break;
+                                    }
+                              }
                         }
                   setLayoutAll(true);
                   }
@@ -682,7 +680,7 @@ Fraction Score::makeGap(Segment* segment, int track, const Fraction& _sd, Tuplet
                   if (dList.isEmpty())
                         return akkumulated;
 
-                  Fraction f(cr->staff()->timeStretch(cr->tick()) * sd);
+                  Fraction f = sd / cr->staff()->timeStretch(cr->tick());
                   for (Tuplet* t = tuplet; t; t = t->tuplet())
                         f /= t->ratio();
                   int tick  = cr->tick() + f.ticks();
@@ -725,15 +723,27 @@ Fraction Score::makeGap(Segment* segment, int track, const Fraction& _sd, Tuplet
 //    - do not stop at measure end
 //---------------------------------------------------------
 
-bool Score::makeGap1(int tick, int staffIdx, Fraction len)
+bool Score::makeGap1(int tick, int staffIdx, Fraction len, int voices)
       {
-      ChordRest* cr = 0;
       Segment* seg = tick2segment(tick, true, Segment::Type::ChordRest);
       if (!seg) {
             qDebug("1:makeGap1: no segment at %d", tick);
             return false;
             }
-      int track = staffIdx * VOICES;
+      int strack = staffIdx * VOICES;
+      for (int track = strack; track < strack + 4; track++) {
+            if (!(voices & (1 << (track-strack))))
+                  continue;
+            bool result = makeGapVoice(seg, track, len, tick);
+            if(track == strack && !result)
+                  return false;
+            }
+      return true;
+      }
+
+bool Score::makeGapVoice(Segment* seg, int track, Fraction len, int tick)
+      {
+      ChordRest* cr = 0;
       cr = static_cast<ChordRest*>(seg->element(track));
       if (!cr) {
             // check if we are in the middle of a chord/rest
@@ -759,7 +769,6 @@ bool Score::makeGap1(int tick, int staffIdx, Fraction len)
                         return false;
                         }
                   if (seg1->element(track)) {
-                        tick = seg1->tick();
                         cr = static_cast<ChordRest*>(seg1->element(track));
                         break;
                         }
@@ -1626,9 +1635,17 @@ bool Score::processMidiInput()
                         p = staff(0)->part();
                   else
                         p = staff(staffIdx)->part();
-                  if (p)
-                        MScore::seq->startNote(p->instr()->channel(0).channel, ev.pitch, 80,
-                           MScore::defaultPlayDuration, 0.0);
+                  if (p) {
+                        if (!styleB(StyleIdx::concertPitch)) {
+                              ev.pitch += p->instr(selection().tickStart())->transpose().chromatic;
+                        }
+                        MScore::seq->startNote(
+                                          p->instr()->channel(0).channel,
+                                          ev.pitch,
+                                          80,
+                                          MScore::defaultPlayDuration,
+                                          0.0);
+                        }
                   }
             else  {
                   if (!cmdActive) {
@@ -1638,8 +1655,10 @@ bool Score::processMidiInput()
                   NoteVal nval(ev.pitch);
                   Staff* st = staff(inputState().track() / VOICES);
                   Key key = st->key(inputState().tick());
-
                   nval.tpc = pitch2tpc(nval.pitch, key, Prefer::NEAREST);
+                  if (!styleB(StyleIdx::concertPitch)) {
+                      nval.pitch += st->part()->instr(inputState().tick())->transpose().chromatic;
+                      }
                   addPitch(nval, ev.chord);
                   }
             }
@@ -1674,13 +1693,12 @@ Element* Score::move(const QString& cmd)
 
       // no chord/rest found? look for another type of element
       if (cr == 0) {
-            Element* el  = 0;
-            Element* trg = 0;
-            // retrieve last element of section list
-            if (!selection().elements().isEmpty())
-                  el = selection().elements().last();
-            if (!el)                            // no element, no party!
+            if (selection().elements().isEmpty())
                   return 0;
+            // retrieve last element of section list
+            Element* el = selection().elements().last();
+            Element* trg = 0;
+
             // get parent of element and process accordingly:
             // trg is the element to select on "next-chord" cmd
             // cr is the ChordRest to move from on other cmd's
@@ -1946,7 +1964,7 @@ void Score::cmdDoubleDuration()
 //---------------------------------------------------------
 //   cmdAddBracket
 //---------------------------------------------------------
-      
+
 void Score::cmdAddBracket()
       {
       for(Element* el : selection().elements()) {
@@ -1966,7 +1984,7 @@ void Score::cmdAddBracket()
                   }
             }
       }
-      
+
 
 //---------------------------------------------------------
 //   cmdMoveRest
@@ -2031,7 +2049,7 @@ void Score::cmd(const QAction* a)
       Element* el = selection().element();
       if (cmd == "pitch-up") {
             if (el && (el->type() == Element::Type::ARTICULATION || el->isText()))
-                  undoMove(el, el->userOff() + QPointF(0.0, -MScore::nudgeStep * el->spatium()));
+                  el->undoChangeProperty(P_ID::USER_OFF, el->userOff() + QPointF(0.0, -MScore::nudgeStep * el->spatium()));
             else if (el && el->type() == Element::Type::REST)
                   cmdMoveRest(static_cast<Rest*>(el), MScore::Direction::UP);
             else if (el && el->type() == Element::Type::LYRICS)
@@ -2041,7 +2059,7 @@ void Score::cmd(const QAction* a)
             }
       else if (cmd == "pitch-down") {
             if (el && (el->type() == Element::Type::ARTICULATION || el->isText()))
-                  undoMove(el, el->userOff() + QPointF(0.0, MScore::nudgeStep * el->spatium()));
+                  el->undoChangeProperty(P_ID::USER_OFF, el->userOff() + QPointF(0.0, MScore::nudgeStep * el->spatium()));
             else if (el && el->type() == Element::Type::REST)
                   cmdMoveRest(static_cast<Rest*>(el), MScore::Direction::DOWN);
             else if (el && el->type() == Element::Type::LYRICS)
@@ -2057,10 +2075,6 @@ void Score::cmd(const QAction* a)
             addArticulation(ArticulationType::Marcato);
       else if (cmd == "add-trill")
             addArticulation(ArticulationType::Trill);
-      else if (cmd == "add-hairpin")
-            cmdAddHairpin(false);
-      else if (cmd == "add-hairpin-reverse")
-            cmdAddHairpin(true);
       else if (cmd == "add-8va")
             cmdAddOttava(Ottava::Type::OTTAVA_8VA);
       else if (cmd == "add-8vb")
@@ -2074,13 +2088,13 @@ void Score::cmd(const QAction* a)
             }
       else if (cmd == "pitch-up-octave") {
             if (el && (el->type() == Element::Type::ARTICULATION || el->isText()))
-                  undoMove(el, el->userOff() + QPointF(0.0, -MScore::nudgeStep10 * el->spatium()));
+                  el->undoChangeProperty(P_ID::USER_OFF, el->userOff() + QPointF(0.0, -MScore::nudgeStep10 * el->spatium()));
             else
                   upDown(true, UpDownMode::OCTAVE);
             }
       else if (cmd == "pitch-down-octave") {
             if (el && (el->type() == Element::Type::ARTICULATION || el->isText()))
-                  undoMove(el, el->userOff() + QPointF(0.0, MScore::nudgeStep10 * el->spatium()));
+                  el->undoChangeProperty(P_ID::USER_OFF, el->userOff() + QPointF(0.0, MScore::nudgeStep10 * el->spatium()));
             else
                   upDown(false, UpDownMode::OCTAVE);
             }
@@ -2287,5 +2301,40 @@ void Score::cmd(const QAction* a)
       else
             qDebug("unknown cmd <%s>", qPrintable(cmd));
       }
+
+//---------------------------------------------------------
+//   cmdInsertClef
+//    insert clef before cr
+//---------------------------------------------------------
+
+void Score::cmdInsertClef(Clef* clef, ChordRest* cr)
+      {
+      Clef* gclef = 0;
+      for (Element* e : cr->linkList()) {
+            ChordRest* cr = static_cast<ChordRest*>(e);
+            Score* score = cr->score();
+
+            //
+            // create a clef segment before cr if it does not exist
+            //
+            Segment* s = cr->segment();
+            Segment* cs = s->prev();
+            if (!cs || cs->segmentType() != Segment::Type::Clef) {
+                  cs = new Segment(cr->measure(), Segment::Type::Clef, s->tick());
+                  cs->setNext(s);
+                  score->undo(new AddElement(cs));
+                  }
+            Clef* c = static_cast<Clef*>(gclef ? gclef->linkedClone() : clef->clone());
+            gclef = c;
+            c->setParent(cs);
+            c->setScore(cs->score());
+            c->setTrack(cr->staffIdx() * VOICES);
+            if (cs->element(c->track()))
+                  score->undo(new RemoveElement(cs->element(c->track())));
+            score->undo(new AddElement(c));
+            }
+      delete clef;
+      }
+
 }
 

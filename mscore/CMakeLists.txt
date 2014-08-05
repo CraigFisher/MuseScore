@@ -125,7 +125,7 @@ endif (OMR)
 QT4_WRAP_CPP (mocs
       scoreview.h editinstrument.h editstyle.h instrdialog.h
       musescore.h navigator.h pagesettings.h palette.h mixer.h playpanel.h
-      measureproperties.h seq.h textpalette.h textstyle.h
+      measureproperties.h seq.h textpalette.h textstyle.h selectionwindow.h
       timedialog.h symboldialog.h shortcutcapturedialog.h simplebutton.h
       greendotbutton.h recordbutton.h editdrumset.h editstaff.h selinstrument.h
       voltaproperties.h timesigproperties.h boxproperties.h newwizard.h
@@ -150,8 +150,7 @@ QT4_WRAP_CPP (mocs
       inspector/inspectorJump.h inspector/inspectorMarker.h inspector/inspectorGlissando.h
       inspector/inspectorNote.h inspector/inspectorAmbitus.h
       paletteBoxButton.h pathlistdialog.h exampleview.h noteGroups.h inspector/inspectorTextLine.h
-      importmidi_panel.h
-      importmidi_opmodel.h importmidi_opdelegate.h
+      importmidi_panel.h importmidi_delegate.h importmidi_view.h
       debugger/debugger.h
       resourceManager.h downloadUtils.h
       ${OMR_MOCS}
@@ -159,9 +158,9 @@ QT4_WRAP_CPP (mocs
       )
 
 if (APPLE)
-      QT4_ADD_RESOURCES (qrc_files musescore-apple.qrc)
+      QT4_ADD_RESOURCES (qrc_files musescore.qrc)
 else (APPLE)
-      QT5_ADD_RESOURCES (qrc_files musescore.qrc)
+      QT5_ADD_RESOURCES (qrc_files musescore.qrc musescorefonts.qrc)
 endif (APPLE)
 
 
@@ -191,16 +190,16 @@ if (USE_JACK)
 endif (USE_JACK)
 
 if (APPLE)
-        set (ExecutableName mscore MACOSX_BUNDLE)
-        set (MACOSX_BUNDLE_ICON_FILE      mscore.icns)
-        set (MACOSX_BUNDLE_GUI_IDENTIFIER org.musescore.MuseScore)
-        set (MACOSX_BUNDLE_LONG_VERSION_STRING ${MUSESCORE_VERSION_FULL})
-        set (MACOSX_BUNDLE_BUNDLE_NAME MuseScore)
-        set (MACOSX_BUNDLE_SHORT_VERSION_STRING ${MUSESCORE_VERSION})
-        set (MACOSX_BUNDLE_BUNDLE_VERSION ${MUSESCORE_VERSION_FULL})
-        set (MACOSX_BUNDLE_COPYRIGHT musescore.org)
+      set (ExecutableName mscore MACOSX_BUNDLE)
+      set (MACOSX_BUNDLE_ICON_FILE      mscore.icns)
+      set (MACOSX_BUNDLE_GUI_IDENTIFIER org.musescore.MuseScore)
+      set (MACOSX_BUNDLE_LONG_VERSION_STRING ${MUSESCORE_VERSION_FULL})
+      set (MACOSX_BUNDLE_BUNDLE_NAME MuseScore)
+      set (MACOSX_BUNDLE_SHORT_VERSION_STRING ${MUSESCORE_VERSION})
+      set (MACOSX_BUNDLE_BUNDLE_VERSION ${MUSESCORE_VERSION_FULL})
+      set (MACOSX_BUNDLE_COPYRIGHT musescore.org)
 else (APPLE)
-        set (ExecutableName mscore)
+      set (ExecutableName mscore)
 endif (APPLE)
 
 if (OMR)
@@ -208,9 +207,9 @@ if (OMR)
 endif (OMR)
 
 if (APPLE)
-        file(GLOB_RECURSE INCS "*.h")
+      file(GLOB_RECURSE INCS "*.h")
 else (APPLE)
-        set(INCS "")
+      set(INCS "")
 endif (APPLE)
 
 add_executable ( ${ExecutableName}
@@ -228,7 +227,7 @@ add_executable ( ${ExecutableName}
       icons.cpp importbww.cpp instrdialog.cpp
       debugger/debugger.cpp menus.cpp importmidi.cpp
       musescore.cpp navigator.cpp pagesettings.cpp palette.cpp
-      mixer.cpp playpanel.cpp preferences.cpp measureproperties.cpp
+      mixer.cpp playpanel.cpp selectionwindow.cpp preferences.cpp measureproperties.cpp
       seq.cpp boxproperties.cpp textpalette.cpp
       timedialog.cpp symboldialog.cpp shortcutcapturedialog.cpp
       simplebutton.cpp musedata.cpp
@@ -240,7 +239,7 @@ add_executable ( ${ExecutableName}
       textproperties.cpp synthcontrol.cpp drumroll.cpp pianoroll.cpp piano.cpp
       pianoview.cpp drumview.cpp scoretab.cpp keyedit.cpp harmonyedit.cpp
       updatechecker.cpp importove.cpp ove.cpp ruler.cpp
-      importgtp.cpp fotomode.cpp drumtools.cpp
+      importgtp.cpp importgtp-gp4.cpp importgtp-gp5.cpp importgtp-gp6.cpp fotomode.cpp drumtools.cpp
       selinstrument.cpp texteditor.cpp editstafftype.cpp texttools.cpp
       editpitch.cpp editstringdata.cpp editraster.cpp pianotools.cpp mediadialog.cpp
       workspace.cpp exportmp3.cpp chordview.cpp
@@ -264,11 +263,13 @@ add_executable ( ${ExecutableName}
       paletteBoxButton.cpp driver.cpp exportmidi.cpp noteGroups.cpp
       pathlistdialog.cpp exampleview.cpp inspector/inspectorTextLine.cpp
       importmidi_panel.cpp importmidi_operations.cpp miconengine.cpp
-      importmidi_opmodel.cpp importmidi_trmodel.cpp importmidi_opdelegate.cpp
+      importmidi_model.cpp importmidi_delegate.cpp
       importmidi_meter.cpp importmidi_quant.cpp importmidi_tuplet.cpp importmidi_chord.cpp
-      importmidi_data.cpp importmidi_swing.cpp importmidi_fraction.cpp importmidi_drum.cpp
-      importmidi_clef.cpp importmidi_lrhand.cpp importmidi_lyrics.cpp importmidi_trview.cpp
-      importmidi_inner.cpp importmidi_tie.cpp
+      importmidi_swing.cpp importmidi_fraction.cpp importmidi_drum.cpp
+      importmidi_clef.cpp importmidi_lrhand.cpp importmidi_lyrics.cpp
+      importmidi_inner.cpp importmidi_tie.cpp importmidi_tuplet_voice.cpp importmidi_beat.cpp
+      importmidi_tuplet_detect.cpp  importmidi_tuplet_filter.cpp importmidi_tuplet_tonotes.cpp
+      importmidi_simplify.cpp importmidi_voice.cpp importmidi_view.cpp
       resourceManager.cpp downloadUtils.cpp
       textcursor.cpp
       continuouspanel.cpp
@@ -297,17 +298,18 @@ target_link_libraries(mscore
       libmscore
       xmlstream
       qzip
+      beatroot
       )
 
 #if MSCORE_OUTPUT_NAME is set (e.g, when cmake is called by the user), the output executable will be
 #called MSCORE_OUTPUT_NAME instead of 'mscore'. This can be used to have MuseScore stable and unstable
 #both installed in the same prefix on a Linux system.
 if (MSCORE_OUTPUT_NAME)
-      set_target_properties(
-            ${ExecutableName}
-            PROPERTIES
-            OUTPUT_NAME ${MSCORE_OUTPUT_NAME}
-            )
+  set_target_properties(
+      ${ExecutableName}
+      PROPERTIES
+      OUTPUT_NAME ${MSCORE_OUTPUT_NAME}
+      )
 endif (MSCORE_OUTPUT_NAME)
 
 if (ZERBERUS)
@@ -326,8 +328,8 @@ endif (HAS_AUDIOFILE)
 
 if (APPLE)
       set_target_properties (mscore
-         PROPERTIES
-            MACOSX_BUNDLE_INFO_PLIST ${PROJECT_SOURCE_DIR}/build/MacOSXBundleInfo.plist.in)
+          PROPERTIES
+          MACOSX_BUNDLE_INFO_PLIST ${PROJECT_SOURCE_DIR}/build/MacOSXBundleInfo.plist.in)
       #enable dSym generation
       #set_target_properties (mscore
       #   PROPERTIES
@@ -335,7 +337,7 @@ if (APPLE)
 endif(APPLE)
 
 if (OSC)
-    target_link_libraries(mscore ofqf)
+      target_link_libraries(mscore ofqf)
 endif (OSC)
 
 if (MINGW)

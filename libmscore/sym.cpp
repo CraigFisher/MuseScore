@@ -27,9 +27,9 @@ namespace Ms {
 static const int FALLBACK_FONT = 2;       // Bravura
 
 QVector<ScoreFont> ScoreFont::_scoreFonts = {
-      ScoreFont("Emmentaler", "MScore",      ":/fonts/mscore/",   "mscore.ttf",   "MScore Text" ),
-      ScoreFont("Gonville",   "Gonville",    ":/fonts/gonville/", "Gonville.otf", "Bravura Text" ),
-      ScoreFont("Bravura",    "Bravura",     ":/fonts/bravura/",  "Bravura.otf",  "Bravura Text" )
+      ScoreFont("Emmentaler", "MScore",      ":/fonts/mscore/",   "mscore.ttf"   ),
+      ScoreFont("Gonville",   "Gonville",    ":/fonts/gonville/", "Gonville.otf" ),
+      ScoreFont("Bravura",    "Bravura",     ":/fonts/bravura/",  "Bravura.otf"  )
       };
 
 //---------------------------------------------------------
@@ -2451,6 +2451,7 @@ QVector<const char*> Sym::symNames = {
       "noteLongaDown",
       "noteLongaSquareUp",
       "noteLongaSquareDown",
+      "space"
       };
 
 QVector<QString> Sym::symUserNames = {
@@ -4866,6 +4867,7 @@ QVector<QString> Sym::symUserNames = {
       "noteLongaDown",
       "noteLongaSquareUp",
       "noteLongaSquareDown",
+      "space"
       };
 
 //---------------------------------------------------------
@@ -5519,7 +5521,11 @@ void ScoreFont::load()
                         }
                   }
             }
-
+      // add space symbol
+      Sym* sym = &_symbols[int(SymId::space)];
+      sym->setString("\u0020");
+      sym->setBbox(QRectF(_fm->tightBoundingRect(sym->string())));
+      
       /*for (int i = 1; i < int(SymId::lastSym); ++i) {
             Sym sym = _symbols[i];
             if (!sym.isValid())
@@ -5558,6 +5564,15 @@ ScoreFont* ScoreFont::fallbackFont()
       if (!f->loaded)
             f->load();
       return f;
+      }
+
+//---------------------------------------------------------
+//   fallbackTextFont
+//---------------------------------------------------------
+
+const char* ScoreFont::fallbackTextFont()
+      {
+      return "Bravura Text";
       }
 
 //---------------------------------------------------------

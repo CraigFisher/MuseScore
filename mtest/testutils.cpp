@@ -23,6 +23,7 @@
 #include "synthesizer/msynthesizer.h"
 #include "mscore/musescoreCore.h"
 #include "mscore/shortcut.h"
+#include "mscore/importmidi_operations.h"
 #include "libmscore/xml.h"
 #include "libmscore/excerpt.h"
 
@@ -160,7 +161,7 @@ Score* MTest::readCreatedScore(const QString& name)
 //   saveScore
 //---------------------------------------------------------
 
-bool MTest::saveScore(Score* score, const QString& name)
+bool MTest::saveScore(Score* score, const QString& name) const
       {
       QFileInfo fi(name);
 //      MScore::testMode = true;
@@ -171,7 +172,7 @@ bool MTest::saveScore(Score* score, const QString& name)
 //   compareFiles
 //---------------------------------------------------------
 
-bool MTest::compareFiles(const QString& saveName, const QString& compareWith)
+bool MTest::compareFiles(const QString& saveName, const QString& compareWith) const
       {
       QString cmd = "diff";
       QStringList args;
@@ -196,7 +197,7 @@ bool MTest::compareFiles(const QString& saveName, const QString& compareWith)
 //   saveCompareScore
 //---------------------------------------------------------
 
-bool MTest::saveCompareScore(Score* score, const QString& saveName, const QString& compareWith)
+bool MTest::saveCompareScore(Score* score, const QString& saveName, const QString& compareWith) const
       {
       saveScore(score, saveName);
       return compareFiles(saveName, compareWith);
@@ -269,6 +270,30 @@ bool MTest::savePdf(Score* cs, const QString& saveName)
 bool MTest::saveMusicXml(Score* score, const QString& saveName)
       {
       return saveXml(score, saveName);
+      }
+
+//---------------------------------------------------------
+//   saveMimeData
+//---------------------------------------------------------
+
+bool MTest::saveMimeData(QByteArray mimeData, const QString& saveName)
+      {
+      QFile f(saveName);
+      if (!f.open(QIODevice::WriteOnly))
+            return false;
+
+      f.write(mimeData);
+      return f.error() == QFile::NoError;
+      }
+
+//---------------------------------------------------------
+//   saveCompareMimeData
+//---------------------------------------------------------
+
+bool MTest::saveCompareMimeData(QByteArray mimeData, const QString& saveName, const QString& compareWith)
+      {
+      saveMimeData(mimeData, saveName);
+      return compareFiles(saveName, compareWith);
       }
 
 //---------------------------------------------------------

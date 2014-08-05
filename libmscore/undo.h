@@ -477,26 +477,6 @@ class ChangeSingleBarLineSpan : public UndoCommand {
       };
 
 //---------------------------------------------------------
-//   ChangeSlurOffsets
-//---------------------------------------------------------
-
-class ChangeSlurOffsets : public UndoCommand {
-      SlurSegment* slur;
-      QPointF off[4];
-      void flip();
-
-   public:
-      ChangeSlurOffsets(SlurSegment* s, const QPointF& o1, const QPointF& o2,
-         const QPointF& o3, const QPointF& o4) : slur(s) {
-            off[0] = o1;
-            off[1] = o2;
-            off[2] = o3;
-            off[3] = o4;
-            }
-      UNDO_NAME("ChangeSlurOffsets")
-      };
-
-//---------------------------------------------------------
 //   SigInsertTime
 //---------------------------------------------------------
 
@@ -741,11 +721,12 @@ class ChangeStaff : public UndoCommand {
       bool        invisible;
       qreal       userDist;
       QColor      color;
+      bool        neverHide;
 
       void flip();
 
    public:
-      ChangeStaff(Staff*, bool small, bool invisible, qreal userDist, QColor _color);
+      ChangeStaff(Staff*, bool small, bool invisible, qreal userDist, QColor _color, bool _neverHide);
       UNDO_NAME("ChangeStaff")
       };
 
@@ -1389,21 +1370,7 @@ class ChangeNoteEvent : public UndoCommand {
    public:
       ChangeNoteEvent(Note* n, NoteEvent* oe, const NoteEvent& ne)
          : note(n), oldEvent(oe), newEvent(ne) {}
-      };
-
-//---------------------------------------------------------
-//   SetClefType
-//---------------------------------------------------------
-
-class SetClefType : public UndoCommand {
-      Staff* staff;
-      int tick;
-      ClefTypeList ctl;
-
-      void flip();
-
-   public:
-      SetClefType(Staff* st, int t, const ClefTypeList& l) : staff(st), tick(t), ctl(l) {}
+      UNDO_NAME("ChangeNoteEvent")
       };
 
 //---------------------------------------------------------
@@ -1418,6 +1385,37 @@ class Unlink : public UndoCommand {
       Unlink(Element* _e);
       virtual void undo();
       virtual void redo();
+      UNDO_NAME("Unlink")
+      };
+
+//---------------------------------------------------------
+//   Link
+//---------------------------------------------------------
+
+class Link : public UndoCommand {
+      Element* e1;
+      Element* e2;
+
+   public:
+      Link(Element* _e1, Element* _e2) : e1(_e1), e2(_e2) {}
+      virtual void undo();
+      virtual void redo();
+      UNDO_NAME("Link")
+      };
+
+//---------------------------------------------------------
+//   LinkStaff
+//---------------------------------------------------------
+
+class LinkStaff : public UndoCommand {
+      Staff* s1;
+      Staff* s2;
+
+   public:
+      LinkStaff(Staff* _s1, Staff* _s2) : s1(_s1), s2(_s2) {}
+      virtual void undo();
+      virtual void redo();
+      UNDO_NAME("LinkStaff")
       };
 
 //---------------------------------------------------------
@@ -1433,6 +1431,7 @@ class ChangeStartEndSpanner : public UndoCommand {
 
    public:
       ChangeStartEndSpanner(Spanner* sp, Element*s, Element*e) : spanner(sp), start(s), end(e) {}
+      UNDO_NAME("ChangeStartEndSpanner")
       };
 
 

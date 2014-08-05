@@ -1876,7 +1876,7 @@ void ScoreView::paint(const QRect& r, QPainter& p)
             p.setBrush(Qt::NoBrush);
 
             QPen pen;
-            pen.setColor(Qt::blue);
+            pen.setColor(MScore::selectColor[0]);
             pen.setWidthF(2.0 / p.matrix().m11());
 
             pen.setStyle(Qt::SolidLine);
@@ -2340,7 +2340,7 @@ void ScoreView::setFocusRect()
             if (!focusFrame) {
                   focusFrame = new QFocusFrame;
                   QPalette p(focusFrame->palette());
-                  p.setColor(QPalette::WindowText, Qt::blue);
+                  p.setColor(QPalette::WindowText, MScore::selectColor[0]);
                   focusFrame->setPalette(p);
                   }
             focusFrame->setWidget(static_cast<QWidget*>(this));
@@ -2505,6 +2505,10 @@ void ScoreView::cmd(const QAction* a)
             sm->postEvent(new CommandEvent(cmd));
       else if (cmd == "add-slur")
             cmdAddSlur();
+      else if (cmd == "add-hairpin")
+            cmdAddHairpin(false);
+      else if (cmd == "add-hairpin-reverse")
+            cmdAddHairpin(true);
       else if (cmd == "add-noteline")
             cmdAddNoteLine();
       else if (cmd == "note-c")
@@ -2615,13 +2619,13 @@ void ScoreView::cmd(const QAction* a)
             if (el && (el->isText())) {
                   score()->startCmd();
                   if (cmd == "prev-chord")
-                        score()->undoMove(el, el->userOff() - QPointF (MScore::nudgeStep * el->spatium(), 0.0));
+                        el->undoChangeProperty(P_ID::USER_OFF, el->userOff() - QPointF (MScore::nudgeStep * el->spatium(), 0.0));
                   else if (cmd == "next-chord")
-                        score()->undoMove(el, el->userOff() + QPointF (MScore::nudgeStep * el->spatium(), 0.0));
+                        el->undoChangeProperty(P_ID::USER_OFF, el->userOff() + QPointF (MScore::nudgeStep * el->spatium(), 0.0));
                   else if (cmd == "prev-measure")
-                        score()->undoMove(el, el->userOff() - QPointF (MScore::nudgeStep10 * el->spatium(), 0.0));
+                        el->undoChangeProperty(P_ID::USER_OFF, el->userOff() - QPointF (MScore::nudgeStep10 * el->spatium(), 0.0));
                   else if (cmd == "next-measure")
-                        score()->undoMove(el, el->userOff() + QPointF (MScore::nudgeStep10 * el->spatium(), 0.0));
+                        el->undoChangeProperty(P_ID::USER_OFF, el->userOff() + QPointF (MScore::nudgeStep10 * el->spatium(), 0.0));
                   score()->endCmd();
                   }
             else {
@@ -4093,6 +4097,49 @@ void ScoreView::cmdAddSlur(Note* firstNote, Note* lastNote)
       }
 
 //---------------------------------------------------------
+//   cmdAddHairpin
+//    '<' typed on keyboard
+//---------------------------------------------------------
+
+void ScoreView::cmdAddHairpin(bool decrescendo)
+      {
+      ChordRest* cr1;
+      ChordRest* cr2;
+      _score->getSelectedChordRest2(&cr1, &cr2);
+      if (!cr1)
+            return;
+      if (cr2 == 0)
+            cr2 = nextChordRest(cr1);
+      if (cr2 == 0)
+            return;
+
+      _score->startCmd();
+      Hairpin* pin = new Hairpin(_score);
+      pin->setHairpinType(decrescendo ? Hairpin::Type::DECRESCENDO : Hairpin::Type::CRESCENDO);
+      pin->setTrack(cr1->track());
+      pin->setTick(cr1->segment()->tick());
+      pin->setTick2(cr2->segment()->tick());
+      _score->undoAddElement(pin);
+      pin->layout();
+      _score->endCmd();
+      _score->startCmd();
+
+      const QList<SpannerSegment*>& el = pin->spannerSegments();
+
+      if (noteEntryMode()) {
+            _score->endCmd();
+            }
+      else {
+            if (!el.isEmpty()) {
+                  editObject = el.front();
+                  sm->postEvent(new CommandEvent("edit"));  // calls startCmd()
+                  }
+            else
+                  _score->endCmd();
+            }
+      }
+
+//---------------------------------------------------------
 //   cmdChangeEnharmonic
 //---------------------------------------------------------
 
@@ -4706,7 +4753,6 @@ void ScoreView::cmdAddPitch(int note, bool addFlag)
             qDebug("cannot enter notes here (no chord rest at current position)");
             return;
             }
-printf("cmdAddPitch %p\n", is.segment());
       Drumset* ds = is.drumset();
       int octave = 4;
       if (ds) {
@@ -4743,7 +4789,6 @@ printf("cmdAddPitch %p\n", is.segment());
             else {
                   int curPitch = -1;
                   if (is.segment()) {
-printf("   cmdAddPitch1 %p\n", is.segment());
                         Staff* staff = score()->staff(is.track() / VOICES);
                         Segment* seg = is.segment()->prev1(Segment::Type::ChordRest | Segment::Type::Clef);
                         while(seg) {
@@ -4778,16 +4823,13 @@ printf("   cmdAddPitch1 %p\n", is.segment());
                         --octave;
                   else if (delta < -6)
                         ++octave;
-printf("   cmdAddPitch2 %p\n", is.segment());
                   }
             }
 
       if (!noteEntryMode()) {
             sm->postEvent(new CommandEvent("note-input"));
             qApp->processEvents();
-printf("   cmdAddPitch3 %p\n", is.segment());
             }
-printf("   cmdAddPitch4 %p\n", is.segment());
       _score->cmdAddPitch(octave * 7 + note, addFlag);
       adjustCanvasPosition(is.cr(), false);
       }
@@ -5084,6 +5126,7 @@ void ScoreView::cmdRepeatSelection()
 
       QByteArray data(mimeData->data(mimeType));
       XmlReader xml(data);
+      xml.setPasteMode(true);
 
       int dStaff = selection.staffStart();
       Segment* endSegment = selection.endSegment();

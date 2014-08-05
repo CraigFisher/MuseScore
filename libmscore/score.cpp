@@ -330,7 +330,7 @@ void Score::init()
 //---------------------------------------------------------
 
 Score::Score()
-   : QObject(0), _is(this), _selection(this)
+   : QObject(0), _is(this), _selection(this), _selectionFilter(this)
       {
       _parentScore = 0;
       init();
@@ -340,7 +340,7 @@ Score::Score()
       }
 
 Score::Score(const MStyle* s)
-   : _is(this), _selection(this)
+   : _is(this), _selection(this), _selectionFilter(this)
       {
       _parentScore = 0;
       init();
@@ -362,7 +362,7 @@ Score::Score(const MStyle* s)
 //
 
 Score::Score(Score* parent)
-   : _is(this), _selection(this)
+   : _is(this), _selection(this), _selectionFilter(this)
       {
       _parentScore = parent;
       init();
@@ -386,7 +386,7 @@ Score::Score(Score* parent)
       }
 
 Score::Score(Score* parent, const MStyle* s)
-   : _is(this), _selection(this)
+   : _is(this), _selection(this), _selectionFilter(this)
       {
       _parentScore = parent;
       init();
@@ -1106,12 +1106,25 @@ bool Score::getPosition(Position* pos, const QPointF& p, int voice) const
       System* system     = measure->system();
       qreal y           = p.y() - system->pagePos().y();
       for (; pos->staffIdx < nstaves(); ++pos->staffIdx) {
+            Staff* st = staff(pos->staffIdx);
+            if (st->invisible() || !st->part()->show())
+                  continue;
             qreal sy2;
             SysStaff* ss = system->staff(pos->staffIdx);
-            if ((pos->staffIdx+1) != nstaves()) {
-                  SysStaff* nstaff = system->staff(pos->staffIdx+1);
+            SysStaff* nstaff = 0;
+
+            // find next visible staff
+            for (int i = pos->staffIdx + 1; i < nstaves(); ++i) {
+                  Staff* st = staff(i);
+                  if (st->invisible() || !st->part()->show())
+                        continue;
+                  nstaff = system->staff(i);
+                  break;
+                  }
+
+            if (nstaff) {
                   qreal s1y2 = ss->bbox().y() + ss->bbox().height();
-                  sy2         = s1y2 + (nstaff->bbox().y() - s1y2) * .5;
+                  sy2        = s1y2 + (nstaff->bbox().y() - s1y2) * .5;
                   }
             else
                   sy2 = system->page()->height() - system->pos().y();   // system->height();
@@ -2008,7 +2021,7 @@ void Score::removeExcerpt(Score* score)
 
 void Score::updateNotes()
       {
-      for (Measure* m = firstMeasureMM(); m; m = m->nextMeasureMM()) {
+      for (Measure* m = firstMeasure(); m; m = m->nextMeasure()) {
             for (int staffIdx = 0; staffIdx < nstaves(); ++staffIdx)
                   m->updateNotes(staffIdx);
             }
@@ -2067,36 +2080,6 @@ Score* Score::clone()
       XmlReader r(buffer.buffer());
       Score* score = new Score(style());
       score->read1(r, true);
-
-#if 0
-      int staffIdx = 0;
-      foreach (Staff* st, score->staves()) {
-            if (st->updateKeymap())
-                  st->clearKeys();
-            int track = staffIdx * VOICES;
-            KeySig* key1 = 0;
-            for (Measure* m = score->firstMeasure(); m; m = m->nextMeasure()) {
-                  for (Segment* s = m->first(); s; s = s->next()) {
-                        if (!s->element(track))
-                              continue;
-                        Element* e = s->element(track);
-                        if (e->generated())
-                              continue;
-                        if ((s->segmentType() == Segment::Type::KeySig) && st->updateKeymap()) {
-                              KeySig* ks = static_cast<KeySig*>(e);
-                              int naturals = key1 ? key1->keySigEvent().key() : 0;
-                              ks->setOldSig(naturals);
-                              st->setKey(s->tick(), ks->key());
-                              key1 = ks;
-                              }
-                        }
-                  if (m->sectionBreak())
-                        key1 = 0;
-                  }
-            st->setUpdateKeymap(false);
-            ++staffIdx;
-            }
-#endif
 
       score->updateNotes();
       score->addLayoutFlags(LayoutFlag::FIX_TICKS | LayoutFlag::FIX_PITCH_VELO);
@@ -3449,102 +3432,6 @@ bool Score::isSpannerStartEnd(int tick, int track) const
       return false;
       }
 
-//---------------------------------------------------------
-//   undoInsertTime
-//   acts on the linked scores as well
-//---------------------------------------------------------
-
-void Score::undoInsertTime(int tick, int len)
-      {
-      qDebug() << "insertTime" << len << "at tick" << tick;
-      if (len == 0)
-            return;
-
-      //
-      // we have to iterate on a map copy bc. the map is
-      // changed in the loop
-      //
-      std::multimap<int, Spanner*> spannerMap = _spanner.map();
-
-      for (auto i : spannerMap) {
-            Spanner* s = i.second;
-            if (s->tick2() < tick)
-                  continue;
-            if (len > 0) {
-                  if (tick > s->tick() && tick < s->tick2()) {
-                        //
-                        //  case a:
-                        //  +----spanner--------+
-                        //    +---add---
-                        //
-                        undoChangeProperty(s, P_ID::SPANNER_TICK2, s->tick2() + len);
-                        }
-                  else if (tick <= s->tick()) {
-                        //
-                        //  case b:
-                        //       +----spanner--------
-                        //  +---add---
-                        // and
-                        //            +----spanner--------
-                        //  +---add---+
-                        undoChangeProperty(s, P_ID::SPANNER_TICK, s->tick() + len);
-                        undoChangeProperty(s, P_ID::SPANNER_TICK2, s->tick2() + len);
-                        }
-                  }
-            else {
-                  int tick2 = tick - len;
-                  if (s->tick() >= tick2) {
-                        //
-                        //  case A:
-                        //  +----remove---+ +---spanner---+
-                        //
-                        int t = s->tick() + len;
-                        if (t < 0)
-                              t = 0;
-                        undoChangeProperty(s, P_ID::SPANNER_TICK, t);
-                        undoChangeProperty(s, P_ID::SPANNER_TICK2, s->tick2() + len);
-                        }
-                  else if ((s->tick() < tick) && (s->tick2() > tick2)) {
-                        //
-                        //  case B:
-                        //  +----spanner--------+
-                        //    +---remove---+
-                        //
-                        int t2 = s->tick2() + len;
-                        if (t2 > s->tick())
-                              undoChangeProperty(s, P_ID::SPANNER_TICK2, t2);
-                        }
-                  else if (s->tick() >= tick && s->tick2() < tick2) {
-                        //
-                        //  case C:
-                        //    +---spanner---+
-                        //  +----remove--------+
-                        //
-                        undoRemoveElement(s);
-                        }
-                  else if (s->tick() > tick && s->tick2() > tick2) {
-                        //
-                        //  case D:
-                        //       +----spanner--------+
-                        //  +---remove---+
-                        //
-                        int d1 = s->tick() - tick;
-                        int d2 = tick2 - s->tick();
-                        int len = s->tickLen() - d2;
-                        if (len == 0)
-                             undoRemoveElement(s);
-                        else {
-                              undoChangeProperty(s, P_ID::SPANNER_TICK, s->tick() - d1);
-                              undoChangeProperty(s, P_ID::SPANNER_TICK2, s->tick2() - (tick2-tick));
-                              }
-                        }
-                  }
-            }
-      // insert time in (key, clef) maps
-      undo(new InsertTime(this, tick, len));
-      }
-
-
 void Score::insertTime(int tick, int len)
       {
       for (Score* score : scoreList()) {
@@ -3601,13 +3488,13 @@ QList<int> Score::uniqueStaves() const
 ChordRest* Score::findCR(int tick, int track) const
       {
       Measure* m = tick2measureMM(tick);
+      if (!m) {
+            qDebug("findCR: no measure for tick %d", tick);
+            return nullptr;
+            }
       // attach to first rest all spanner when mmRest
       if (m->isMMRest())
             tick = m->tick();
-      if (m == 0) {
-            qDebug("findCR: no measure for tick %d", tick);
-            return 0;
-            }
       Segment* s = m->first(Segment::Type::ChordRest);
       for (Segment* ns = s; ; ns = ns->next(Segment::Type::ChordRest)) {
             if (ns == 0 || ns->tick() > tick)

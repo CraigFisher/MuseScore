@@ -171,6 +171,7 @@ static const StyleTypes2 styleTypes2[] = {
       { StyleIdx::MinTieLength,                StyleType("minTieLength",            StyleValueType::SPATIUM) },
       { StyleIdx::SectionPause,                StyleType("sectionPause",            StyleValueType::DOUBLE) },
       { StyleIdx::MusicalSymbolFont,           StyleType("musicalSymbolFont",       StyleValueType::STRING) },
+      { StyleIdx::MusicalTextFont,             StyleType("musicalTextFont",         StyleValueType::STRING) },
       { StyleIdx::showHeader,                  StyleType("showHeader",              StyleValueType::BOOL) },
 //      { StyleIdx::headerStyled,                StyleType("headerStyled",            StyleValueType::BOOL) },
       { StyleIdx::headerFirstPage,             StyleType("headerFirstPage",         StyleValueType::BOOL) },
@@ -267,7 +268,7 @@ void initStyle(MStyle* s)
       AS("Instrument Name (Part)", ff, 18, false, false, false, AlignmentFlags::LEFT | AlignmentFlags::BOTTOM, QPointF(), OA);
 
       // dynamics size is 12pt for bravura-text
-      AS("Dynamics",  "ScoreFont", 12, false,false,false, AlignmentFlags::HCENTER | AlignmentFlags::BASELINE, QPointF(0.0, 8.0), OS, true);
+      AS("Dynamics",  ff, 12, false, false,false, AlignmentFlags::HCENTER | AlignmentFlags::BASELINE, QPointF(0.0, 8.0), OS, true);
       AS("Technique", ff, 12, false, true, false, AlignmentFlags::LEFT | AlignmentFlags::BASELINE, QPointF(0.0, -2.0), OS);
 
       AS("Tempo", ff, 12, false, false, false, AlignmentFlags::LEFT | AlignmentFlags::BASELINE, QPointF(0, -4.0), OS,
@@ -304,7 +305,7 @@ void initStyle(MStyle* s)
       // y offset may depend on voltaHook style element
       AS("Volta",     ff, 11, true, false, false, AlignmentFlags::LEFT | AlignmentFlags::BASELINE, QPointF(0.5, 1.9), OS, true);
       AS("Frame",     ff, 12, false, false, false, AlignmentFlags::LEFT | AlignmentFlags::TOP);
-      AS("Text Line", ff, 20, false, false, false, AlignmentFlags::LEFT | AlignmentFlags::VCENTER, QPointF(), OS, true);
+      AS("Text Line", ff, 12, false, false, false, AlignmentFlags::LEFT | AlignmentFlags::VCENTER, QPointF(), OS, true);
       AS("Glissando", ff, 8, false, true, false, AlignmentFlags::HCENTER | AlignmentFlags::BASELINE, QPointF(), OS, true);
 
       AS("String Number", ff,  8, false, false, false,
@@ -407,7 +408,7 @@ StyleData::StyleData()
             { StyleIdx::propertyDistance,            QVariant(1.0) },
             { StyleIdx::articulationMag,             QVariant(1.0) },
             { StyleIdx::lastSystemFillLimit,         QVariant(0.3) },
-            { StyleIdx::hairpinY,                    QVariant(8) },
+            { StyleIdx::hairpinY,                    QVariant(7.5) },
             { StyleIdx::hairpinHeight,               QVariant(1.2) },
             { StyleIdx::hairpinContHeight,           QVariant(0.5) },
             { StyleIdx::hairpinLineWidth,            QVariant(0.13) },
@@ -472,6 +473,7 @@ StyleData::StyleData()
             { StyleIdx::MinTieLength,                QVariant(1.0) },
             { StyleIdx::SectionPause,                QVariant(qreal(3.0)) },
             { StyleIdx::MusicalSymbolFont,           QVariant(QString("Emmentaler")) },
+            { StyleIdx::MusicalTextFont,             QVariant(QString("MScore Text")) },
             { StyleIdx::showHeader,                  QVariant(false) },
 //            { StyleIdx::headerStyled,                QVariant(true) },
             { StyleIdx::headerFirstPage,             QVariant(false) },

@@ -2375,8 +2375,8 @@ static void setSLinePlacement(SLine* sli, float spatium, const QString placement
             offsBelow = -1;
             }
       else if (sli->type() == Element::Type::TEXTLINE) {
-            offsAbove = -3;
-            offsBelow =  3 + (stafflines - 1);
+            offsAbove = 0;
+            offsBelow =  5 + 3 + (stafflines - 1);
             }
       else if (sli->type() == Element::Type::OTTAVA) {
             // ignore
@@ -5512,7 +5512,7 @@ StaffTypes MusicXml::xmlClef(QDomElement e, int staffIdx, Measure* measure)
       clefs->setTrack((staffIdx + clefno) * VOICES);
       Segment* s = measure->getSegment(clefs, tick);
       s->add(clefs);
-      clefs->staff()->setClef(tick, clefs->clefTypeList());
+//      clefs->staff()->setClef(tick, clefs->clefTypeList());
       return res;
       }
 

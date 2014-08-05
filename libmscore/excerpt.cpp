@@ -39,6 +39,7 @@
 #include "beam.h"
 #include "utils.h"
 #include "tremolo.h"
+#include "undo.h"
 
 namespace Ms {
 
@@ -123,6 +124,7 @@ Score* createExcerpt(const QList<Part*>& parts)
             int idx = 0;
             foreach (Staff* staff, *part->staves()) {
                   Staff* s = new Staff(score, p, idx);
+                  s->setInitialClef(staff->initialClefTypeList());
                   s->setStaffType(staff->staffType());
                   s->linkTo(staff);
                   p->staves()->append(s);
@@ -330,7 +332,7 @@ void cloneStaves(Score* oscore, Score* score, const QList<int>& map)
                               if (oe == 0)
                                     continue;
                               Element* ne;
-                              if (oe->generated() || oe->type() == Element::Type::CLEF)
+                              if (oe->generated())
                                     ne = oe->clone();
                               else
                                     ne = oe->linkedClone();
@@ -429,7 +431,7 @@ void cloneStaves(Score* oscore, Score* score, const QList<int>& map)
                               continue;
                         }
                   Element* ne;
-                  if (e->type() == Element::Type::TEXT) // clone the title, subtitle etc...
+                  if (e->type() == Element::Type::TEXT || e->type() == Element::Type::LAYOUT_BREAK) // link the title, subtitle etc...
                         ne = e->linkedClone();
                   else
                         ne = e->clone();
@@ -443,7 +445,7 @@ void cloneStaves(Score* oscore, Score* score, const QList<int>& map)
       for (int dstStaffIdx = 0; dstStaffIdx < n; ++dstStaffIdx) {
             Staff* srcStaff = oscore->staff(map[dstStaffIdx]);
             Staff* dstStaff = score->staff(dstStaffIdx);
-            *dstStaff->clefList() = *srcStaff->clefList();
+//            *dstStaff->clefList() = *srcStaff->clefList();
             if (srcStaff->primaryStaff()) {
                   int span = srcStaff->barLineSpan();
                   int sIdx = srcStaff->idx();
@@ -497,8 +499,13 @@ void cloneStaff(Staff* srcStaff, Staff* dstStaff)
       Score* score = srcStaff->score();
       TieMap tieMap;
 
+      score->undo(new LinkStaff(srcStaff, dstStaff));
+
       int srcStaffIdx = score->staffIdx(srcStaff);
       int dstStaffIdx = score->staffIdx(dstStaff);
+
+      if (srcStaff->staffGroup() == dstStaff->staffGroup())
+            dstStaff->setInitialClef(srcStaff->initialClefTypeList());
 
       for (Measure* m = score->firstMeasure(); m; m = m->nextMeasure()) {
             int sTrack = srcStaffIdx * VOICES;
@@ -520,8 +527,6 @@ void cloneStaff(Staff* srcStaff, Staff* dstStaff)
                               if (ClefInfo::staffGroup(clef->concertClef()) == dstStaff->staffGroup()
                                           && dstStaff->clefTypeList(tick) != clef->clefTypeList()) {
                                     ne = oe->clone();
-                                    // add to staff clef map too
-                                    dstStaff->setClef(tick, clef->clefTypeList());
                                     }
                               }
                         else
@@ -557,6 +562,7 @@ void cloneStaff(Staff* srcStaff, Staff* dstStaff)
                                           // exclude certain element types
                                           // this should be same list excluded in Score::undoAddElement()
                                           case Element::Type::STAFF_TEXT:
+                                          case Element::Type::FRET_DIAGRAM:
                                           case Element::Type::HARMONY:
                                           case Element::Type::FIGURED_BASS:
                                           case Element::Type::LYRICS:
@@ -634,6 +640,7 @@ void cloneStaff2(Staff* srcStaff, Staff* dstStaff, int stick, int etick)
 
       TieMap tieMap;
 
+      dstStaff->setInitialClef(srcStaff->initialClefTypeList());
       int srcStaffIdx = oscore->staffIdx(srcStaff);
       int dstStaffIdx = score->staffIdx(dstStaff);
 
@@ -651,11 +658,7 @@ void cloneStaff2(Staff* srcStaff, Staff* dstStaff, int stick, int etick)
                         if (oe->type() == Element::Type::TIMESIG)
                               continue;
                         Segment* ns = nm->getSegment(oseg->segmentType(), oseg->tick());
-                        Element* ne;
-                        if (oe->type() == Element::Type::CLEF)
-                              ne = oe->clone();
-                        else
-                              ne = oe->linkedClone();
+                        Element* ne = oe->linkedClone();
                         ne->setTrack(dstTrack);
                         ne->setParent(ns);
                         ne->setScore(score);

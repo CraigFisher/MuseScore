@@ -2442,6 +2442,7 @@ enum class SymId {
       noteLongaDown,
       noteLongaSquareUp,
       noteLongaSquareDown,
+      space,
 
 //    END OF TABLE
 
@@ -2518,8 +2519,8 @@ class ScoreFont {
 
    public:
       ScoreFont() {}
-      ScoreFont(const char* n, const char* f, const char* p, const char* fn, const char* tf)
-         : _name(n), _family(f), _fontPath(p), _filename(fn), _textFace(tf) {
+      ScoreFont(const char* n, const char* f, const char* p, const char* fn)
+         : _name(n), _family(f), _fontPath(p), _filename(fn) {
             _symbols = QVector<Sym>(int(SymId::lastSym) + 1);
             }
 
@@ -2527,6 +2528,7 @@ class ScoreFont {
 
       static ScoreFont* fontFactory(QString);
       static ScoreFont* fallbackFont();
+      static const char* fallbackTextFont();
       static const QVector<ScoreFont>& scoreFonts() { return _scoreFonts; }
 
       const QFont& font() const { return *_font; }
@@ -2552,7 +2554,6 @@ class ScoreFont {
       QPointF cutOutSW(SymId id, qreal mag) const     { return _symbols[int(id)].cutOutSW() * mag; }
       bool isValid(SymId id) const                    { return _symbols[int(id)].isValid(); }
       const QString& family() const                   { return _family; }
-      const QString& textFace() const                 { return _textFace; }
       };
 
 extern void initScoreFonts();

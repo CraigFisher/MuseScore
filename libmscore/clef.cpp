@@ -631,6 +631,5 @@ QVariant Clef::propertyDefault(P_ID id) const
             default:              return Element::propertyDefault(id);
             }
       }
-
 }
 
