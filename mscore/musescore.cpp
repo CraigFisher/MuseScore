@@ -4720,6 +4720,13 @@ int main(int argc, char* av[])
       preferences.init();
           
       //cc
+      // preferences.altNotePositions 	= false;
+      // preferences.altNoteHeadGroups = false;
+      // preferences.altNoAccidentals	= false;
+      // preferences.altStaffLines	= false;
+      // preferences.altInnerLedgers 	= false;
+          
+      //cc
       preferences.altNotePositions 	= true;
       preferences.altNoteHeadGroups = true;
       preferences.altNoAccidentals	= true;

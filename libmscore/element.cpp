@@ -937,12 +937,11 @@ void StaffLines::layout()
             //cc
             if(preferences.altStaffLines && st->group() == StaffGroup::STANDARD) {
                   _altStaffLines = true;
-                  lines = StaffLines::altStaffLinesHeight;
                   }
             else {
                   _altStaffLines = false;
-                  lines = st->lines();
                   }
+            lines = st->lines();
             }
       else {
             dist  = _spatium;
@@ -974,14 +973,8 @@ void StaffLines::draw(QPainter* painter) const
       QVector<QLineF> ll;
       qreal y = _pos.y();
 
-          // for (int i = 0; i < lines; ++i) {
-          //         ll[i].setLine(x1, y, x2, y);
-          //         y += dist;
-          //   }
-
-
-//cc
-      if(_altStaffLines) { //cc
+      //cc
+      if(_altStaffLines) {
           qreal halfDist = dist / 2;
           int length = StaffLines::altLineVisibility.size();
           ll.resize(length);
@@ -992,35 +985,11 @@ void StaffLines::draw(QPainter* painter) const
               y += halfDist;
             }
       } else {
-
-
-//cc_temp
-      // TODO: RECREATE THE OLD ALGORITHM
           ll.resize(lines);
           for (int i = 0; i < lines; ++i) {
                   ll[i].setLine(x1, y, x2, y);
                   y += dist;
             }
-
-                                    // USE QREAL
-                                    // TODO: TEMPDIST SHOULD NOT HAVE BEEN AN INT
-
-                                    // FIX THAT ABOVE~~~~~~~~~????!!!!!!!!!!
-
-
-    //cc_temp  
-      //    bool hiddens[9] = {true, true, true, true, true, true, true, true, true};
-          
-      // qreal tempDist = dist / 2;
-      //     ll.resize(9);
-          
-      //     for (int i = 0; i < 9; ++i) {
-      //        if(hiddens[i]) {
-      //             ll[i].setLine(x1, y, x2, y);
-      //        }
-      //         y += tempDist;
-      //        }
-
       }
              
       if (MScore::debugMode) {

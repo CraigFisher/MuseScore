@@ -224,7 +224,9 @@ class StaffType {
       static const char* groupName(StaffGroup);
 
       void setLines(int val);
-      int lines() const                        { return _lines;           }
+      // int lines() const                        { return _lines;           }
+      int lines() const;
+
       void setStepOffset(int v)                { _stepOffset = v;         }
       int stepOffset() const                   { return _stepOffset;      }
       void setLineDistance(const Spatium& val) { _lineDistance = val;     }

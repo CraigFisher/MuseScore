@@ -1868,7 +1868,11 @@ int Note::altOctaveDistance;
 int Note::computeAlternativeLine() const
      {
      int octave = ((_pitch / 12) * -1) + 5;
-     return Note::altNotePositions[_tpc[0]] + (octave * Note::altOctaveDistance);
+         
+         int k = Note::altNotePositions[_tpc[0]] + (octave * Note::altOctaveDistance);
+         return k;
+         
+//     return Note::altNotePositions[_tpc[0]] + (octave * Note::altOctaveDistance);
      }
 //---------------------------------------------------------
 //   setLine
@@ -2042,7 +2046,7 @@ void Note::updateRelLine(int relLine, bool undoable)
       ClefType clef = s->clef(chord()->tick());
       int line = relStep(relLine, clef);
       
-      if (line != _line) {
+      if (line != _line || preferences.altNotePositions) { //cc alt line may need to be computed
             if (undoable)
                   undoChangeProperty(P_ID::LINE, line);
             else
