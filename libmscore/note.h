@@ -22,6 +22,7 @@
 #include "symbol.h"
 #include "noteevent.h"
 #include "pitchspelling.h"
+#include "clef.h" //cc
 #include <map>
 
 class QPainter;
@@ -431,9 +432,11 @@ class Note : public Element {
       static SymId noteHead(int direction, NoteHead::Group, NoteHead::Type);
       NoteVal noteVal() const;
     
-    static std::map<int, int> altNotePositions; //cc
-    static std::map<int, NoteHead::Group> altNoteHeadGroups; //cc
-    static int altOctaveDistance;         //cc
+    //cc
+    static std::map<int, int> altNotePositions;
+    static std::map<int, NoteHead::Group> altNoteHeadGroups;
+    static std::map<ClefType, int> altClefOffsets;
+    static int altOctaveDistance;
       };
 
 }     // namespace Ms

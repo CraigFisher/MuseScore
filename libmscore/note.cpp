@@ -1862,17 +1862,17 @@ void Note::setSmall(bool val)
 //cc
 std::map<int, int> Note::altNotePositions;
 std::map<int, NoteHead::Group> Note::altNoteHeadGroups;
-int Note::altOctaveDistance;  
+std::map<ClefType, int> Note::altClefOffsets;
+int Note::altOctaveDistance;
 
 //cc
 int Note::computeAlternativeLine() const
      {
+     Staff* s = score()->staff(staffIdx() + chord()->staffMove());
+     ClefType clef = s->clef(chord()->tick());
+     int clefOffset = Note::altClefOffsets[clef];
      int octave = ((_pitch / 12) * -1) + 5;
-         
-         int k = Note::altNotePositions[_tpc[0]] + (octave * Note::altOctaveDistance);
-         return k;
-         
-//     return Note::altNotePositions[_tpc[0]] + (octave * Note::altOctaveDistance);
+     return Note::altNotePositions[_tpc[0]] + (octave * Note::altOctaveDistance) + clefOffset;
      }
 //---------------------------------------------------------
 //   setLine
@@ -1883,7 +1883,7 @@ void Note::setLine(int n)
       _line = n;
       rypos() = _line * spatium() * .5;
 
-     if(preferences.altNotePositions) { //cc
+     if (preferences.altNotePositions) { //cc
            _alternativeLine = computeAlternativeLine();
            } 
 

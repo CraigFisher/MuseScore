@@ -15,24 +15,10 @@
 
 /**
  \file
- Definition of class Accidental
+ Definition of class NotationSetter
 */
 
-#include "mscore/preferences.h"
-#include "note.h"
-#include "chord.h"
-
-// class QPainter;
-
 namespace Ms {
-
-//---------------------------------------------------------
-//   @@ Accidental
-//   @P hasBracket  bool
-//   @P small       bool
-//   @P acctype     Ms::Accidental::Type  (NONE, SHARP, FLAT, SHARP2, FLAT2, NATURAL, ...) (read only)
-//   @P role        Ms::Accidental::Role  (AUTO, USER) (read only)
-//---------------------------------------------------------
 
 class NotationSetter {      
    private:

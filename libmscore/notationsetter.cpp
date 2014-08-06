@@ -11,6 +11,10 @@
 //=============================================================================
 
 #include "notationsetter.h"
+#include "mscore/preferences.h"
+#include "note.h"
+#include "chord.h"
+#include "clef.h"
 
 //TODO: GUARANTEE THIS CLASS IS NEVER CALLED BEFORE A SCORE IS LOADED
 //TODO: MOVE FUNCTIONALITY OF THIS CLASS TO A DIALOG
@@ -30,19 +34,19 @@ void NotationSetter::setNotation() {
 	//		   NOTATION PREFERENCES BEING CHANGED TWICE
 	//		   BEFORE LAYOUT() IS PERFORMED.
 	
-  if(preferences.altNotePositions) {
+  if (preferences.altNotePositions) {
 		setNotePositions();		
 	}
-	if(preferences.altNoteHeadGroups) {
+	if (preferences.altNoteHeadGroups) {
 		setNoteHeadGroups();
 	}
-	if(preferences.altNewAccidentals) {  //STUB
+	if (preferences.altNewAccidentals) {  //STUB
 		setAccidentals();                   
 	}
-	if(preferences.altStaffLines) {
+	if (preferences.altStaffLines) {
 		setStaffLines();
 	}
-	if(preferences.altInnerLedgers) {
+	if (preferences.altInnerLedgers) {
 		setInnerLedgers();
 	}
 }
@@ -137,6 +141,31 @@ void NotationSetter::setNotePositions() {
           Note::altNotePositions[26] = 0;   //B#
           Note::altNotePositions[33] = -1;   //B##
 
+
+          //initialize ClefOffsets
+          Note::altClefOffsets[ClefType::INVALID] = 0;
+          Note::altClefOffsets[ClefType::G] = 0;
+          Note::altClefOffsets[ClefType::G1] = 0;
+          Note::altClefOffsets[ClefType::G2] = 0;
+          Note::altClefOffsets[ClefType::G3] = 0;
+          Note::altClefOffsets[ClefType::F] = -24;
+          Note::altClefOffsets[ClefType::F8] = 0;
+          Note::altClefOffsets[ClefType::F15] = 0;
+          Note::altClefOffsets[ClefType::F_B] = 0;
+          Note::altClefOffsets[ClefType::F_C] = 0;
+          Note::altClefOffsets[ClefType::C1] = 0;
+          Note::altClefOffsets[ClefType::C2] = 0;
+          Note::altClefOffsets[ClefType::C3] = 0;
+          Note::altClefOffsets[ClefType::C4] = 0;
+          Note::altClefOffsets[ClefType::TAB] = 0;
+          Note::altClefOffsets[ClefType::PERC] = 0;
+          Note::altClefOffsets[ClefType::C5] = 0;
+          Note::altClefOffsets[ClefType::G4] = 0;
+          Note::altClefOffsets[ClefType::F_8VA] = 0;
+          Note::altClefOffsets[ClefType::F_15MA] = 0;
+          Note::altClefOffsets[ClefType::PERC2] = 0;
+          Note::altClefOffsets[ClefType::TAB2] = 0;
+          Note::altClefOffsets[ClefType::MAX] = 0;
 }
 
 void NotationSetter::setNoteHeadGroups() {
@@ -242,7 +271,7 @@ void NotationSetter::setStaffLines() {
     // visList->push_back(true);
 
 
-    //------------------------------------------------
+    //-----------------------
 
     visList->push_back(true);
     visList->push_back(false);
