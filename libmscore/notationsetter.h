@@ -29,10 +29,10 @@ class NotationSetter {
       static void setAccidentals();
       static void setStaffLines();
       static void setInnerLedgers();
-      static void setNotationState();
+      static void loadNotationState();
 
    public:
-      static void setNotation();
+      static void loadNotation();
     
       };
 }

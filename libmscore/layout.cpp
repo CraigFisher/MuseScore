@@ -3085,6 +3085,11 @@ static bool systemDistCompare(System* s1, System* s2)
 //    to fill page
 //---------------------------------------------------------
 
+
+//TODO: TRY HACKING SYSTEM DISTANCE HERE
+
+
+
 void Score::layoutPage(const PageContext& pC, qreal d)
       {
       Page* page       = pC.page;

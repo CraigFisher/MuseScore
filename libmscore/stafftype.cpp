@@ -164,11 +164,10 @@ bool StaffType::isSameStructure(const StaffType& st) const
                ;
             }
       }
-
-
- //cc
-    int StaffType::lines() const {
-       //cc
+    
+//cc
+//TODO: implement alt lines in setter
+int StaffType::lines() const {
        if(preferences.altStaffLines && _group == StaffGroup::STANDARD) {
              return StaffLines::altStaffLinesHeight;
              }
@@ -177,8 +176,6 @@ bool StaffType::isSameStructure(const StaffType& st) const
              }
  }
 
-
-
 //---------------------------------------------------------
 //   setLines
 //---------------------------------------------------------
@@ -186,14 +183,9 @@ bool StaffType::isSameStructure(const StaffType& st) const
 void StaffType::setLines(int val)
       {
 //TODO: implement alt lines in setter
-//      //cc
-//      if(preferences.altStaffLines && _group == StaffGroup::STANDARD) {
-//            _lines = StaffLines::altStaffLinesHeight;
-//            }
-//      else {
-//            _lines = val;
-//            }
 
+          
+          
       _lines = val;
       if (_group != StaffGroup::TAB) {
             switch(_lines) {

@@ -28,7 +28,7 @@ namespace Ms {
 //   NotationSetter
 //---------------------------------------------------------
 
-void NotationSetter::setNotation() {
+void NotationSetter::loadNotation() {
 	
 	//TODO: GUARANTEE NO POSSIBLE RACE CONDITION FROM
 	//		   NOTATION PREFERENCES BEING CHANGED TWICE
@@ -141,31 +141,100 @@ void NotationSetter::setNotePositions() {
           Note::altNotePositions[26] = 0;   //B#
           Note::altNotePositions[33] = -1;   //B##
 
+          //------------------------------
+          // Note::altOctaveDistance = 7;
+          // Note::altNotePositions[0] = 4;    //Cbb
+          // Note::altNotePositions[7] = 4;    //Cb
+          // Note::altNotePositions[14] = 10;    //C
+          // Note::altNotePositions[21] = 10;   //C#
+          // Note::altNotePositions[28] = 9;   //C##
+          
+          // Note::altNotePositions[2] = 10;    //Dbb
+          // Note::altNotePositions[9] = 9;    //Db
+          // Note::altNotePositions[16] = 9;   //D
+          // Note::altNotePositions[23] = 9;   //D#
+          // Note::altNotePositions[30] = 8;   //D##
+
+          // Note::altNotePositions[4] = 9;    //Ebb
+          // Note::altNotePositions[11] = 8;   //Eb
+          // Note::altNotePositions[18] = 8;   //E
+          // Note::altNotePositions[25] = 7;   //E#
+          // Note::altNotePositions[32] = 7;   //E##
+
+          // Note::altNotePositions[-1] = 8;   //Fbb
+          // Note::altNotePositions[6] = 8;    //Fb
+          // Note::altNotePositions[13] = 7;   //F
+          // Note::altNotePositions[20] = 7;   //F#
+          // Note::altNotePositions[27] = 6;   //F##
+
+          // Note::altNotePositions[1] = 7;    //Gbb
+          // Note::altNotePositions[8] = 6;    //Gb
+          // Note::altNotePositions[15] = 6;   //G
+          // Note::altNotePositions[22] = 6;   //G#
+          // Note::altNotePositions[29] = 5;   //G##
+
+          // Note::altNotePositions[3] = 6;    //Abb
+          // Note::altNotePositions[10] = 5;   //Ab
+          // Note::altNotePositions[17] = 5;   //A
+          // Note::altNotePositions[24] = 5;   //A#
+          // Note::altNotePositions[31] = 4;   //A##
+
+          // Note::altNotePositions[5] = 5;    //Bbb
+          // Note::altNotePositions[12] = 4;   //Bb
+          // Note::altNotePositions[19] = 4;   //B
+          // Note::altNotePositions[26] = 10;   //B#
+          // Note::altNotePositions[33] = 10;   //B##
 
           //initialize ClefOffsets
+
+          //traditional
           Note::altClefOffsets[ClefType::INVALID] = 0;
           Note::altClefOffsets[ClefType::G] = 0;
-          Note::altClefOffsets[ClefType::G1] = 0;
-          Note::altClefOffsets[ClefType::G2] = 0;
-          Note::altClefOffsets[ClefType::G3] = 0;
-          Note::altClefOffsets[ClefType::F] = -24;
-          Note::altClefOffsets[ClefType::F8] = 0;
-          Note::altClefOffsets[ClefType::F15] = 0;
-          Note::altClefOffsets[ClefType::F_B] = 0;
-          Note::altClefOffsets[ClefType::F_C] = 0;
-          Note::altClefOffsets[ClefType::C1] = 0;
-          Note::altClefOffsets[ClefType::C2] = 0;
-          Note::altClefOffsets[ClefType::C3] = 0;
-          Note::altClefOffsets[ClefType::C4] = 0;
-          Note::altClefOffsets[ClefType::TAB] = 0;
-          Note::altClefOffsets[ClefType::PERC] = 0;
-          Note::altClefOffsets[ClefType::C5] = 0;
-          Note::altClefOffsets[ClefType::G4] = 0;
-          Note::altClefOffsets[ClefType::F_8VA] = 0;
-          Note::altClefOffsets[ClefType::F_15MA] = 0;
-          Note::altClefOffsets[ClefType::PERC2] = 0;
-          Note::altClefOffsets[ClefType::TAB2] = 0;
-          Note::altClefOffsets[ClefType::MAX] = 0;
+          Note::altClefOffsets[ClefType::G1] = 7;
+          Note::altClefOffsets[ClefType::G2] = 14;
+          Note::altClefOffsets[ClefType::G3] = -7;
+          Note::altClefOffsets[ClefType::F] = -12;
+          Note::altClefOffsets[ClefType::F8] = -19;
+          Note::altClefOffsets[ClefType::F15] = -26;
+          Note::altClefOffsets[ClefType::F_B] = -10;
+          Note::altClefOffsets[ClefType::F_C] = -14;
+          Note::altClefOffsets[ClefType::C1] = -2;
+          Note::altClefOffsets[ClefType::C2] = -4;
+          Note::altClefOffsets[ClefType::C3] = -6;
+          Note::altClefOffsets[ClefType::C4] = -8;
+          Note::altClefOffsets[ClefType::C5] = -10;
+          Note::altClefOffsets[ClefType::G4] = 2;     //probably incorrect.  cleftype and clefinfo appear out of sync
+          Note::altClefOffsets[ClefType::F_8VA] = -5;
+          Note::altClefOffsets[ClefType::F_15MA] = 2;          
+          // Note::altClefOffsets[ClefType::PERC2] = 0; //these staffs should never be called
+          // Note::altClefOffsets[ClefType::TAB2] = 0;
+          // Note::altClefOffsets[ClefType::MAX] = 0;
+
+          // //initialize ClefOffsets
+          // Note::altClefOffsets[ClefType::INVALID] = 0;
+          // Note::altClefOffsets[ClefType::G] = 0;
+          // Note::altClefOffsets[ClefType::G1] = 0;
+          // Note::altClefOffsets[ClefType::G2] = 0;
+          // Note::altClefOffsets[ClefType::G3] = 0;
+          // Note::altClefOffsets[ClefType::F] = -12;
+          // Note::altClefOffsets[ClefType::F8] = 0;
+          // Note::altClefOffsets[ClefType::F15] = 0;
+          // Note::altClefOffsets[ClefType::F_B] = 0;
+          // Note::altClefOffsets[ClefType::F_C] = 0;
+          // Note::altClefOffsets[ClefType::C1] = 0;
+          // Note::altClefOffsets[ClefType::C2] = 0;
+          // Note::altClefOffsets[ClefType::C3] = 0;
+          // Note::altClefOffsets[ClefType::C4] = 0;
+          // Note::altClefOffsets[ClefType::TAB] = 0;
+          // Note::altClefOffsets[ClefType::PERC] = 0;
+          // Note::altClefOffsets[ClefType::C5] = 0;
+          // Note::altClefOffsets[ClefType::G4] = 0;
+          // Note::altClefOffsets[ClefType::F_8VA] = 0;
+          // Note::altClefOffsets[ClefType::F_15MA] = 0;
+          // Note::altClefOffsets[ClefType::PERC2] = 0;
+          // Note::altClefOffsets[ClefType::TAB2] = 0;
+          // Note::altClefOffsets[ClefType::MAX] = 0;
+
 }
 
 void NotationSetter::setNoteHeadGroups() {
@@ -186,61 +255,117 @@ void NotationSetter::setNoteHeadGroups() {
             // HEAD_GROUPS,
             // HEAD_INVALID = -1
 
+          //traditional
+          // Note::altNoteHeadGroups[0] =  NoteHead::Group::HEAD_NORMAL;   //Cbb
+          // Note::altNoteHeadGroups[7] =  NoteHead::Group::HEAD_NORMAL;   //Cb
+          // Note::altNoteHeadGroups[14] = NoteHead::Group::HEAD_NORMAL; //C
+          // Note::altNoteHeadGroups[21] = NoteHead::Group::HEAD_NORMAL;   //C#
+          // Note::altNoteHeadGroups[28] = NoteHead::Group::HEAD_NORMAL;   //C##
+          
+          // Note::altNoteHeadGroups[2] =  NoteHead::Group::HEAD_NORMAL;   //Dbb
+          // Note::altNoteHeadGroups[9] =  NoteHead::Group::HEAD_NORMAL;   //Db
+          // Note::altNoteHeadGroups[16] = NoteHead::Group::HEAD_NORMAL;   //D
+          // Note::altNoteHeadGroups[23] = NoteHead::Group::HEAD_NORMAL;   //D#
+          // Note::altNoteHeadGroups[30] = NoteHead::Group::HEAD_NORMAL;   //D##
 
-          // Note::altNoteHeadGroups[0] =  NoteHead::Group::HEAD_TRIANGLE;   //Cbb
-          // Note::altNoteHeadGroups[7] =  NoteHead::Group::HEAD_TRIANGLE;   //Cb
-          // Note::altNoteHeadGroups[14] = NoteHead::Group::HEAD_TRIANGLE; //C
-          // Note::altNoteHeadGroups[21] = NoteHead::Group::HEAD_TRIANGLE;   //C#
-          // Note::altNoteHeadGroups[28] = NoteHead::Group::HEAD_TRIANGLE;   //C##
+          // Note::altNoteHeadGroups[4] =  NoteHead::Group::HEAD_NORMAL;   //Ebb
+          // Note::altNoteHeadGroups[11] = NoteHead::Group::HEAD_NORMAL;   //Eb
+          // Note::altNoteHeadGroups[18] = NoteHead::Group::HEAD_NORMAL;   //E
+          // Note::altNoteHeadGroups[25] = NoteHead::Group::HEAD_NORMAL;   //E#
+          // Note::altNoteHeadGroups[32] = NoteHead::Group::HEAD_NORMAL;   //E##
 
+          // Note::altNoteHeadGroups[-1] = NoteHead::Group::HEAD_NORMAL;   //Fbb
+          // Note::altNoteHeadGroups[6] =  NoteHead::Group::HEAD_NORMAL;   //Fb
+          // Note::altNoteHeadGroups[13] = NoteHead::Group::HEAD_NORMAL;   //F
+          // Note::altNoteHeadGroups[20] = NoteHead::Group::HEAD_NORMAL;   //F#
+          // Note::altNoteHeadGroups[27] = NoteHead::Group::HEAD_NORMAL;   //F##
 
+          // Note::altNoteHeadGroups[1] =  NoteHead::Group::HEAD_NORMAL;   //Gbb
+          // Note::altNoteHeadGroups[8] =  NoteHead::Group::HEAD_NORMAL;   //Gb
+          // Note::altNoteHeadGroups[15] = NoteHead::Group::HEAD_NORMAL;   //G
+          // Note::altNoteHeadGroups[22] = NoteHead::Group::HEAD_NORMAL;   //G#
+          // Note::altNoteHeadGroups[29] = NoteHead::Group::HEAD_NORMAL;   //G##
 
-          Note::altNoteHeadGroups[0] =  NoteHead::Group::HEAD_NORMAL;   //Cbb
+          // Note::altNoteHeadGroups[3] =  NoteHead::Group::HEAD_NORMAL;   //Abb
+          // Note::altNoteHeadGroups[10] = NoteHead::Group::HEAD_NORMAL;   //Ab
+          // Note::altNoteHeadGroups[17] = NoteHead::Group::HEAD_NORMAL;   //A
+          // Note::altNoteHeadGroups[24] = NoteHead::Group::HEAD_NORMAL;   //A#
+          // Note::altNoteHeadGroups[31] = NoteHead::Group::HEAD_NORMAL;   //A##
+
+          // Note::altNoteHeadGroups[5] = NoteHead::Group::HEAD_NORMAL;    //Bbb
+          // Note::altNoteHeadGroups[12] = NoteHead::Group::HEAD_NORMAL;   //Bb
+          // Note::altNoteHeadGroups[19] = NoteHead::Group::HEAD_NORMAL;   //B
+          // Note::altNoteHeadGroups[26] = NoteHead::Group::HEAD_NORMAL;   //B#
+          // Note::altNoteHeadGroups[33] = NoteHead::Group::HEAD_NORMAL;   //B##
+
+            // HEAD_NORMAL = 0,
+            // HEAD_CROSS,
+            // HEAD_DIAMOND,
+            // HEAD_TRIANGLE,
+            // HEAD_MI,
+            // HEAD_SLASH,
+            // HEAD_XCIRCLE,
+            // HEAD_DO,
+            // HEAD_RE,
+            // HEAD_FA,
+            // HEAD_LA,
+            // HEAD_TI,
+            // HEAD_SOL,
+            // HEAD_BREVIS_ALT,
+            // HEAD_GROUPS,
+            // HEAD_INVALID = -1
+
+          //-----------------------
+
+NoteHead::Group SHARP = NoteHead::Group::HEAD_TRIANGLE;
+NoteHead::Group FLAT = NoteHead::Group::HEAD_CROSS;
+
+          Note::altNoteHeadGroups[0] =  FLAT;   //Cbb
           Note::altNoteHeadGroups[7] =  NoteHead::Group::HEAD_NORMAL;   //Cb
           Note::altNoteHeadGroups[14] = NoteHead::Group::HEAD_NORMAL; //C
-          Note::altNoteHeadGroups[21] = NoteHead::Group::HEAD_NORMAL;   //C#
+          Note::altNoteHeadGroups[21] = SHARP;   //C#
           Note::altNoteHeadGroups[28] = NoteHead::Group::HEAD_NORMAL;   //C##
           
           Note::altNoteHeadGroups[2] =  NoteHead::Group::HEAD_NORMAL;   //Dbb
-          Note::altNoteHeadGroups[9] =  NoteHead::Group::HEAD_NORMAL;   //Db
+          Note::altNoteHeadGroups[9] =  FLAT;   //Db
           Note::altNoteHeadGroups[16] = NoteHead::Group::HEAD_NORMAL;   //D
-          Note::altNoteHeadGroups[23] = NoteHead::Group::HEAD_NORMAL;   //D#
+          Note::altNoteHeadGroups[23] = SHARP;   //D#
           Note::altNoteHeadGroups[30] = NoteHead::Group::HEAD_NORMAL;   //D##
 
           Note::altNoteHeadGroups[4] =  NoteHead::Group::HEAD_NORMAL;   //Ebb
-          Note::altNoteHeadGroups[11] = NoteHead::Group::HEAD_NORMAL;   //Eb
+          Note::altNoteHeadGroups[11] = FLAT;   //Eb
           Note::altNoteHeadGroups[18] = NoteHead::Group::HEAD_NORMAL;   //E
           Note::altNoteHeadGroups[25] = NoteHead::Group::HEAD_NORMAL;   //E#
-          Note::altNoteHeadGroups[32] = NoteHead::Group::HEAD_NORMAL;   //E##
+          Note::altNoteHeadGroups[32] = SHARP;   //E##
 
-          Note::altNoteHeadGroups[-1] = NoteHead::Group::HEAD_NORMAL;   //Fbb
+          Note::altNoteHeadGroups[-1] = FLAT;   //Fbb
           Note::altNoteHeadGroups[6] =  NoteHead::Group::HEAD_NORMAL;   //Fb
           Note::altNoteHeadGroups[13] = NoteHead::Group::HEAD_NORMAL;   //F
-          Note::altNoteHeadGroups[20] = NoteHead::Group::HEAD_NORMAL;   //F#
+          Note::altNoteHeadGroups[20] = SHARP;   //F#
           Note::altNoteHeadGroups[27] = NoteHead::Group::HEAD_NORMAL;   //F##
 
           Note::altNoteHeadGroups[1] =  NoteHead::Group::HEAD_NORMAL;   //Gbb
-          Note::altNoteHeadGroups[8] =  NoteHead::Group::HEAD_NORMAL;   //Gb
+          Note::altNoteHeadGroups[8] =  FLAT;   //Gb
           Note::altNoteHeadGroups[15] = NoteHead::Group::HEAD_NORMAL;   //G
-          Note::altNoteHeadGroups[22] = NoteHead::Group::HEAD_NORMAL;   //G#
+          Note::altNoteHeadGroups[22] = SHARP;   //G#
           Note::altNoteHeadGroups[29] = NoteHead::Group::HEAD_NORMAL;   //G##
 
           Note::altNoteHeadGroups[3] =  NoteHead::Group::HEAD_NORMAL;   //Abb
-          Note::altNoteHeadGroups[10] = NoteHead::Group::HEAD_NORMAL;   //Ab
+          Note::altNoteHeadGroups[10] = FLAT;   //Ab
           Note::altNoteHeadGroups[17] = NoteHead::Group::HEAD_NORMAL;   //A
-          Note::altNoteHeadGroups[24] = NoteHead::Group::HEAD_NORMAL;   //A#
+          Note::altNoteHeadGroups[24] = SHARP;   //A#
           Note::altNoteHeadGroups[31] = NoteHead::Group::HEAD_NORMAL;   //A##
 
           Note::altNoteHeadGroups[5] = NoteHead::Group::HEAD_NORMAL;    //Bbb
-          Note::altNoteHeadGroups[12] = NoteHead::Group::HEAD_NORMAL;   //Bb
+          Note::altNoteHeadGroups[12] = FLAT;   //Bb
           Note::altNoteHeadGroups[19] = NoteHead::Group::HEAD_NORMAL;   //B
           Note::altNoteHeadGroups[26] = NoteHead::Group::HEAD_NORMAL;   //B#
-          Note::altNoteHeadGroups[33] = NoteHead::Group::HEAD_NORMAL;   //B##
+          Note::altNoteHeadGroups[33] = SHARP;   //B##
 }
 
 void NotationSetter::setAccidentals() {
     //STUB: FUNCTIONALITY NOT YET DECIDED ON
-    //      (currently, setting preferences.altNoAccidentals is enough to eliminate accidentals)
+    //      (currently, setting preferences.altNoAccidentals will eliminate accidentals)
 }
 
 void NotationSetter::setStaffLines() {
@@ -272,7 +397,6 @@ void NotationSetter::setStaffLines() {
 
 
     //-----------------------
-
     visList->push_back(true);
     visList->push_back(false);
     visList->push_back(true);
@@ -302,7 +426,11 @@ void NotationSetter::setInnerLedgers() {
     std::vector<int>* innerLedgers = &Chord::altInnerLedgers;
     innerLedgers->clear();
 
+    //traditional
     innerLedgers->push_back(6);
+
+    //-------------------
+    // innerLedgers->push_back(6);
 }
 
 }

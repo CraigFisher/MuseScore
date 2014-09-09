@@ -869,6 +869,81 @@ void MuseScore::saveScoreDialogFilterSelected(const QString& s)
             }
       }
 
+//-----------------------------------------------------//cc
+//   getNotationFilename
+//---------------------------------------------------------
+//cc
+QString MuseScore::getNotationFilename(bool open)
+      {
+      if (preferences.nativeDialogs) {
+            QString fn;
+            if (open) {
+                  fn = QFileDialog::getOpenFileName(
+                     this, tr("MuseScore: Load Alternative Notation"),
+                     QString(),
+                     tr("MuseScore Styles (*.mss);;" "All Files (*)")
+                     );
+                  }
+            else {
+                  fn = QFileDialog::getSaveFileName(
+                     this, tr("MuseScore: Save Alternative Notation"),
+                     QString(),
+                     tr("MuseScore Style File (*.mss)")
+                     );
+                  }
+            return fn;
+            }
+
+      QFileDialog* dialog;
+      QList<QUrl> urls;
+      QString home = QDir::homePath();
+      urls.append(QUrl::fromLocalFile(home));
+      urls.append(QUrl::fromLocalFile(QString()));
+      urls.append(QUrl::fromLocalFile(QDir::currentPath()));
+
+      if (open) {
+            if (loadStyleDialog == 0) {
+                  loadNotationDialog = new QFileDialog(this);
+                  loadNotationDialog->setFileMode(QFileDialog::ExistingFile);
+                  loadNotationDialog->setOption(QFileDialog::DontUseNativeDialog, true);
+                  loadNotationDialog->setWindowTitle(tr("MuseScore: Load Notation"));
+                  loadNotationDialog->setNameFilter(tr("MuseScore Style File (*.mss)"));
+                  loadNotationDialog->setDirectory(QString());
+
+                  QSettings settings;
+                  loadNotationDialog->restoreState(settings.value("loadNotationDialog").toByteArray());
+                  loadNotationDialog->setAcceptMode(QFileDialog::AcceptOpen);
+                  }
+            urls.append(QUrl::fromLocalFile(mscoreGlobalShare+"/styles"));
+            dialog = loadStyleDialog;
+            }
+      else {
+            if (saveStyleDialog == 0) {
+                  saveNotationDialog = new QFileDialog(this);
+                  saveNotationDialog->setAcceptMode(QFileDialog::AcceptSave);
+                  saveNotationDialog->setFileMode(QFileDialog::AnyFile);
+                  saveNotationDialog->setOption(QFileDialog::DontConfirmOverwrite, false);
+                  saveNotationDialog->setOption(QFileDialog::DontUseNativeDialog, true);
+                  saveNotationDialog->setWindowTitle(tr("MuseScore: Save Notation"));
+                  saveNotationDialog->setNameFilter(tr("MuseScore Style File (*.mss)"));
+                  saveNotationDialog->setDirectory(QString());
+
+                  QSettings settings;
+                  saveNotationDialog->restoreState(settings.value("saveNotationDialog").toByteArray());
+                  saveNotationDialog->setAcceptMode(QFileDialog::AcceptSave);
+                  }
+            dialog = saveNotationDialog;
+            }
+      // setup side bar urls
+      dialog->setSidebarUrls(urls);
+
+      if (dialog->exec()) {
+            QStringList result = dialog->selectedFiles();
+            return result.front();
+            }
+      return QString();
+      }
+
 //---------------------------------------------------------
 //   getStyleFilename
 //---------------------------------------------------------

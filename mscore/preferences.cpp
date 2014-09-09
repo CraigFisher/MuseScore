@@ -213,6 +213,15 @@ void Preferences::init()
       nativeDialogs           = false;    // don't use system native file dialogs
 #endif
 
+      //cc
+      useAltNotationFile = false;
+      altNotePositions = false;
+      altNoteHeadGroups = false;
+      altNoAccidentals = false;
+      altNewAccidentals = false;
+      altStaffLines = false;
+      altInnerLedgers = false;
+         
       exportAudioSampleRate   = exportAudioSampleRates[0];
 
       workspace               = "default";
@@ -346,6 +355,9 @@ void Preferences::write()
 
       //update
       s.setValue("checkUpdateStartup", checkUpdateStartup);
+          
+      //cc
+      s.setValue("useAltNotationFile", useAltNotationFile);
 
       s.setValue("useMidiRemote", useMidiRemote);
       for (int i = 0; i < MIDI_REMOTES; ++i) {
@@ -517,6 +529,9 @@ void Preferences::read()
       startScore     = s.value("startScore", startScore).toString();
       instrumentList1 = s.value("instrumentList",  instrumentList1).toString();
       instrumentList2 = s.value("instrumentList2", instrumentList2).toString();
+          
+      //cc
+      useAltNotationFile = s.value("useAltNotationFile", useAltNotationFile).toBool();
 
       useMidiRemote  = s.value("useMidiRemote", useMidiRemote).toBool();
       for (int i = 0; i < MIDI_REMOTES; ++i) {
@@ -581,6 +596,7 @@ PreferenceDialog::PreferenceDialog(QWidget* parent)
       fgWallpaperSelect->setIcon(*icons[int(Icons::fileOpen_ICON)]);
       styleFileButton->setIcon(*icons[int(Icons::fileOpen_ICON)]);
       shortcutsChanged        = false;
+      // notationFileChanged     = false; //cc
 
 #ifndef USE_JACK
       jackDriver->setVisible(false);
@@ -676,6 +692,8 @@ PreferenceDialog::PreferenceDialog(QWidget* parent)
       connect(jackDriver, SIGNAL(toggled(bool)), SLOT(exclusiveAudioDriver(bool)));
       connect(useJackAudio, SIGNAL(toggled(bool)), SLOT(nonExclusiveJackDriver(bool)));
       connect(useJackMidi,  SIGNAL(toggled(bool)), SLOT(nonExclusiveJackDriver(bool)));
+
+      connect(altNotationFileButton, SIGNAL(clicked()), SLOT(altNotationFileButtonClicked()));
       updateRemote();
       }
 
@@ -984,6 +1002,11 @@ void PreferenceDialog::updateValues()
       myPlugins->setText(prefs.myPluginsPath);
       sfPath->setText(prefs.sfPath);
       sfzPath->setText(prefs.sfzPath);
+          
+      //cc
+      useAltNotationFile->setChecked(prefs.useAltNotationFile);
+      useTraditionalNotation->setChecked(!(prefs.useAltNotationFile));
+      altNotationFile->setText(prefs.altNotationFile);
 
       idx = 0;
       int n = sizeof(exportAudioSampleRates)/sizeof(*exportAudioSampleRates);
@@ -1443,7 +1466,30 @@ void PreferenceDialog::apply()
       genIcons();
 
       mscore->setIconSize(QSize(prefs.iconWidth, prefs.iconHeight));
+          
+      //cc
+      prefs.useAltNotationFile = useAltNotationFile->isChecked();
+      if (prefs.useAltNotationFile /* && notationFileChanged*/) {
+            prefs.altNotationFile =  altNotationFile->text();
+          
+            //cc_temp until xml loading is coded
+            prefs.altNotePositions  = true;
+            prefs.altNoteHeadGroups = true;
+            prefs.altNoAccidentals  = true;
+            prefs.altStaffLines     = true;
+            prefs.altInnerLedgers   = true;
+            }
+      else {
+           prefs.altNotationFile = "";
 
+           //cc_temp until xml loading is coded
+           prefs.altNotePositions  = false;
+           prefs.altNoteHeadGroups = false;
+           prefs.altNoAccidentals  = false;
+           prefs.altStaffLines     = false;
+           prefs.altInnerLedgers   = false;
+      }
+          
       preferences = prefs;
       emit preferencesChanged();
       preferences.write();
@@ -1487,6 +1533,18 @@ void PreferenceDialog::resetAllValues()
       updateSCListView();
       }
 
+//-----------------------------------------------------//cc
+//   altNotationFileButtonClicked
+//---------------------------------------------------------
+//cc
+void PreferenceDialog::altNotationFileButtonClicked()
+{
+    QString fn = mscore->getNotationFilename(true);
+    if (fn.isEmpty())
+       return;
+    altNotationFile->setText(fn);
+}
+    
 //---------------------------------------------------------
 //   styleFileButtonClicked
 //---------------------------------------------------------

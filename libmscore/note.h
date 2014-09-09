@@ -239,7 +239,7 @@ class Note : public Element {
       void updateRelLine(int relLine, bool undoable);
 
       int computeAlternativeLine() const; //cc //TODO: possibly make this void function that just sets alternative line
-      mutable int _alternativeLine; //cc
+      // mutable int _alternativeLine; //cc_temp
 
 
    public:

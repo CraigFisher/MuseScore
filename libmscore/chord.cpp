@@ -663,8 +663,11 @@ void Chord::addLedgerLines(int move)
       qreal extraLen = score()->styleS(StyleIdx::ledgerLineLength).val() * _spatium * 0.5;
 
       std::vector<int>* innerLedgers;
-      if(preferences.altInnerLedgers) {
-            innerLedgers = &Chord::altInnerLedgers; //cc
+
+      //cc
+      bool standardStaff = staff() && staff()->staffType()->group() == StaffGroup::STANDARD;
+      if(preferences.altInnerLedgers && standardStaff) {
+            innerLedgers = &Chord::altInnerLedgers;
       }
       
       // scan chord notes, collecting visibility and x and y extrema
@@ -690,7 +693,7 @@ void Chord::addLedgerLines(int move)
                   const Note* note = _notes.at(i);
 
                 int l = note->line();
-                if(!preferences.altInnerLedgers) { //cc
+                if (!(preferences.altInnerLedgers && standardStaff)) { //cc
                 
                     if ( (!j && l < lineBelow) || // if 1st pass and note not below staff
                         (j && l >= 0) )          // or 2nd pass and note not above staff
@@ -734,7 +737,7 @@ void Chord::addLedgerLines(int move)
                                     d.maxX = maxX;
                         }
 
-                if(preferences.altInnerLedgers) { //cc
+                if (preferences.altInnerLedgers && standardStaff) { //cc
                       
                       //cc
                       vector<int>::iterator stopItr = innerLedgers->end();
@@ -799,8 +802,7 @@ void Chord::addLedgerLines(int move)
                         maxLine = l;
                         }
                   }
-          //cc
-           if (minLine < 0 || maxLine > lineBelow || preferences.altInnerLedgers)
+           if (minLine < 0 || maxLine > lineBelow || (preferences.altInnerLedgers && standardStaff)) //cc
                   createLedgerLines(track, vecLines, !staff()->invisible());
             }
 

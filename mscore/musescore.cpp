@@ -352,6 +352,11 @@ void MuseScore::preferencesChanged()
                         }
                   }
             }
+          
+      //      //cc
+//      if (preferences.useAltNotationFile) {
+//            NotationSetter::loadNotation();
+//      }
 
       transportTools->setEnabled(!noSeq);
       playId->setEnabled(!noSeq);
@@ -417,6 +422,8 @@ MuseScore::MuseScore()
 
       loadScoreDialog       = 0;
       saveScoreDialog       = 0;
+      loadNotationDialog    = 0; //cc
+      saveNotationDialog    = 0; //cc
       loadStyleDialog       = 0;
       saveStyleDialog       = 0;
       saveImageDialog       = 0;
@@ -885,6 +892,10 @@ MuseScore::MuseScore()
       a = getAction("toggle-mixer");
       a->setCheckable(true);
       menuView->addAction(a);
+      //cc
+//      a = getAction("notation-editor");
+//      a->setCheckable(true);
+//      menuView->addAction(a);
 
       a = getAction("synth-control");
       a->setCheckable(true);
@@ -4104,6 +4115,10 @@ void MuseScore::cmd(QAction* a, const QString& cmd)
             showMixer(a->isChecked());
       else if (cmd == "synth-control")
             showSynthControl(a->isChecked());
+      //cc
+//      else if (cmd == "notation-editor")
+//          
+//            showNotationEditor(a->isChecked());
       else if (cmd == "toggle-selection-window")
             showSelectionWindow(a->isChecked());
       else if (cmd == "show-keys")
@@ -4718,22 +4733,6 @@ int main(int argc, char* av[])
 
       Shortcut::init();
       preferences.init();
-          
-      //cc
-      // preferences.altNotePositions 	= false;
-      // preferences.altNoteHeadGroups = false;
-      // preferences.altNoAccidentals	= false;
-      // preferences.altStaffLines	= false;
-      // preferences.altInnerLedgers 	= false;
-          
-      //cc
-      preferences.altNotePositions 	= true;
-      preferences.altNoteHeadGroups = true;
-      preferences.altNoAccidentals	= true;
-      preferences.altStaffLines	= true;
-      preferences.altInnerLedgers 	= true;
-      NotationSetter::setNotation(); //TODO: have these currently-hardcoded preferences loaded
-                                     //      from QSettings
 
       QNetworkProxyFactory::setUseSystemConfiguration(true);
 
@@ -4779,6 +4778,22 @@ int main(int argc, char* av[])
       if (!useFactorySettings)
             preferences.read();
 
+      //cc_temp
+      if (0) { //traditional
+            preferences.altNotePositions  = false;
+            preferences.altNoteHeadGroups = false;
+            preferences.altNoAccidentals  = false;
+            preferences.altStaffLines     = false;
+            preferences.altInnerLedgers   = false;
+      } else {
+            preferences.altNotePositions  = true;
+            preferences.altNoteHeadGroups = false;
+            preferences.altNoAccidentals  = true;
+            preferences.altStaffLines     = false;
+            preferences.altInnerLedgers   = false;
+      }
+      NotationSetter::loadNotation();
+          
       preferences.readDefaultStyle();
 
       if (converterDpi == 0)

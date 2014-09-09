@@ -178,6 +178,8 @@ struct Preferences {
       QList<PluginDescription> pluginList;
 
       //cc
+      bool useAltNotationFile;
+      QString altNotationFile;
       bool altNotePositions;  
       bool altNoteHeadGroups;
       bool altNoAccidentals;
