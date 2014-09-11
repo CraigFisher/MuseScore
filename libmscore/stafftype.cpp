@@ -165,11 +165,10 @@ bool StaffType::isSameStructure(const StaffType& st) const
             }
       }
     
-//cc
-//TODO: implement alt lines in setter
+//cc BAD PATTERN
 int StaffType::lines() const {
-       if(preferences.altStaffLines && _group == StaffGroup::STANDARD) {
-             return StaffLines::altStaffLinesHeight;
+       if(NotationRules::alternateStaffLines && _group == StaffGroup::STANDARD) {
+             return NotationRules::staffLinesHeight();
              }
        else {
              return _lines;

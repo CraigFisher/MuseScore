@@ -20,8 +20,6 @@
 
 #include <functional>
 #include "chordrest.h"
-#include "mscore/preferences.h" //cc
-#include <vector>        //cc
 
 class QPainter;
 
@@ -214,7 +212,7 @@ class Chord : public ChordRest {
 
       void sortNotes();
 
-      static std::vector<int> altInnerLedgers; //cc
+//      static std::vector<int> altInnerLedgers; //cc
       };
 
 

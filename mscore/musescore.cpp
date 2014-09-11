@@ -97,7 +97,7 @@
 #include "fluid/fluid.h"
 #include "qmlplugin.h"
 
-#include "libmscore/notationsetter.h"
+#include "libmscore/notationrules.h"
 
 #ifdef AEOLUS
 extern Ms::Synthesizer* createAeolus();
@@ -354,9 +354,14 @@ void MuseScore::preferencesChanged()
             }
           
       //      //cc
-//      if (preferences.useAltNotationFile) {
-//            NotationSetter::loadNotation();
-//      }
+      if (preferences.useAlternateNotationFile) {
+          if (!preferences.alternateNotationFile.isEmpty()) {
+              QFile f(preferences.alternateNotationFile);
+              // silently ignore style file on error
+              if (f.open(QIODevice::ReadOnly))
+                  NotationRules::load(&f);
+          }
+      }
 
       transportTools->setEnabled(!noSeq);
       playId->setEnabled(!noSeq);
@@ -4779,20 +4784,20 @@ int main(int argc, char* av[])
             preferences.read();
 
       //cc_temp
-      if (0) { //traditional
-            preferences.altNotePositions  = false;
-            preferences.altNoteHeadGroups = false;
-            preferences.altNoAccidentals  = false;
-            preferences.altStaffLines     = false;
-            preferences.altInnerLedgers   = false;
-      } else {
-            preferences.altNotePositions  = true;
-            preferences.altNoteHeadGroups = false;
-            preferences.altNoAccidentals  = true;
-            preferences.altStaffLines     = false;
-            preferences.altInnerLedgers   = false;
-      }
-      NotationSetter::loadNotation();
+//      if (0) { //traditional
+//            preferences.altNotePositions  = false;
+//            preferences.altNoteHeadGroups = false;
+//            preferences.altNoAccidentals  = false;
+//            preferences.altStaffLines     = false;
+//            preferences.altInnerLedgers   = false;
+//      } else {
+//            preferences.altNotePositions  = true;
+//            preferences.altNoteHeadGroups = false;
+//            preferences.altNoAccidentals  = true;
+//            preferences.altStaffLines     = false;
+//            preferences.altInnerLedgers   = false;
+//      }
+//      NotationRules::loadNotation();
           
       preferences.readDefaultStyle();
 

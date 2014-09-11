@@ -42,6 +42,7 @@
 #include "fluid/fluid.h"
 #include "pathlistdialog.h"
 #include "mstyle/mconfig.h"
+#include "libmscore/notationrules.h"
 
 namespace Ms {
 
@@ -215,12 +216,7 @@ void Preferences::init()
 
       //cc
       useAltNotationFile = false;
-      altNotePositions = false;
-      altNoteHeadGroups = false;
-      altNoAccidentals = false;
-      altNewAccidentals = false;
-      altStaffLines = false;
-      altInnerLedgers = false;
+      altNotationFile = "";
          
       exportAudioSampleRate   = exportAudioSampleRates[0];
 
@@ -596,7 +592,6 @@ PreferenceDialog::PreferenceDialog(QWidget* parent)
       fgWallpaperSelect->setIcon(*icons[int(Icons::fileOpen_ICON)]);
       styleFileButton->setIcon(*icons[int(Icons::fileOpen_ICON)]);
       shortcutsChanged        = false;
-      // notationFileChanged     = false; //cc
 
 #ifndef USE_JACK
       jackDriver->setVisible(false);
@@ -1471,23 +1466,16 @@ void PreferenceDialog::apply()
       prefs.useAltNotationFile = useAltNotationFile->isChecked();
       if (prefs.useAltNotationFile /* && notationFileChanged*/) {
             prefs.altNotationFile =  altNotationFile->text();
-          
-            //cc_temp until xml loading is coded
-            prefs.altNotePositions  = true;
-            prefs.altNoteHeadGroups = true;
-            prefs.altNoAccidentals  = true;
-            prefs.altStaffLines     = true;
-            prefs.altInnerLedgers   = true;
             }
       else {
-           prefs.altNotationFile = "";
-
-           //cc_temp until xml loading is coded
-           prefs.altNotePositions  = false;
-           prefs.altNoteHeadGroups = false;
-           prefs.altNoAccidentals  = false;
-           prefs.altStaffLines     = false;
-           prefs.altInnerLedgers   = false;
+            prefs.altNotationFile = "";
+            }
+          
+      if (!preferences.altNotationFile.isEmpty()) {
+           QFile f(preferences.altNotationFile);
+           // silently ignore style file on error
+           if (f.open(QIODevice::ReadOnly))
+               NotationRules::load(&f);
       }
           
       preferences = prefs;

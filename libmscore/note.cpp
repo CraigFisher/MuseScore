@@ -54,7 +54,7 @@
 #include "spanner.h"
 #include "glissando.h"
 #include "bagpembell.h"
-#include "mscore/preferences.h" //cc
+#include "notationrules.h"
 
 namespace Ms {
 
@@ -181,7 +181,6 @@ Note::Note(Score* s)
       _small             = false;
       _userDotPosition   = MScore::Direction::AUTO;
       _line              = 0;
-      // _alternativeLine   = 0; //cc_temp
       _fret              = -1;
       _string            = -1;
       _fretConflict      = false;
@@ -227,7 +226,7 @@ Note::Note(const Note& n, bool link)
             linkTo((Note*)&n);      // HACK!
       _subchannel        = n._subchannel;
      // _line              = n._line;
-          setLine(n._line); //cc
+          setLine(n._line); //cc BAD PRACTICE
       _fret              = n._fret;
       _string            = n._string;
       _fretConflict      = n._fretConflict;
@@ -253,7 +252,7 @@ Note::Note(const Note& n, bool link)
       // if (n._accidental) {
             // add(new Accidental(*(n._accidental)));
       if (n._accidental) {
-            if(preferences.altNoAccidentals) {
+            if(NotationRules::noAccidentals) {
                   add(new Accidental(score()));
             } else {
                   add(new Accidental(*(n._accidental)));
@@ -459,8 +458,8 @@ SymId Note::noteHead() const
       //cc
       SymId t;
       bool standardStaff = staff() && staff()->staffType()->group() == StaffGroup::STANDARD;
-      if(preferences.altNoteHeadGroups && standardStaff) {
-            t = noteHead(up, Note::altNoteHeadGroups[_tpc[0]], ht);
+      if(NotationRules::alternateNoteheads && standardStaff) {
+            t = noteHead(up, (*(NotationRules::noteHeads()))[_tpc[0]], ht);
       } else {      
             t = noteHead(up, _headGroup, ht);
       }
@@ -766,8 +765,8 @@ void Note::write(Xml& xml) const
       xml.stag("Note");
       Element::writeProperties(xml);
 
-      if (_accidental/*//cc*/)
-            _accidental/*//cc*/->write(xml);
+      if (_accidental)
+            _accidental->write(xml);
       _el.write(xml);
       int dots = chord() ? chord()->dots() : 0;
       if (dots) {
@@ -901,7 +900,7 @@ void Note::read(XmlReader& e)
                   setProperty(P_ID::VELO_TYPE, Ms::getProperty(P_ID::VELO_TYPE, e));
             else if (tag == "line")
                  // _line = e.readInt();
-                    setLine(e.readInt()); //cc
+                    setLine(e.readInt()); //cc BAD PRACTICE
             else if (tag == "Tie") {
                   _tieFor = new Tie(score());
                   _tieFor->setTrack(track());
@@ -979,9 +978,9 @@ void Note::read(XmlReader& e)
                               case 25: at = Accidental::Type::SORI; break;
                               case 26: at = Accidental::Type::KORON; break;
                               }
-                        _accidental/*//cc*/->setAccidentalType(at);
-                        _accidental/*//cc*/->setHasBracket(bracket);
-                        _accidental/*//cc*/->setRole(Accidental::Role::USER);
+                        _accidental->setAccidentalType(at);
+                        _accidental->setHasBracket(bracket);
+                        _accidental->setRole(Accidental::Role::USER);
                         hasAccidental = true;   // we now have an accidental
                         }
                   }
@@ -990,7 +989,7 @@ void Note::read(XmlReader& e)
                   // if a userAccidental has some other property set (like for instance offset)
                   Accidental* a;
                   if (hasAccidental)            // if the other tag has already been read,
-                        a = _accidental/*//cc*/;        // re-use the accidental it constructed
+                        a = _accidental;        // re-use the accidental it constructed
                   else
                         a = new Accidental(score());
                   // the accidental needs to know the properties of the
@@ -1660,8 +1659,8 @@ bool Note::dotIsUp() const
 void Note::layout10(AccidentalState* as)
       {
       if (staff()->isTabStaff()) {
-            if (_accidental/*//cc*/) {
-                  delete _accidental/*//cc*/;
+            if (_accidental) {
+                  delete _accidental;
                   _accidental = 0;
                   }
             if (_fret < 0) {
@@ -1679,8 +1678,8 @@ void Note::layout10(AccidentalState* as)
             // calculate accidental
 
             Accidental::Type acci = Accidental::Type::NONE;
-            if (_accidental/*//cc*/ && _accidental/*//cc*/->role() == Accidental::Role::USER) {
-                  acci = _accidental/*//cc*/->accidentalType();
+            if (_accidental && _accidental->role() == Accidental::Role::USER) {
+                  acci = _accidental->accidentalType();
                   if (acci == Accidental::Type::SHARP || acci == Accidental::Type::FLAT) {
                         // TODO - what about double flat and double sharp?
                         Key key = (staff() && chord()) ? staff()->key(chord()->tick()) : Key::C;
@@ -1710,17 +1709,17 @@ void Note::layout10(AccidentalState* as)
                         }
                   }
             if (acci != Accidental::Type::NONE && !_tieBack && !_hidden) {
-                  if (_accidental/*//cc*/ == 0) {
+                  if (_accidental == 0) {
                         _accidental = new Accidental(score());
-                        _accidental/*//cc*/->setGenerated(true);
-                        add(_accidental/*//cc*/);
+                        _accidental->setGenerated(true);
+                        add(_accidental);
                         }
-                  _accidental/*//cc*/->setAccidentalType(acci);
+                  _accidental->setAccidentalType(acci);
                   }
             else {
-                  if (_accidental/*//cc*/) {
-                        if (_accidental/*//cc*/->selected())
-                              score()->deselect(_accidental/*//cc*/);
+                  if (_accidental) {
+                        if (_accidental->selected())
+                              score()->deselect(_accidental);
                         delete _accidental;
                         _accidental = 0;
                         }
@@ -1737,21 +1736,11 @@ NoteType Note::noteType() const
       {
       return chord()->noteType();
       }
-   
-//cc
-//TODO: DECIDE WHETHER _lineOffset should be included for alternative line
-int Note::line() const {    
-      // if(preferences.altNotePositions && standardStaff) { //cc_temp
-          // return _alternativeLine + _lineOffset;
-      // } else {
-          return _line + _lineOffset;
-      // }
-}
 
 //cc
 Q_INVOKABLE Ms::Accidental* Note::accidental() const {
      bool standardStaff = staff() && staff()->staffType()->group() == StaffGroup::STANDARD;
-     if(preferences.altNoAccidentals && standardStaff) {
+     if(NotationRules::noAccidentals && standardStaff) {
            return _altAccidental;
      } else {
             return _accidental;
@@ -1798,8 +1787,8 @@ void Note::scanElements(void* data, void (*func)(void*, Element*), bool all)
             }
       for (Spanner* sp : _spannerFor)
             sp->scanElements(data, func, all);
-      if (!dragMode && accidental()/*//cc_temp*/)
-            func(data, accidental()/*//cc_temp*/);
+      if (!dragMode && accidental()/*//cc_temp VERY BAD PRACTICE*/)
+            func(data, accidental()/*//cc_temp VERY BAD PRACTICE*/);
       if (chord()) {
             for (int i = 0; i < chord()->dots(); ++i) {
                   if (_dots[i])
@@ -1869,19 +1858,22 @@ void Note::setSmall(bool val)
 //---------------------------------------------------------       
 
 //cc
-std::map<int, int> Note::altNotePositions;
-std::map<int, NoteHead::Group> Note::altNoteHeadGroups;
-std::map<ClefType, int> Note::altClefOffsets;
-int Note::altOctaveDistance;
+// std::map<int, int> Note::altNotePositions;
+// std::map<int, NoteHead::Group> Note::altNoteHeadGroups;
+// std::map<ClefType, int> Note::altClefOffsets;
+// int Note::altOctaveDistance;
 
 //cc
 int Note::computeAlternativeLine() const
      {
+     const std::map<int, int>& notePositions = NotationRules::notePositions();
+     const std::map<ClefType, int>& clefOffsets = NotationRules::clefOffsets();
+
      Staff* s = score()->staff(staffIdx() + chord()->staffMove());
      ClefType clef = s->clef(chord()->tick());
-     int clefOffset = Note::altClefOffsets[clef];
+     int clefOffset = notePositions[clef];
      int octave = ((_pitch / 12) * -1) + 5;
-     return Note::altNotePositions[_tpc[0]] + (octave * Note::altOctaveDistance) + clefOffset;
+     return notePositions[_tpc[0]] + (octave * NotationRules::altOctaveDistance) + clefOffset;
      }
 //---------------------------------------------------------
 //   setLine
@@ -1891,7 +1883,7 @@ void Note::setLine(int n)
       {
       //cc
       bool standardStaff = staff() && staff()->staffType()->group() == StaffGroup::STANDARD; //cc
-      if (preferences.altNotePositions && standardStaff) { //cc
+      if (NotationRules::alternateNotePositions && standardStaff) { //cc
            _line = computeAlternativeLine();
             } 
       else {
@@ -1983,7 +1975,7 @@ void Note::updateAccidental(AccidentalState* as)
 
       // don't touch accidentals that don't concern tpc such as
       // quarter tones
-      if (!(_accidental/*//cc*/ && _accidental/*//cc*/->accidentalType() > Accidental::Type::NATURAL)) {
+      if (!(_accidental && _accidental->accidentalType() > Accidental::Type::NATURAL)) {
             // calculate accidental
             Accidental::Type acci = Accidental::Type::NONE;
 
@@ -1999,34 +1991,34 @@ void Note::updateAccidental(AccidentalState* as)
                         }
                   }
             if (acci != Accidental::Type::NONE && !_tieBack && !_hidden) {
-                  if (_accidental/*//cc*/ == 0) {
+                  if (_accidental == 0) {
                         Accidental* a = new Accidental(score());
                         a->setParent(this);
                         a->setAccidentalType(acci);
                         score()->undoAddElement(a);
                         }
-                  else if (_accidental/*//cc*/->accidentalType() != acci) {
-                        Accidental* a = _accidental/*//cc*/->clone();
+                  else if (_accidental->accidentalType() != acci) {
+                        Accidental* a = _accidental->clone();
                         a->setParent(this);
                         a->setAccidentalType(acci);
-                        score()->undoChangeElement(_accidental/*//cc*/, a);
+                        score()->undoChangeElement(_accidental, a);
                         }
                   }
             else {
-                  if (_accidental/*//cc*/) {
+                  if (_accidental) {
                         // remove this if it was AUTO:
-                        if (_accidental/*//cc*/->role() == Accidental::Role::AUTO)
-                              score()->undoRemoveElement(_accidental/*//cc*/);
+                        if (_accidental->role() == Accidental::Role::AUTO)
+                              score()->undoRemoveElement(_accidental);
                         else {
                               // keep it, but update type if needed
                               acci = Accidental::value2subtype(accVal);
                               if (acci == Accidental::Type::NONE)
                                     acci = Accidental::Type::NATURAL;
-                              if (_accidental/*//cc*/->accidentalType() != acci) {
-                                    Accidental* a = _accidental/*//cc*/->clone();
+                              if (_accidental->accidentalType() != acci) {
+                                    Accidental* a = _accidental->clone();
                                     a->setParent(this);
                                     a->setAccidentalType(acci);
-                                    score()->undoChangeElement(_accidental/*//cc*/, a);
+                                    score()->undoChangeElement(_accidental, a);
                                     }
                               }
                         }
@@ -2056,7 +2048,7 @@ void Note::updateRelLine(int relLine, bool undoable)
       int line;
           
       bool standardStaff = staff() && staff()->staffType()->group() == StaffGroup::STANDARD; //cc
-      if (preferences.altNotePositions && standardStaff) { //cc
+      if (NotationRules::alternateNotePositions && standardStaff) { //cc
             line = _line - 1; //ensure line != line
             }
       else {
@@ -2065,7 +2057,7 @@ void Note::updateRelLine(int relLine, bool undoable)
             line = relStep(relLine, clef);
             }
 
-      if (line != _line) { //cc alt line may need to be re-computed
+      if (line != _line) { //cc alt line may need to be re-computed (HACK)
             if (undoable)
                   undoChangeProperty(P_ID::LINE, line);
             else
@@ -2188,7 +2180,7 @@ bool Note::setProperty(P_ID propertyId, const QVariant& v)
                   break;
             case P_ID::LINE:
                  // _line = v.toInt();
-              setLine(v.toInt()); //cc
+              setLine(v.toInt()); //cc BAD PRACTICE
                   break;
             case P_ID::SMALL:
                   setSmall(v.toBool());

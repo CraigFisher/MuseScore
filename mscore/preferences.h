@@ -180,12 +180,12 @@ struct Preferences {
       //cc
       bool useAltNotationFile;
       QString altNotationFile;
-      bool altNotePositions;  
-      bool altNoteHeadGroups;
-      bool altNoAccidentals;
-      bool altNewAccidentals;
-      bool altStaffLines;
-      bool altInnerLedgers;
+      // bool altNotePositions;  
+      // bool altNoteHeadGroups;
+      // bool altNoAccidentals;
+      // bool altNewAccidentals;
+      // bool altStaffLines;
+      // bool altInnerLedgers;
 
       bool readPluginList();
       void writePluginList();

@@ -51,6 +51,7 @@
 #include "sym.h"
 #include "stringdata.h"
 #include "beam.h"
+#include "notationrules.h" //cc
 
 namespace Ms {
 
@@ -643,7 +644,7 @@ void Chord::createLedgerLines(int track, vector<LedgerLineData>& vecLines, bool 
 //---------------------------------------------------------
 
 //cc
-std::vector<int> Chord::altInnerLedgers;
+// std::vector<int> Chord::altInnerLedgers;
 
 void Chord::addLedgerLines(int move)
       {          
@@ -666,9 +667,6 @@ void Chord::addLedgerLines(int move)
 
       //cc
       bool standardStaff = staff() && staff()->staffType()->group() == StaffGroup::STANDARD;
-      if(preferences.altInnerLedgers && standardStaff) {
-            innerLedgers = &Chord::altInnerLedgers;
-      }
       
       // scan chord notes, collecting visibility and x and y extrema
       // NOTE: notes are sorted from bottom to top (line no. decreasing)
@@ -692,15 +690,14 @@ void Chord::addLedgerLines(int move)
             for (int i = from; i < n && i >=0 ; i += delta) {
                   const Note* note = _notes.at(i);
 
-                int l = note->line();
-                if (!(preferences.altInnerLedgers && standardStaff)) { //cc
+                  int l = note->line();
+                  if (!(NotationRules::useInnerLedgers) || !standardStaff)) { //cc
+                        if ( (!j && l < lineBelow) || // if 1st pass and note not below staff
+                             (j && l >= 0) )          // or 2nd pass and note not above staff
+                             break;                  // stop this pass
+                        }
                 
-                    if ( (!j && l < lineBelow) || // if 1st pass and note not below staff
-                        (j && l >= 0) )          // or 2nd pass and note not above staff
-                        break;                  // stop this pass
-                }
-                
-                int original_l = l;
+                  int original_l = l;
                   // round line number to even number toward 0
                   if (l < 0)        l = (l+1) & ~ 1;
                   else              l = l & ~ 1;
@@ -737,45 +734,44 @@ void Chord::addLedgerLines(int move)
                                     d.maxX = maxX;
                         }
 
-                if (preferences.altInnerLedgers && standardStaff) { //cc
-                      
-                      //cc
-                      vector<int>::iterator stopItr = innerLedgers->end();
-                      for(vector<int>::iterator itr = innerLedgers->begin(); itr != stopItr; itr++) {
-                          //                      TODO: SEE IF minX, maxX can be left as is
-                          
-                          if(*itr == original_l) { //if our note line is equal to one of the designated ledger lines
-                              if(*itr % 2 == 1) {
-                                  lld.line = original_l - 1;
-                                  lld.minX = minX;
-                                  lld.maxX = maxX;
-                                  lld.visible = visible;
-                                  lld.accidental = false;
-                                  vecLines.push_back(lld);
-                                  lld.line = original_l + 1;
-                                  lld.minX = minX;
-                                  lld.maxX = maxX;
-                                  lld.visible = visible;
-                                  lld.accidental = false;
-                                  vecLines.push_back(lld);
-                              } else {
-                                  lld.line = original_l;
-                                  lld.minX = minX;
-                                  lld.maxX = maxX;
-                                  lld.visible = visible;
-                                  lld.accidental = false;
-                                  vecLines.push_back(lld);
+                  //cc
+                  if (NotationRules::useInnerLedgers && standardStaff) {
+                        vector<int>::iterator itr = NotationRules::innerLedgers->begin();
+                        vector<int>::iterator stopItr = NotationRules::innerLedgers()->end();                      
+                        while (itr != stopItr) {
+                              //TODO: SEE IF minX, maxX can be left as is
+                              if (*itr == original_l) { //if our note line is equal to one of the designated ledger lines
+                                    if (*itr % 2 == 1) {
+                                          lld.line = original_l - 1;
+                                          lld.minX = minX;
+                                          lld.maxX = maxX;
+                                          lld.visible = visible;
+                                          lld.accidental = false;
+                                          vecLines.push_back(lld);
+                                          lld.line = original_l + 1;
+                                          lld.minX = minX;
+                                          lld.maxX = maxX;
+                                          lld.visible = visible;
+                                          lld.accidental = false;
+                                          vecLines.push_back(lld);
+                                          }
+                                    else {
+                                          lld.line = original_l;
+                                          lld.minX = minX;
+                                          lld.maxX = maxX;
+                                          lld.visible = visible;
+                                          lld.accidental = false;
+                                          vecLines.push_back(lld);
+                                          }
+                                    break;
+                                    }
+                              itr++;
                               }
-                              break;
-                          }
-                      }
-
-                        if ( (!j && l < lineBelow) || (j && l >= 0) ) {// if 1st pass and note not below staff
+                        if ((!j && l < lineBelow) || (j && l >= 0) ) {// if 1st pass and note not below staff
                                                                       // or 2nd pass and note not above staff
-                           break;                  // stop this pass
-                           }
-                          
-                }
+                              break;                  // stop this pass
+                              }
+                        }
                 
                   // check if note vert. pos. is outside current range
                   // and, in case, add data for new line(s)
@@ -802,9 +798,9 @@ void Chord::addLedgerLines(int move)
                         maxLine = l;
                         }
                   }
-           if (minLine < 0 || maxLine > lineBelow || (preferences.altInnerLedgers && standardStaff)) //cc
+            if (minLine < 0 || maxLine > lineBelow || (NotationRules::useInnerLedgers && standardStaff)) //cc
                   createLedgerLines(track, vecLines, !staff()->invisible());
-            }
+                  }
 
             return;                       // no ledger lines for this chord
 

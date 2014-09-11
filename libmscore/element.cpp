@@ -935,7 +935,7 @@ void StaffLines::layout()
             dist  = st->lineDistance().val() * _spatium;
             
             //cc
-            if(preferences.altStaffLines && st->group() == StaffGroup::STANDARD) {
+            if(NotationRules::alternateStaffLines && st->group() == StaffGroup::STANDARD) {
                   _altStaffLines = true;
                   }
             else {
@@ -960,8 +960,8 @@ void StaffLines::layout()
 //   draw
 //---------------------------------------------------------
 
-std::vector<bool> StaffLines::altLineVisibility; //cc
-int StaffLines::altStaffLinesHeight; //cc
+// std::vector<bool> StaffLines::altLineVisibility; //cc
+// int StaffLines::altStaffLinesHeight; //cc
     
 void StaffLines::draw(QPainter* painter) const
       {
@@ -976,10 +976,10 @@ void StaffLines::draw(QPainter* painter) const
       //cc
       if(_altStaffLines) {
           qreal halfDist = dist / 2;
-          int length = StaffLines::altLineVisibility.size();
+          int length = NotationRules::staffLines().size();
           ll.resize(length);
           for (int i = 0; i < length; ++i) {
-              if(StaffLines::altLineVisibility[i]) {
+              if((*(NotationRules::staffLines()))[i]) {
                   ll[i].setLine(x1, y, x2, y);
               }
               y += halfDist;

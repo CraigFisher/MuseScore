@@ -238,9 +238,7 @@ class Note : public Element {
       int concertPitchIdx() const;
       void updateRelLine(int relLine, bool undoable);
 
-      int computeAlternativeLine() const; //cc //TODO: possibly make this void function that just sets alternative line
-      // mutable int _alternativeLine; //cc_temp
-
+      int computeAlternativeLine() const; //cc
 
    public:
       Note(Score* s = 0);
@@ -309,8 +307,7 @@ class Note : public Element {
       void setAccidental(Accidental* a)   { _accidental = a;    } 
       // void setAccidental(Accidental* a); 
 
-//      int line() const                { return _line + _lineOffset;   }
-      int line() const; //cc
+      int line() const                { return _line + _lineOffset;   }
       void setLine(int n);
 
       int fret() const                { return _fret;   }
@@ -433,10 +430,10 @@ class Note : public Element {
       NoteVal noteVal() const;
     
     //cc
-    static std::map<int, int> altNotePositions;
-    static std::map<int, NoteHead::Group> altNoteHeadGroups;
-    static std::map<ClefType, int> altClefOffsets;
-    static int altOctaveDistance;
+//    static std::map<int, int> altNotePositions;
+//    static std::map<int, NoteHead::Group> altNoteHeadGroups;
+//    static std::map<ClefType, int> altClefOffsets;
+//    static int altOctaveDistance;
       };
 
 }     // namespace Ms
