@@ -643,9 +643,6 @@ void Chord::createLedgerLines(int track, vector<LedgerLineData>& vecLines, bool 
 //   addLedgerLines
 //---------------------------------------------------------
 
-//cc
-// std::vector<int> Chord::altInnerLedgers;
-
 void Chord::addLedgerLines(int move)
       {          
       LedgerLineData    lld;

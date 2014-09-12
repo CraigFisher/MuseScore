@@ -959,9 +959,6 @@ void StaffLines::layout()
 //---------------------------------------------------------
 //   draw
 //---------------------------------------------------------
-
-// std::vector<bool> StaffLines::altLineVisibility; //cc
-// int StaffLines::altStaffLinesHeight; //cc
     
 void StaffLines::draw(QPainter* painter) const
       {

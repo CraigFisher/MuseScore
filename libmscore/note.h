@@ -428,12 +428,6 @@ class Note : public Element {
 
       static SymId noteHead(int direction, NoteHead::Group, NoteHead::Type);
       NoteVal noteVal() const;
-    
-    //cc
-//    static std::map<int, int> altNotePositions;
-//    static std::map<int, NoteHead::Group> altNoteHeadGroups;
-//    static std::map<ClefType, int> altClefOffsets;
-//    static int altOctaveDistance;
       };
 
 }     // namespace Ms

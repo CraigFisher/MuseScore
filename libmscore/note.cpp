@@ -1856,13 +1856,6 @@ void Note::setSmall(bool val)
 //---------------------------------------==============//cc
 //   computeAlternativeLine
 //---------------------------------------------------------       
-
-//cc
-// std::map<int, int> Note::altNotePositions;
-// std::map<int, NoteHead::Group> Note::altNoteHeadGroups;
-// std::map<ClefType, int> Note::altClefOffsets;
-// int Note::altOctaveDistance;
-
 //cc
 int Note::computeAlternativeLine() const
      {

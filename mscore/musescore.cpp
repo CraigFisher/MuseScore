@@ -4784,22 +4784,6 @@ int main(int argc, char* av[])
 
       if (!useFactorySettings)
             preferences.read();
-
-      //cc_temp
-//      if (0) { //traditional
-//            preferences.altNotePositions  = false;
-//            preferences.altNoteHeadGroups = false;
-//            preferences.altNoAccidentals  = false;
-//            preferences.altStaffLines     = false;
-//            preferences.altInnerLedgers   = false;
-//      } else {
-//            preferences.altNotePositions  = true;
-//            preferences.altNoteHeadGroups = false;
-//            preferences.altNoAccidentals  = true;
-//            preferences.altStaffLines     = false;
-//            preferences.altInnerLedgers   = false;
-//      }
-//      NotationRules::loadNotation();
           
       preferences.readDefaultStyle();
 

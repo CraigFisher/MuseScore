@@ -601,9 +601,6 @@ class StaffLines : public Element {
       bool _altStaffLines = false; //cc used for faster checks in the StaffLines::draw function
 
    public:
-      // static std::vector<bool> altLineVisibility; //cc
-      // static int altStaffLinesHeight;                  //cc
-
       StaffLines(Score*);
       virtual StaffLines* clone() const    { return new StaffLines(*this); }
       virtual Element::Type type() const   { return Element::Type::STAFF_LINES; }

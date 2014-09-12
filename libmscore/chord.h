@@ -20,8 +20,8 @@
 
 #include <functional>
 #include "chordrest.h"
-#include "mscore/preferences.h" //cc_temp
-#include <vector>        //cc_temp
+#include "mscore/preferences.h" //cc
+#include <vector>        //cc
 
 class QPainter;
 
@@ -213,8 +213,6 @@ class Chord : public ChordRest {
       virtual Measure* measure() const;
 
       void sortNotes();
-
-//      static std::vector<int> altInnerLedgers; //cc
       };
 
 
