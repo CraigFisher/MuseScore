@@ -978,19 +978,20 @@ void StaffLines::draw(QPainter* painter) const
           int length = NotationRules::staffLines()->size();
           ll.resize(length);
           for (int i = 0; i < length; ++i) {
-              if(NotationRules::staffLines()->at(i)) {
-                  ll[i].setLine(x1, y, x2, y);
-              }
-              y += halfDist;
+                if(NotationRules::staffLines()->at(i)) {
+                   ll[i].setLine(x1, y, x2, y);
+                   }
+                y += halfDist;
+                }
             }
-      } else {
+      else {
           ll.resize(lines);
           for (int i = 0; i < lines; ++i) {
-                  ll[i].setLine(x1, y, x2, y);
-                  y += dist;
-            }
-      }
-             
+               ll[i].setLine(x1, y, x2, y);
+               y += dist;
+               }
+          }
+          
       if (MScore::debugMode) {
             painter->setPen(QPen(Qt::lightGray, lw, Qt::SolidLine, Qt::FlatCap));
             y = _pos.y() - 3 * dist;

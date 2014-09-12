@@ -15,7 +15,7 @@
 #include "xml.h"
 #include "mscore.h"
 #include "chord.h"
-#include "notationrules.h"
+#include "notationrules.h" //cc
 
 #define TAB_DEFAULT_LINE_SP   (1.5)
 #define TAB_RESTSYMBDISPL     2.0

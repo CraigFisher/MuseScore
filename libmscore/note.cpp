@@ -55,7 +55,7 @@
 #include "spanner.h"
 #include "glissando.h"
 #include "bagpembell.h"
-#include "notationrules.h"
+#include "notationrules.h" //cc
 
 namespace Ms {
 
@@ -266,7 +266,7 @@ Note::Note(const Note& n, bool link)
 
       //cc
       // if (n._accidental) {
-            // add(new Accidental(*(n._accidental)));
+      //      add(new Accidental(*(n._accidental)));
       if (n._accidental) {
             if(NotationRules::noAccidentals) {
                   add(new Accidental(score()));
@@ -2107,7 +2107,7 @@ void Note::updateAccidental(AccidentalState* as)
 
 void Note::updateRelLine(int relLine, bool undoable)
       {
-      int line;
+      int line; //cc
           
       bool standardStaff = staff() && staff()->staffType()->group() == StaffGroup::STANDARD; //cc
       if (NotationRules::alternateNotePositions && standardStaff) { //cc
@@ -2120,7 +2120,7 @@ void Note::updateRelLine(int relLine, bool undoable)
 
             Staff* s = score()->staff(staffIdx() + chord()->staffMove());
             ClefType clef = s->clef(chord()->tick());
-            int line = relStep(relLine, clef);
+            line = relStep(relLine, clef);
             }
       if (line != _line) {
             if (undoable)

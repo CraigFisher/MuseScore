@@ -688,7 +688,7 @@ void Chord::addLedgerLines(int move)
       std::vector<int>* innerLedgers;
 
       //cc
-      bool standardStaff = staff() && staff()->staffType()->group() == StaffGroup::STANDARD;
+     bool standardStaff = staff() && staff()->staffType()->group() == StaffGroup::STANDARD;
       
       // scan chord notes, collecting visibility and x and y extrema
       // NOTE: notes are sorted from bottom to top (line no. decreasing)
@@ -713,11 +713,11 @@ void Chord::addLedgerLines(int move)
                   const Note* note = _notes.at(i);
 
                   int l = note->line();
-                  if (!(NotationRules::useInnerLedgers) || !standardStaff) { //cc
+                 if (!(NotationRules::useInnerLedgers) || !standardStaff) { //cc
                         if ( (!j && l < lineBelow) || // if 1st pass and note not below staff
                              (j && l >= 0) )          // or 2nd pass and note not above staff
                              break;                  // stop this pass
-                        }
+                       }
                 
                   int original_l = l;
                   // round line number to even number toward 0
@@ -1622,6 +1622,7 @@ void Chord::layout2()
                         if (found)
                               break;
                         }
+//                break; cc_temp_temp
                   }
             }
       }
