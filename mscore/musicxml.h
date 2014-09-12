@@ -126,12 +126,12 @@ typedef  CreditWordsList::const_iterator ciCreditWords;
 
 class JumpMarkerDesc {
       Element* _el;
-      const Measure* _meas;
+      Measure* _meas;
 
 public:
-      JumpMarkerDesc(Element* el, const Measure* meas) : _el(el), _meas(meas) {}
+      JumpMarkerDesc(Element* el, Measure* meas) : _el(el), _meas(meas) {}
       Element* el() const { return _el; }
-      const Measure* meas() const { return _meas; }
+      Measure* meas() const { return _meas; }
       };
 
 typedef QList<JumpMarkerDesc> JumpMarkerDescList;
@@ -141,6 +141,7 @@ typedef QList<JumpMarkerDesc> JumpMarkerDescList;
 //---------------------------------------------------------
 
 typedef std::vector<MusicXmlPartGroup*> MusicXmlPartGroupList;
+typedef QMap<SLine*, QPair<int, int> > MusicXmlSpannerMap;
 
 /**
  The MusicXML importer.
@@ -154,7 +155,6 @@ class MusicXml {
       Fraction fractionTSig;                    ///< Current timesig as fraction
 
       Slur* slur[MAX_NUMBER_LEVEL];
-
       TextLine* bracket[MAX_BRACKETS];
       TextLine* dashes[MAX_DASHES];
 
@@ -177,11 +177,12 @@ class MusicXml {
       JumpMarkerDescList jumpsMarkers;
 
       MusicXmlPartGroupList partGroupList;
-      QMap<Spanner*, QPair<int, int> > spanners;
+      MusicXmlSpannerMap spanners;
 
       Ottava* ottava;                            ///< Current ottava
       Trill* trill;                              ///< Current trill
       Pedal* pedal;                              ///< Current pedal
+      Pedal* pedalContinue;                      ///< Current pedal type="change" requiring fixup
       Harmony* harmony;                          ///< Current harmony
       Hairpin* hairpin;                          ///< Current hairpin (obsoletes wedgelist)
       Chord* tremStart;                          ///< Starting chord for current tremolo
@@ -203,18 +204,19 @@ class MusicXml {
       void xmlPart(QDomElement, QString id);
       void xmlScorePart(QDomElement node, QString id, int& parts);
       Measure* xmlMeasure(Part*, QDomElement, int, Fraction measureLen, KeySig*);
-      void xmlAttributes(Measure*, int stave, QDomElement node, KeySig*);   
+      void xmlAttributes(Measure*, int stave, QDomElement node, KeySig*);
       void xmlLyric(int trk, QDomElement e,
                     QMap<int, Lyrics*>& numbrdLyrics,
                     QMap<int, Lyrics*>& defyLyrics,
                     QList<Lyrics*>& unNumbrdLyrics);
-      void xmlNotations(Note* note, ChordRest* cr, int trk, int ticks, QDomElement node);
+      void xmlNotations(Note* note, ChordRest* cr, int trk, int tick, int ticks, QDomElement node);
       Note* xmlNote(Measure*, int stave, const QString& partId, Beam*& beam, QString& currentVoice, QDomElement node, QList<Chord*>& graceNotes, int& alt);
       void xmlHarmony(QDomElement node, int tick, Measure* m, int staff);
       StaffTypes xmlClef(QDomElement, int staffIdx, Measure*);
       void readPageFormat(PageFormat* pf, QDomElement de, qreal conversion);
       QList<QDomElement> findSlurElements(QDomElement);
       void addGraceNoteAfter(Chord*, Segment*);
+      void initPartState();
 public:
       MusicXml(QDomDocument* d, MxmlReaderFirstPass const& p1);
       void import(Score*);

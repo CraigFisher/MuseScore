@@ -19,37 +19,27 @@
 #=============================================================================
 
 install(FILES
-      instruments_ca.xml
-      instruments_de.xml
-      instruments_es.xml
-      instruments_fr.xml
-      instruments_gl.xml
-      instruments_it.xml
-      instruments_ja.xml
-      instruments_nb.xml
-      instruments_nl.xml
-      instruments_pt.xml
-      instruments_pt_BR.xml
-      instruments_ru.xml
-      instruments_uk.xml
-      instruments_zh_CN.xml
-      instruments_zh_TW.xml
-      instruments.xml
-      instruments-band.xml
-      Chamber\ Orchestra.mscx
-      Choir\ SATB.mscx
-      Choir\ SATB\ with\ Piano.mscx
-      Concert\ Band.mscx
-      Hymn.mscz
-      Lead\ Sheet.mscx
-      Piano.mscx
-      Guitar\ Tab.mscx
-      carol.mscx
-      Jazz\ Lead\ Sheet.mscz
-      Jazz\ Big\ Band.mscz
-      Jazz\ Combo.mscz
-      UK\ Brass\ Band.mscz
       drumset_fr.drm
+      01-General-Bass_Clef.mscx
+      01-General-Treble_Clef.mscx
+      02-Choral-Liturgical_Unmetrical.mscx
+      02-Choral-Liturgical_Unmetrical_with_Organ.mscx
+      02-Choral-SATB.mscx
+      02-Choral-SATB_Closed_Score.mscx
+      02-Choral-SATB_Closed_Score_with_Organ.mscx
+      02-Choral-SATB_Closed_Score_with_Piano.mscx
+      02-Choral-SATB_with_Organ.mscx
+      02-Choral-SATB_with_Piano.mscx
+      02-Choral-Voice_Piano.mscx
+      03-Solo-Guitar.mscx
+      03-Solo-Guitar_Standard_Tablature.mscx
+      03-Solo-Guitar_Tablature.mscx
+      03-Solo-Piano.mscx
+      04-Jazz-Jazz_Big_Band.mscx
+      04-Jazz-Jazz_Combo.mscx
+      04-Jazz-Jazz_Lead_Sheet.mscx
+      05-Orchestral-Classical_Orchestra.mscx
+      06-Band-Rock_Band.mscx
       DESTINATION ${Mscore_SHARE_NAME}${Mscore_INSTALL_NAME}templates
       )
 

@@ -272,6 +272,31 @@ Chord::Chord(const Chord& c, bool link)
       }
 
 //---------------------------------------------------------
+//   undoUnlink
+//---------------------------------------------------------
+
+void Chord::undoUnlink()
+      {
+      ChordRest::undoUnlink();
+      for (Note* n : _notes)
+            n->undoUnlink();
+      for (Chord* gn : graceNotes())
+            gn->undoUnlink();
+
+      if (_glissando)
+            _glissando->undoUnlink();
+      if (_arpeggio)
+            _arpeggio->undoUnlink();
+      if (_tremolo && !_tremolo->twoNotes())
+            _tremolo->undoUnlink();
+
+      for (Element* e : el()) {
+            if (e->type() == Element::Type::CHORDLINE)
+                  e->undoUnlink();
+            }
+      }
+
+//---------------------------------------------------------
 //   ~Chord
 //---------------------------------------------------------
 
@@ -858,6 +883,13 @@ void Chord::computeUp()
       // PITCHED STAVES (or TAB with stems through staves)
       if (_stemDirection != MScore::Direction::AUTO) {
             _up = _stemDirection == MScore::Direction::UP;
+            }
+      else if (!parent()) {
+            // hack for palette and drumset editor
+            if (upNote()->line() > 4)
+                  _up = true;
+            else
+                  _up = false;
             }
       else if (_noteType != NoteType::NORMAL) {
             //
@@ -1604,7 +1636,7 @@ void Chord::updateNotes(AccidentalState* as)
             c->updateNotes(as);
 
       Drumset* drumset = 0;
-      if (staff()->part()->instr()->useDrumset())
+      if (staff()->part()->instr()->useDrumset() != DrumsetKind::NONE)
             drumset = staff()->part()->instr()->drumset();
 
       QList<Note*> nl(notes());
@@ -1853,8 +1885,9 @@ void Chord::layoutPitched()
             ll->layout();
 
       if (_arpeggio) {
+            qreal arpeggioDistance = score()->styleS(StyleIdx::ArpeggioNoteDistance).val() * score()->spatium() * mag();
             _arpeggio->layout();    // only for width() !
-            lll        += _arpeggio->width() + _spatium * .5 + chordX;
+            lll        += _arpeggio->width() + arpeggioDistance + chordX;
             qreal y1   = upnote->pos().y() - upnote->headHeight() * .5;
             _arpeggio->setPos(-lll, y1);
             _arpeggio->adjustReadPos();
@@ -2002,7 +2035,7 @@ void Chord::layoutPitched()
                  case TDuration::DurationType::V_WHOLE:   fc = 3.8; break;
                  case TDuration::DurationType::V_HALF:    fc = 3.6; break;
                  case TDuration::DurationType::V_QUARTER: fc = 2.1; break;
-                 case TDuration::DurationType::V_EIGHT:   fc = 1.4; break;
+                 case TDuration::DurationType::V_EIGHTH:  fc = 1.4; break;
                  case TDuration::DurationType::V_16TH:    fc = 1.2; break;
                  default: fc = 1;
                  }
@@ -2088,10 +2121,14 @@ void Chord::layoutTablature()
       // remove stems
       if (tab->slashStyle() || _noStem || durationType().type() <
          (tab->minimStyle() != TablatureMinimStyle::NONE ? TDuration::DurationType::V_HALF : TDuration::DurationType::V_QUARTER) ) {
-            delete _stem;
-            delete _hook;
-            _stem = 0;
-            _hook = 0;
+            // delete _stem;
+            // delete _hook;
+            // _stem = 0;
+            // _hook = 0;
+            if (_stem)
+                  score()->undo(new RemoveElement(_stem));
+            if (_hook)
+                  score()->undo(new RemoveElement(_hook));
             }
       // if stem is required but missing, add it;
       // set stem position (stem length is set in Chord:layoutStem() )
@@ -2221,7 +2258,7 @@ void Chord::layoutTablature()
                  case TDuration::DurationType::V_WHOLE:   fc = 3.8; break;
                  case TDuration::DurationType::V_HALF:    fc = 3.6; break;
                  case TDuration::DurationType::V_QUARTER: fc = 2.1; break;
-                 case TDuration::DurationType::V_EIGHT:   fc = 1.4; break;
+                 case TDuration::DurationType::V_EIGHTH:  fc = 1.4; break;
                  case TDuration::DurationType::V_16TH:    fc = 1.2; break;
                  default: fc = 1;
                  }
@@ -2471,7 +2508,7 @@ QVariant Chord::propertyDefault(P_ID propertyId) const
             case P_ID::SMALL:          return false;
             case P_ID::STEM_DIRECTION: return int(MScore::Direction::AUTO);
             default:
-                  return ChordRest::getProperty(propertyId);
+                  return ChordRest::propertyDefault(propertyId);
             }
       }
 
@@ -2584,6 +2621,30 @@ QPointF Chord::layoutArticulation(Articulation* a)
             a->setPos(pos);
             a->adjustReadPos();
             return QPointF(pos);
+            }
+
+      // Lute fingering are always in the middle of the space right below the fret mark,
+      else if (staff() && staff()->staffGroup() == StaffGroup::TAB
+                  && st >= ArticulationType::LuteFingThumb && st <= ArticulationType::LuteFingThird) {
+            // lute fing. glyphs are vertically registered in the middle of bottom space;
+            // move down of half a space to have the glyph on the line
+            y = chordBotY + _spatium * 0.5;
+            if (staff()->staffType()->onLines()) {          // if fret marks are on lines
+                  // move down by half the height of fret marks (extending below the line)
+                  // and half of the remaing space below,
+                  // to centre the symbol between the fret mark and the line below
+                  // fretBoxH/2 + (spStaff - fretBoxH/2) / 2 becomes:
+                  y += (staff()->staffType()->fretBoxH()*0.5 + _spStaff) * 0.5;
+                  }
+            else {                                          // if marks are between lines
+                  // move down by half a sp to pace the glyph right below the mark,
+                  // and not too far away (as it would have been, if centred in the line space below)
+                  y += _spatium * 0.5;
+                  }
+            a->layout();
+            a->setPos(x, y);
+            a->adjustReadPos();
+            return QPointF(x, y);
             }
 
       // other articulations are outside of area occupied by the staff or the chord
@@ -2834,6 +2895,72 @@ TremoloChordType Chord::tremoloChordType() const
                   }
             }
       return TremoloChordType::TremoloSingle;
+      }
+
+
+//---------------------------------------------------------
+//   nextElement
+//---------------------------------------------------------
+
+Element* Chord::nextElement()
+      {
+      for (int v = track() + 1; staffIdx() == v/VOICES; ++v) {
+            Element* e = segment()->element(v);
+            if (e) {
+                  if (e->type() == Element::Type::CHORD)
+                        return static_cast<Chord*>(e)->notes().back();
+
+                  return e;
+                  }
+            }
+
+      return ChordRest::nextElement();
+      }
+
+//---------------------------------------------------------
+//   prevElement
+//---------------------------------------------------------
+
+Element* Chord::prevElement()
+      {
+      for (int v = track() - 1; staffIdx() == v/VOICES; --v) {
+            Element* e = segment()->element(v);
+            if (e) {
+                  if (e->type() == Element::Type::CHORD)
+                        return static_cast<Chord*>(e)->notes().first();
+
+                  return e;
+                  }
+            }
+
+      return ChordRest::prevElement();
+      }
+
+QString Chord::accessibleExtraInfo()
+      {
+      QString rez = "";
+
+      if (!isGrace()) {
+            foreach (Chord* c, graceNotes()) {
+                  foreach (Note* n, c->notes()) {
+                        rez = QString("%1 %2").arg(rez).arg(n->screenReaderInfo());
+                        }
+                  }
+            }
+
+      if (arpeggio())
+            rez = QString("%1 %2").arg(rez).arg(arpeggio()->screenReaderInfo());
+
+      if (tremolo())
+            rez = QString("%1 %2").arg(rez).arg(tremolo()->screenReaderInfo());
+
+      if (glissando())
+            rez = QString("%1 %2").arg(rez).arg(glissando()->screenReaderInfo());
+
+      foreach (Element* e, el())
+            rez = QString("%1 %2").arg(rez).arg(e->screenReaderInfo());
+
+      return QString("%1 %2").arg(rez).arg(ChordRest::accessibleExtraInfo());
       }
 }
 

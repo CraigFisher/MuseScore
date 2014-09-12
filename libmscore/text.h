@@ -179,6 +179,7 @@ class Text : public Element {
       Q_PROPERTY(QString text READ text WRITE undoSetText)
 
       QString _text;
+      static QString oldText;      // used to remember original text in edit mode
       QList<TextBlock> _layout;
       TextStyleType _styleIndex;
 
@@ -293,7 +294,7 @@ class Text : public Element {
       bool setProperty(P_ID propertyId, const QVariant& v);
       virtual QVariant propertyDefault(P_ID id) const;
 
-      virtual bool acceptDrop(MuseScoreView*, const QPointF&, Element*) const override;
+      virtual bool acceptDrop(const DropData&) const override;
       virtual Element* drop(const DropData&) override;
 
       friend class TextBlock;
@@ -303,6 +304,7 @@ class Text : public Element {
       static QString convertToHtml(const QString&, const TextStyle&);
 
       void undoSetText(const QString& s) { undoChangeProperty(P_ID::TEXT, s); }
+      virtual QString accessibleInfo() override;
       };
 
 

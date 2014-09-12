@@ -75,7 +75,8 @@ void Lyrics::scanElements(void* data, void (*func)(void*, Element*), bool)
 
 void Lyrics::write(Xml& xml) const
       {
-      if(!xml.canWrite(this)) return;
+      if (!xml.canWrite(this))
+            return;
       xml.stag("Lyrics");
       if (_no)
             xml.tag("no", _no);
@@ -85,8 +86,8 @@ void Lyrics::write(Xml& xml) const
                   };
             xml.tag("syllabic", sl[int(_syllabic)]);
             }
-      if (_ticks)
-            xml.tag("ticks", _ticks);
+      writeProperty(xml, P_ID::LYRIC_TICKS);
+
       Text::writeProperties(xml);
       if (_verseNumber) {
             xml.stag("Number");
@@ -223,13 +224,30 @@ void Lyrics::layout1()
       int line = ll->indexOf(this);
       qreal y  = lh * line + point(score()->styleS(StyleIdx::lyricsDistance));
       qreal x  = 0.0;
+
       //
-      // left align if syllable has a number or is a melisma
+      // left align if syllable has a number or is a melisma or is first syllable of hyphenated word
       //
-      if (_ticks == 0 && (textStyle().align() & AlignmentFlags::HCENTER) && !_verseNumber)
-            x += symWidth(SymId::noteheadBlack) * .5;
-      else if (_ticks || ((textStyle().align() & AlignmentFlags::HCENTER) && _verseNumber))
-            x += width() * .5;
+      ChordRest* cr = chordRest();
+      qreal maxWidth;
+      if (cr->type() == Element::Type::CHORD)
+            maxWidth = static_cast<Chord*>(cr)->maxHeadWidth();
+      else
+            maxWidth = cr->width();       // TODO: exclude ledger line for multivoice rest?
+      qreal nominalWidth = symWidth(SymId::noteheadBlack);
+      bool hyphenatedMelisma = false;
+      if (_syllabic == Syllabic::BEGIN || _syllabic == Syllabic::MIDDLE) {
+            // hyphenated syllables representing melismas need to be left aligned
+            // detecting this means finding next CR on same track and checking for existence of lyric in same verse
+            Segment* s = cr->segment()->next1();
+            ChordRest* ncr = s ? s->nextChordRest(cr->track()) : nullptr;
+            if (ncr && !ncr->lyrics(_no))
+                  hyphenatedMelisma = true;
+            }
+      if (_ticks == 0 && !hyphenatedMelisma && (textStyle().align() & AlignmentFlags::HCENTER) && !_verseNumber)
+            x +=  nominalWidth * .5 - cr->x();
+      else if (_ticks || hyphenatedMelisma || ((textStyle().align() & AlignmentFlags::HCENTER) && _verseNumber))
+            x += (width() + nominalWidth - maxWidth) * .5 - cr->x();
       rxpos() += x;
       rypos() += y;
       if (_verseNumber) {
@@ -253,7 +271,7 @@ void Lyrics::paste(MuseScoreView* scoreview)
       QStringList sl = txt.split(QRegExp("\\s+"), QString::SkipEmptyParts);
       if (sl.isEmpty())
             return;
-      
+
       QStringList hyph = sl[0].split("-");
       bool minus = false;
       if(hyph.length() > 1) {
@@ -298,9 +316,9 @@ int Lyrics::endTick() const
 //   acceptDrop
 //---------------------------------------------------------
 
-bool Lyrics::acceptDrop(MuseScoreView*, const QPointF&, Element* e) const
+bool Lyrics::acceptDrop(const DropData& data) const
       {
-      return e->type() == Element::Type::TEXT;
+      return data.element->type() == Element::Type::TEXT;
       }
 
 //---------------------------------------------------------
@@ -352,7 +370,11 @@ void Lyrics::endEdit()
 
 QVariant Lyrics::getProperty(P_ID propertyId) const
       {
-      switch(propertyId) {
+      switch (propertyId) {
+            case P_ID::SYLLABIC:
+                  return int(_syllabic);
+            case P_ID::LYRIC_TICKS:
+                  return _ticks;
             default:
                   return Text::getProperty(propertyId);
             }
@@ -364,7 +386,13 @@ QVariant Lyrics::getProperty(P_ID propertyId) const
 
 bool Lyrics::setProperty(P_ID propertyId, const QVariant& v)
       {
-      switch(propertyId) {
+      switch (propertyId) {
+            case P_ID::SYLLABIC:
+                  _syllabic = Syllabic(v.toInt());
+                  break;
+            case P_ID::LYRIC_TICKS:
+                  _ticks = v.toInt();
+                  break;
             default:
                   if (!Text::setProperty(propertyId, v))
                         return false;
@@ -380,7 +408,11 @@ bool Lyrics::setProperty(P_ID propertyId, const QVariant& v)
 
 QVariant Lyrics::propertyDefault(P_ID id) const
       {
-      switch(id) {
+      switch (id) {
+            case P_ID::SYLLABIC:
+                  return int(Syllabic::SINGLE);
+            case P_ID::LYRIC_TICKS:
+                  return 0;
             default: return Text::propertyDefault(id);
             }
       }

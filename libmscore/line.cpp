@@ -17,12 +17,12 @@
 #include "score.h"
 #include "xml.h"
 #include "system.h"
+#include "staff.h"
 #include "utils.h"
 #include "barline.h"
 #include "chord.h"
 
 namespace Ms {
-
 
 //---------------------------------------------------------
 //   LineSegment
@@ -80,7 +80,7 @@ void LineSegment::read(XmlReader& e)
 
 void LineSegment::updateGrips(int* grips, int* defaultGrip, QRectF* grip) const
       {
-      *grips = 3;
+      *grips       = 3;
       *defaultGrip = 2;
       QPointF pp(pagePos());
       grip[int(GripLine::START)].translate(pp);
@@ -109,7 +109,7 @@ void LineSegment::setGrip(int grip, const QPointF& p)
             case GripLine::MIDDLE:
                   setUserOff(pt);
                   break;
-            default:
+            case GripLine::APERTURE:
                   break;
             }
       layout();   // needed?
@@ -132,7 +132,7 @@ QPointF LineSegment::getGrip(int grip) const
             case GripLine::MIDDLE:
                   p = userOff();
                   break;
-            default:
+            case GripLine::APERTURE:
                   break;
             }
       p /= spatium();
@@ -144,12 +144,13 @@ QPointF LineSegment::getGrip(int grip) const
 //    return page coordinates
 //---------------------------------------------------------
 
-QPointF LineSegment::gripAnchor(int grip) const
+QPointF LineSegment::gripAnchor(int _grip) const
       {
+      GripLine grip = (GripLine)_grip;
       qreal y = system()->staffYpage(staffIdx());
       if (spannerSegmentType() == SpannerSegmentType::MIDDLE) {
             qreal x;
-            switch((GripLine)grip) {
+            switch (grip) {
                   case GripLine::START:
                         x = system()->firstMeasure()->abbox().left();
                         break;
@@ -166,7 +167,7 @@ QPointF LineSegment::gripAnchor(int grip) const
             return QPointF(x, y);
             }
       else {
-            if (grip == int(GripLine::MIDDLE) || grip == int(GripLine::APERTURE)) // center grip or aperture grip
+            if (grip == GripLine::MIDDLE || grip == GripLine::APERTURE) // center grip or aperture grip
                   return QPointF(0, 0);
             else {
                   System* s;
@@ -218,7 +219,11 @@ bool LineSegment::edit(MuseScoreView* sv, int curGrip, int key, Qt::KeyboardModi
                         if ((s2->system()->firstMeasure() == s2->measure())
                            && (s2->tick() == s2->measure()->tick()))
                               bspDirty = true;
-                        s2 = nextSeg1(s2, track);
+                        Segment* ns2 = nextSeg1(s2, track);
+                        if (ns2)
+                              s2 = ns2;
+                        else
+                              s2 = score()->lastSegment();
                         }
                   }
             if (s1 == 0 || s2 == 0 || s1->tick() >= s2->tick())
@@ -412,6 +417,21 @@ QVariant LineSegment::propertyDefault(P_ID id) const
       }
 
 //---------------------------------------------------------
+//   dragAnchor
+//---------------------------------------------------------
+
+QLineF LineSegment::dragAnchor() const
+      {
+      if (spannerSegmentType() != SpannerSegmentType::SINGLE && spannerSegmentType() != SpannerSegmentType::BEGIN)
+            return QLineF();
+      System* s;
+      QPointF p = line()->linePos(GripLine::START, &s);
+      p += QPointF(s->canvasPos().x(), s->staffYpage(line()->staffIdx()));
+
+      return QLineF(p, canvasPos());
+      }
+
+//---------------------------------------------------------
 //   SLine
 //---------------------------------------------------------
 
@@ -439,20 +459,54 @@ SLine::SLine(const SLine& s)
 //    return System/Staff coordinates
 //---------------------------------------------------------
 
-QPointF SLine::linePos(GripLine grip, System** sys)
+QPointF SLine::linePos(GripLine grip, System** sys) const
       {
       qreal x = 0.0;
       switch (anchor()) {
             case Spanner::Anchor::SEGMENT:
                   {
                   ChordRest* cr;
-                  if (grip == GripLine::START)
+                  if (grip == GripLine::START) {
                         cr = static_cast<ChordRest*>(startElement());
+                        }
                   else {
                         cr = static_cast<ChordRest*>(endElement());
-                        if (cr)
-                              x += cr->width();
+                        if (type() == Element::Type::OTTAVA) {
+                              // lay out to right edge of note (including dots)
+                              if (cr)
+                                    x += cr->segment()->width();
+                              }
+                        else if (type() == Element::Type::HAIRPIN || type() == Element::Type::TRILL || type() == Element::Type::TEXTLINE) {
+                              // lay out all the way to next CR or (almost to) barline
+                              if (cr && endElement()->parent() && endElement()->parent()->type() == Element::Type::SEGMENT) {
+                                    qreal x2 = 0.0;
+                                    qreal sp = endElement()->staff()->spatium();
+                                    int t = track2();
+                                    Segment* seg = static_cast<Segment*>(endElement()->parent())->next();
+                                    for ( ; seg; seg = seg->next()) {
+                                          if (seg->segmentType() == Segment::Type::ChordRest) {
+                                                if (t != -1 && !seg->element(t)) {
+                                                      continue;
+                                                      }
+                                                x2 = seg->x() - sp;     // 1sp shy of next chord
+                                                break;
+                                                }
+                                          else if (seg->segmentType() == Segment::Type::EndBarLine) {
+                                                x2 = seg->x() - sp;
+                                                break;
+                                                }
+                                          }
+                                    if (!seg) {
+                                          // no end segment found, use measure width
+                                          x2 = endElement()->parent()->parent()->width() - sp;
+                                          }
+                                    x += x2 - endElement()->parent()->x();
+                                    }
+                              }
                         }
+
+                  if (cr && cr->durationType() == TDuration::DurationType::V_MEASURE)
+                        x -= cr->x();
 
                   int t = grip == GripLine::START ? tick() : tick2();
                   Measure* m = cr ? cr->measure() : score()->tick2measure(t);
@@ -536,9 +590,10 @@ QPointF SLine::linePos(GripLine grip, System** sys)
 
 void SLine::layout()
       {
-      if (score() == gscore || tick() == -1 || tick2() == -1) {
+      if (score() == gscore || tick() == -1 || tick2() == 1) {
             //
-            // when used in a palette, SLine has no parent and
+            // when used in a palette or while dragging from palette,
+            // SLine has no parent and
             // tick and tick2 has no meaning so no layout is
             // possible and needed
             //
@@ -662,7 +717,10 @@ void SLine::layout()
 
 void SLine::writeProperties(Xml& xml) const
       {
-      Element::writeProperties(xml);
+      if (!endElement()) {
+            xml.tag("ticks", ticks());
+            }
+      Spanner::writeProperties(xml);
       if (_diagonal)
             xml.tag("diagonal", _diagonal);
       if (propertyStyle(P_ID::LINE_WIDTH) != PropertyStyle::STYLED)
@@ -723,10 +781,15 @@ bool SLine::readProperties(XmlReader& e)
       {
       const QStringRef& tag(e.name());
 
-      if (tag == "tick2")                 // obsolete
+      if (tag == "tick2") {                // obsolete
+            if (tick() == -1) // not necessarily set (for first note of score?) #30151
+                  setTick(e.tick());
             setTick2(e.readInt());
+            }
       else if (tag == "tick")             // obsolete
             setTick(e.readInt());
+      else if (tag == "ticks")
+            setTicks(e.readInt());
       else if (tag == "Segment") {
             LineSegment* ls = createLineSegment();
             ls->read(e);

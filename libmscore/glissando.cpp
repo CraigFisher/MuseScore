@@ -152,7 +152,8 @@ void Glissando::layout()
 
 void Glissando::write(Xml& xml) const
       {
-      if (!xml.canWrite(this)) return;
+      if (!xml.canWrite(this))
+            return;
       xml.stag("Glissando");
       if (_showText && !_text.isEmpty())
             xml.tag("text", _text);
@@ -221,7 +222,7 @@ void Glissando::draw(QPainter* painter) const
             if (r.width() < l) {
                   qreal yOffset = r.height() + r.y();       // find text descender height
                   // raise text slightly above line and slightly more with WAVY than with STRAIGHT
-                  yOffset += _spatium * (glissandoType() == Type::WAVY ? 0.3 : 0.05);
+                  yOffset += _spatium * (glissandoType() == Type::WAVY ? 0.75 : 0.05);
                   painter->setFont(f);
                   qreal x = (l - r.width()) * 0.5;
                   painter->drawText(QPointF(x, -yOffset), _text);

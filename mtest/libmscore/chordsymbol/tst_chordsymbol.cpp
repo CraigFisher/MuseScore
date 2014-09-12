@@ -14,6 +14,9 @@
 #include <QtTest/QtTest>
 #include "mtest/testutils.h"
 #include "libmscore/score.h"
+#include "libmscore/undo.h"
+#include "libmscore/excerpt.h"
+#include "libmscore/part.h"
 #include "libmscore/measure.h"
 #include "libmscore/segment.h"
 #include "libmscore/chordrest.h"
@@ -41,6 +44,7 @@ class TestChordSymbol : public QObject, public MTest {
       void testClear();
       void testAddLink();
       void testAddPart();
+      void testNoSystem();
       };
 
 //---------------------------------------------------------
@@ -120,6 +124,42 @@ void TestChordSymbol::testAddPart()
       score->undoAddElement(harmony);
       score->doLayout();
       test_post(score, "add-part");
+      }
+
+void TestChordSymbol::testNoSystem()
+      {
+      Score* score = test_pre("no-system");
+
+      //
+      // create first part
+      //
+      QList<Part*> parts;
+      parts.append(score->parts().at(0));
+
+      Score* nscore = new Score(score);
+      score->undo(new AddExcerpt(nscore));
+
+      ::createExcerpt(nscore, parts);
+      QVERIFY(nscore);
+
+      nscore->setName(parts.front()->partName());
+      nscore->style()->set(StyleIdx::createMultiMeasureRests, true);
+
+      //
+      // create second part
+      //
+      parts.clear();
+      parts.append(score->parts().at(1));
+      nscore = new Score(score);
+      score->undo(new AddExcerpt(nscore));
+      ::createExcerpt(nscore, parts);
+      QVERIFY(nscore);
+
+      nscore->setName(parts.front()->partName());
+      nscore->style()->set(StyleIdx::createMultiMeasureRests, true);
+
+      score->doLayout();
+      test_post(score, "no-system");
       }
 
 QTEST_MAIN(TestChordSymbol)

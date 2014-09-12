@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<museScore version="1.24">
+<museScore version="2.00">
   <Score>
     <LayerTag id="0" tag="default"></LayerTag>
     <currentLayer>0</currentLayer>
@@ -121,7 +121,6 @@
           <durationType>quarter</durationType>
           <Note>
             <Fingering>
-              <pos x="0.663786" y="-1.59871"/>
               <text>0</text>
               </Fingering>
             <pitch>72</pitch>
@@ -132,7 +131,6 @@
           <durationType>quarter</durationType>
           <Note>
             <Fingering>
-              <pos x="0.663786" y="-1.59871"/>
               <text>1</text>
               </Fingering>
             <pitch>74</pitch>
@@ -143,7 +141,6 @@
           <durationType>quarter</durationType>
           <Note>
             <Fingering>
-              <pos x="0.663786" y="-1.59871"/>
               <text>5</text>
               </Fingering>
             <pitch>76</pitch>
@@ -154,7 +151,6 @@
           <durationType>quarter</durationType>
           <Note>
             <Fingering>
-              <pos x="0.663786" y="-1.59871"/>
               <text>3</text>
               </Fingering>
             <pitch>77</pitch>

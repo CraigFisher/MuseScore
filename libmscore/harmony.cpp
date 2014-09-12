@@ -184,7 +184,8 @@ Harmony::~Harmony()
 
 void Harmony::write(Xml& xml) const
       {
-      if (!xml.canWrite(this)) return;
+      if (!xml.canWrite(this))
+            return;
       xml.stag("Harmony");
       if (_leftParen)
             xml.tagE("leftParen");
@@ -202,8 +203,13 @@ void Harmony::write(Xml& xml) const
                   xml.tag("root", rRootTpc);
             if (_id > 0)
                   xml.tag("extension", _id);
-            if (_textName != "")
-                  xml.tag("name", _textName);
+            // parser uses leading "=" as a hidden specifier for minor
+            QString writeName = _textName;
+            if (_parsedForm && _parsedForm->name().startsWith("="))
+                  writeName = "=" + writeName;
+            if (writeName != "")
+                  xml.tag("name", writeName);
+
             if (rBaseTpc != Tpc::TPC_INVALID)
                   xml.tag("base", rBaseTpc);
             foreach(const HDegree& hd, _degreeList) {
@@ -314,21 +320,29 @@ void Harmony::read(XmlReader& e)
       // or constructed in the Chord Symbol Properties dialog.
 
       if (_rootTpc != Tpc::TPC_INVALID) {
-            if (_id > 0)
+            if (_id > 0) {
+                  // positive id will happen only for scores that were created with explicit chord lists
                   // lookup id in chord list and generate new description if necessary
                   getDescription();
-            else if (_textName != "")
-                  // no id - look up name, in case it is in chord list with no id
+                  }
+            else
+                  {
+                  // default case: look up by name
+                  // description will be found for any chord already read in this score
+                  // and we will generate a new one if necessary
                   getDescription(_textName);
+                  }
             }
       else if (_textName == "") {
             // unrecognized chords prior to 2.0 were stored as text with markup
             // we need to strip away the markup
             // this removes any user-applied formatting,
             // but we no longer support user-applied formatting for chord symbols anyhow
+            // with any luck, the resulting text will be parseable now, so give it a shot
             createLayout();
-            _textName = plainText();
-            setText(_textName);
+            QString s = plainText(true);
+            setHarmony(s);
+            return;
             }
 
       // render chord from description (or _textName)
@@ -616,9 +630,21 @@ void Harmony::endEdit()
                         continue;
                   Harmony* h = static_cast<Harmony*>(e);
                   h->setHarmony(text());
+                  // transpose if necessary
+                  if (score()->styleB(StyleIdx::concertPitch) != h->score()->styleB(StyleIdx::concertPitch)) {
+                        Part* partDest = h->staff()->part();
+                        Interval interval = partDest->instr()->transpose();
+                        if (!interval.isZero()) {
+                              if (!h->score()->styleB(StyleIdx::concertPitch))
+                                    interval.flip();
+                              int rootTpc = transposeTpc(h->rootTpc(), interval, false);
+                              int baseTpc = transposeTpc(h->baseTpc(), interval, false);
+                              h->score()->undoTransposeHarmony(h, rootTpc, baseTpc);
+                              }
+                        }
                   }
             }
-      score()->setLayoutAll(true);
+      score()->setLayoutAll(true);  // done in Text::endEdit() too, but no harm being sure
       }
 
 //---------------------------------------------------------
@@ -823,7 +849,7 @@ const ChordDescription* Harmony::getDescription()
 
 const ChordDescription* Harmony::getDescription(const QString& name, const ParsedChord* pc)
       {
-      const ChordDescription* cd = descr(name,pc);
+      const ChordDescription* cd = descr(name, pc);
       if (cd)
             _id = cd->id;
       else {
@@ -1423,5 +1449,59 @@ const QList<HDegree>& Harmony::degreeList() const
       return _degreeList;
       }
 
-}
+//---------------------------------------------------------
+//   parsedForm
+//---------------------------------------------------------
 
+const ParsedChord* Harmony::parsedForm()
+      {
+      if (!_parsedForm) {
+            ChordList* cl = score()->style()->chordList();
+            _parsedForm = new ParsedChord();
+            _parsedForm->parse(_textName, cl, false);
+            }
+      return _parsedForm;
+      }
+
+//---------------------------------------------------------
+//   accessibleInfo
+//---------------------------------------------------------
+
+QString Harmony::accessibleInfo()
+      {
+      return QString("%1: %2").arg(Element::accessibleInfo()).arg(harmonyName());
+      }
+
+//---------------------------------------------------------
+//   screenReaderInfo
+//---------------------------------------------------------
+
+QString Harmony::screenReaderInfo()
+      {
+      QString rez = Element::accessibleInfo();
+      if (_rootTpc != Tpc::TPC_INVALID)
+            rez = QString("%1 %2").arg(rez).arg(tpc2name(_rootTpc, NoteSpellingType::STANDARD, false, true));
+
+      if (parsedForm() && !hTextName().isEmpty()) {
+            QString aux = parsedForm()->handle();
+            aux = aux.replace("#", tr("sharp")).replace("<", "");
+            QString extension = "";
+
+            foreach (QString s, aux.split(">", QString::SkipEmptyParts)) {
+                  if(!s.contains("blues"))
+                        s.replace("b", tr("flat"));
+                  extension += s + " ";
+                  }
+            rez = QString("%1 %2").arg(rez).arg(extension);
+            }
+      else {
+            rez = QString("%1 %2").arg(rez).arg(hTextName());
+            }
+
+      if (_baseTpc != Tpc::TPC_INVALID)
+            rez = QString("%1 / %2").arg(rez).arg(tpc2name(_baseTpc, NoteSpellingType::STANDARD, false, true));
+
+      return rez;
+      }
+
+}

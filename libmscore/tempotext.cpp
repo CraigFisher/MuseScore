@@ -87,15 +87,15 @@ struct TempoPattern {
 // note: findTempoDuration requires the longer patterns to be before the shorter patterns in tp
 
 static const TempoPattern tp[] = {
-      TempoPattern("<sym>noteHalfUp</sym>\\s*<sym>textAugmentationDot</sym>",    1.5/30.0,  TDuration::DurationType::V_HALF, 1),    // dotted 1/2
-      TempoPattern("<sym>noteHalfUp</sym><sym>space</sym><sym>textAugmentationDot</sym>",    1.5/30.0,  TDuration::DurationType::V_HALF, 1),    // dotted 1/2
-      TempoPattern("<sym>noteQuarterUp</sym>\\s*<sym>textAugmentationDot</sym>", 1.5/60.0,  TDuration::DurationType::V_QUARTER, 1), // dotted 1/4
-      TempoPattern("<sym>noteQuarterUp</sym><sym>space</sym><sym>textAugmentationDot</sym>", 1.5/60.0,  TDuration::DurationType::V_QUARTER, 1), // dotted 1/4
-      TempoPattern("<sym>note8thUp</sym>\\s*<sym>textAugmentationDot</sym>",     1.5/120.0, TDuration::DurationType::V_EIGHT, 1),   // dotted 1/8
-      TempoPattern("<sym>note8thUp</sym><sym>space</sym><sym>textAugmentationDot</sym>",     1.5/120.0, TDuration::DurationType::V_EIGHT, 1),   // dotted 1/8
-      TempoPattern("<sym>noteHalfUp</sym>",                                      1.0/30.0,  TDuration::DurationType::V_HALF),       // 1/2
-      TempoPattern("<sym>noteQuarterUp</sym>",                                   1.0/60.0,  TDuration::DurationType::V_QUARTER),    // 1/4
-      TempoPattern("<sym>note8thUp</sym>",                                       1.0/120.0, TDuration::DurationType::V_EIGHT),      // 1/8
+      TempoPattern("<sym>unicodeNoteHalfUp</sym>\\s*<sym>unicodeAugmentationDot</sym>",    1.5/30.0,  TDuration::DurationType::V_HALF, 1),    // dotted 1/2
+      TempoPattern("<sym>unicodeNoteHalfUp</sym><sym>space</sym><sym>unicodeAugmentationDot</sym>",    1.5/30.0,  TDuration::DurationType::V_HALF, 1),    // dotted 1/2
+      TempoPattern("<sym>unicodeNoteQuarterUp</sym>\\s*<sym>unicodeAugmentationDot</sym>", 1.5/60.0,  TDuration::DurationType::V_QUARTER, 1), // dotted 1/4
+      TempoPattern("<sym>unicodeNoteQuarterUp</sym><sym>space</sym><sym>unicodeAugmentationDot</sym>", 1.5/60.0,  TDuration::DurationType::V_QUARTER, 1), // dotted 1/4
+      TempoPattern("<sym>unicodeNote8thUp</sym>\\s*<sym>unicodeAugmentationDot</sym>",     1.5/120.0, TDuration::DurationType::V_EIGHTH, 1),  // dotted 1/8
+      TempoPattern("<sym>unicodeNote8thUp</sym><sym>space</sym><sym>unicodeAugmentationDot</sym>",     1.5/120.0, TDuration::DurationType::V_EIGHTH, 1),  // dotted 1/8
+      TempoPattern("<sym>unicodeNoteHalfUp</sym>",                                      1.0/30.0,  TDuration::DurationType::V_HALF),       // 1/2
+      TempoPattern("<sym>unicodeNoteQuarterUp</sym>",                                   1.0/60.0,  TDuration::DurationType::V_QUARTER),    // 1/4
+      TempoPattern("<sym>unicodeNote8thUp</sym>",                                       1.0/120.0, TDuration::DurationType::V_EIGHTH),     // 1/8
       };
       
 //---------------------------------------------------------
@@ -244,12 +244,57 @@ QVariant TempoText::propertyDefault(P_ID id) const
 
 void TempoText::layout()
       {
-      Text::layout();
+      setPos(textStyle().offset(spatium()));
+      Text::layout1();
+      Segment* s = segment();
+      if (s && !s->rtick()) {
+            // tempo text on first chordrest of measure should align over time sig if present
+            Segment* p = segment()->prev(Segment::Type::TimeSig);
+            if (p) {
+                  rxpos() -= s->x() - p->x();
+                  Element* e = p->element(staffIdx() * VOICES);
+                  if (e)
+                        rxpos() += e->x();
+                  // correct user offset in older scores
+                  if (score()->mscVersion() <= 114 && !userOff().isNull())
+                        rUserXoffset() += s->x() - p->x();
+                  }
+            }
       if (placement() == Element::Placement::BELOW) {
             rypos() = -rypos() + 4 * spatium();
             // rUserYoffset() *= -1;
             // text height ?
             }
+      adjustReadPos();
+      }
+
+QString TempoText::accessibleInfo()
+      {
+      TDuration t;
+      int len;
+      int x = findTempoDuration(plainText(), len, t);
+      if (x != -1) {
+            QString dots;
+
+            switch (t.dots()) {
+                  case 1: dots = tr("Dotted");
+                        break;
+                  case 2: dots = tr("Double dotted");
+                        break;
+                  case 3: dots = tr("Triple dotted");
+                        break;
+                  default:
+                        dots = "";
+                        break;
+                  }
+
+            QString bpm = plainText().split(" = ").back();
+
+            //return Element::accessibleInfo() + dots + " " + t.durationTypeUserName() + " " + tr("note = %1").arg(bpm);
+            return QString("%1: %2 %3 %4").arg(Element::accessibleInfo()).arg(dots).arg(t.durationTypeUserName()).arg(tr("note = %1").arg(bpm));
+            }
+      else
+            return Text::accessibleInfo();
       }
 
 }

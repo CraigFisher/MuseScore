@@ -38,10 +38,10 @@ enum Tpc : signed char {
 
 const int   TPC_DELTA_SEMITONE      = 7;  // the delta in tpc value to go 1 semitone up or down
 const int   TPC_DELTA_ENHARMONIC    = 12; // the delta in tpc value to reach the next (or prev) enharmonic spelling
-const int   TPC_FIRST_STEP          = 3;  // the step of the first valid tpc (= F = step 3)
+//const int   TPC_FIRST_STEP          = 3;  // the step of the first valid tpc (= F = step 3)
 const int   PITCH_DELTA_OCTAVE      = 12; // the delta in pitch value to go 1 octave up or down
 const int   STEP_DELTA_OCTAVE       = 7;  // the number of steps in an octave
-const int   STEP_DELTA_TPC          = 4;  // the number of steps in a tpc step (= a fifth = 4 steps)
+//const int   STEP_DELTA_TPC          = 4;  // the number of steps in a tpc step (= a fifth = 4 steps)
 
 //---------------------------------------------------------
 //   pitch2tpc
@@ -60,8 +60,8 @@ extern void spell(QList<Event>& notes, int);
 extern void spell(QList<Note*>& notes);
 extern int computeWindow(const QList<Note*>& notes, int start, int end);
 extern int tpc(int idx, int pitch, int opt);
-extern QString tpc2name(int tpc, NoteSpellingType spelling, bool lowerCase);
-extern void tpc2name(int tpc, NoteSpellingType spelling, bool lowerCase, QString& s, QString& acc);
+extern QString tpc2name(int tpc, NoteSpellingType spelling, bool lowerCase, bool explicitAccidental = false);
+extern void tpc2name(int tpc, NoteSpellingType spelling, bool lowerCase, QString& s, QString& acc, bool explicitAccidental = false);
 extern void tpc2name(int tpc, NoteSpellingType spelling, bool lowerCase, QString& s, int& acc);
 extern int step2tpc(const QString& stepName, AccidentalVal alter);
 extern int step2tpc(int step);

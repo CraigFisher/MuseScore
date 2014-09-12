@@ -701,5 +701,47 @@ QVariant Ambitus::propertyDefault(P_ID id) const
       return QVariant();
       }
 
+//---------------------------------------------------------
+//   nextElement
+//---------------------------------------------------------
+
+Element* Ambitus::nextElement()
+      {
+      return segment()->firstInNextSegments(staffIdx());
+      }
+
+//---------------------------------------------------------
+//   prevElement
+//---------------------------------------------------------
+
+Element* Ambitus::prevElement()
+      {
+      return segment()->lastInPrevSegments(staffIdx());
+      }
+
+//---------------------------------------------------------
+//   accessibleInfo
+//---------------------------------------------------------
+QString Ambitus::accessibleInfo()
+      {
+      return tr("%1; Top pitch: %2%3; Bottom pitch: %4%5").arg(Element::accessibleInfo())\
+                                                          .arg(tpc2name(topTpc(), NoteSpellingType::STANDARD, false, false))\
+                                                          .arg(QString::number(topOctave()))\
+                                                          .arg(tpc2name(bottomTpc(), NoteSpellingType::STANDARD, false, false))\
+                                                          .arg(QString::number(bottomOctave()));
+      }
+
+//---------------------------------------------------------
+//   screenReaderInfo
+//---------------------------------------------------------
+
+QString Ambitus::screenReaderInfo()
+      {
+      return tr("%1; Top pitch: %2%3; Bottom pitch: %4%5").arg(Element::screenReaderInfo())\
+                                                          .arg(tpc2name(topTpc(), NoteSpellingType::STANDARD, false, true))\
+                                                          .arg(QString::number(topOctave()))\
+                                                          .arg(tpc2name(bottomTpc(), NoteSpellingType::STANDARD, false, true))\
+                                                          .arg(QString::number(bottomOctave()));
+      }
 }
 

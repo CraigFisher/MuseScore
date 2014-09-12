@@ -236,6 +236,7 @@ enum class PasteStatus : char {
 //   @P npages          int               number of pages (read only)
 //   @P nstaves         int               number of staves (read only)
 //   @P ntracks         int               number of tracks (staves * 4) (read only)
+//   @P parts           array[Ms::Part]   the list of parts (read only)
 //---------------------------------------------------------
 
 class Score : public QObject {
@@ -249,6 +250,7 @@ class Score : public QObject {
       Q_PROPERTY(int                npages            READ npages)
       Q_PROPERTY(int                nstaves           READ nstaves)
       Q_PROPERTY(int                ntracks           READ ntracks)
+      Q_PROPERTY(QQmlListProperty<Ms::Part> parts     READ qmlParts)
 
    public:
       enum class FileError : char {
@@ -316,7 +318,7 @@ class Score : public QObject {
       //   modified during cmd processing and used in endCmd() to
       //   determine what to layout and what to repaint:
 
-      QRectF refresh;
+      QRectF refresh;               ///< area to update, canvas coordinates
       LayoutFlags layoutFlags;
 
       bool _updateAll;
@@ -374,6 +376,7 @@ class Score : public QObject {
       PlayMode _playMode;
 
       qreal _noteHeadWidth;
+      QString accInfo;             ///< information used by the screen-reader
 
       //------------------
 
@@ -440,6 +443,8 @@ class Score : public QObject {
       void selectAdd(Element* e);
       void selectRange(Element* e, int staffIdx);
 
+      QQmlListProperty<Ms::Part> qmlParts() { return QQmlListProperty<Ms::Part>(this, _parts); }
+
    protected:
       void createPlayEvents(Chord*);
       SynthesizerState _synthesizerState;
@@ -468,7 +473,6 @@ class Score : public QObject {
       void addMeasure(MeasureBase*, MeasureBase*);
       void readStaff(XmlReader&);
 
-      void cmdInsertPart(Part*, int);
       void cmdRemovePart(Part*);
       void cmdAddTie();
       void cmdAddHairpin(bool);
@@ -510,6 +514,7 @@ class Score : public QObject {
       void undoChangeChordRestSize(ChordRest* cr, bool small);
       void undoChangeChordNoStem(Chord* cr, bool noStem);
       void undoChangePitch(Note* note, int pitch, int tpc1, int tpc2);
+      void undoChangeFretting(Note* note, int pitch, int string, int fret, int tpc1, int tpc2);
       void spellNotelist(QList<Note*>& notes);
       void undoChangeTpc(Note* note, int tpc);
       void undoChangeChordRestLen(ChordRest* cr, const TDuration&);
@@ -520,8 +525,8 @@ class Score : public QObject {
       void undoExchangeVoice(Measure* measure, int val1, int val2, int staff1, int staff2);
       void undoRemovePart(Part* part, int idx);
       void undoInsertPart(Part* part, int idx);
-      void undoRemoveStaff(Staff* staff, int idx);
-      void undoInsertStaff(Staff* staff, int idx);
+      void undoRemoveStaff(Staff* staff);
+      void undoInsertStaff(Staff* staff, int idx, bool createRests=true);
       void undoChangeInvisible(Element*, bool);
       void undoChangeBracketSpan(Staff* staff, int column, int span);
       void undoChangeTuning(Note*, qreal);
@@ -545,7 +550,7 @@ class Score : public QObject {
       void changeCRlen(ChordRest* cr, const TDuration&);
 
       Fraction makeGap(Segment*, int track, const Fraction&, Tuplet*, bool keepChord = false);
-      bool makeGap1(int tick, int staffIdx, Fraction len, int voices);
+      bool makeGap1(int baseTick, int staffIdx, Fraction len, int voiceOffset[VOICES]);
       bool makeGapVoice(Segment* seg, int track, Fraction len, int tick);
 
       Rest* addRest(int tick, int track, TDuration, Tuplet*);
@@ -561,12 +566,10 @@ class Score : public QObject {
       // undo/redo ops
       void addArticulation(ArticulationType);
       void changeAccidental(Accidental::Type);
-      void changeAccidental(Note* oNote, Accidental::Type);
+      void changeAccidental(Note* oNote, Ms::Accidental::Type);
 
       void addElement(Element*);
       void removeElement(Element*);
-
-      void cmdAddSpanner(Spanner* e, const QPointF& pos);
 
       Note* addPitch(NoteVal&, bool addFlag);
       void addPitch(int pitch, bool addFlag);
@@ -748,6 +751,7 @@ class Score : public QObject {
       MidiMapping* midiMapping(int channel)   { return &_midiMapping[channel]; }
       void rebuildMidiMapping();
       void updateChannel();
+      void updateSwing();
 
       void cmdConcertPitchChanged(bool, bool /*useSharpsFlats*/);
 
@@ -812,17 +816,14 @@ class Score : public QObject {
       Ms::Measure* firstMeasureMM() const;
       Ms::Measure* lastMeasure() const;
       Ms::Measure* lastMeasureMM() const;
-//      int measureIdx(MeasureBase*) const;
       MeasureBase* measure(int idx) const;
 
       Q_INVOKABLE Ms::Segment* firstSegment(Segment::Type s = Segment::Type::All) const;
       Ms::Segment* firstSegmentMM(Segment::Type s = Segment::Type::All) const;
       Ms::Segment* lastSegment() const;
 
-      void connectTies();
+      void connectTies(bool silent=false);
 
-//      void add(Element*);
-//      void remove(Element*);
       qreal point(const Spatium sp) const { return sp.val() * spatium(); }
 
       void scanElements(void* data, void (*func)(void*, Element*), bool all=true);
@@ -929,6 +930,7 @@ class Score : public QObject {
       void setInstrumentsChanged(bool val)  { _instrumentsChanged = val; }
       bool selectionChanged() const         { return _selectionChanged; }
       void setSelectionChanged(bool val)    { _selectionChanged = val;  }
+      void setSoloMute();
 
       LayoutMode layoutMode() const         { return _layoutMode; }
       void setLayoutMode(LayoutMode lm);
@@ -966,8 +968,13 @@ class Score : public QObject {
       bool isSpannerStartEnd(int tick, int track) const;
       void removeSpanner(Spanner*);
       void addSpanner(Spanner*);
+      void cmdAddSpanner(Spanner* e, const QPointF& pos);
+      void checkSpanner(int startTick, int lastTick);
+
+      Hairpin* addHairpin(bool crescendo, int tickStart, int tickEnd, int track);
 
       ChordRest* findCR(int tick, int track) const;
+      ChordRest* findCRinStaff(int tick, int track) const;
       void layoutSpanner();
       void insertTime(int tickPos, int tickLen);
 
@@ -987,7 +994,12 @@ class Score : public QObject {
       Element* downAlt(Element*);
       Note* downAltCtrl(Note*) const;
 
+      Element* firstElement();
+      Element* lastElement();
+
       void cmdInsertClef(Clef* clef, ChordRest* cr);
+      void setAccessibleInfo(QString s) { accInfo = s.remove(":").remove(";"); }
+      QString accessibleInfo()          { return accInfo;          }
 
       friend class ChangeSynthesizerState;
       friend class Chord;

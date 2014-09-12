@@ -946,7 +946,8 @@ FiguredBass::~FiguredBass()
 
 void FiguredBass::write(Xml& xml) const
       {
-      if (!xml.canWrite(this)) return;
+      if (!xml.canWrite(this))
+            return;
       xml.stag("FiguredBass");
       if(!onNote())
             xml.tag("onNote", onNote());
@@ -1088,7 +1089,7 @@ NoLen:
 
       // get length of printed lines from horiz. page position of lastCR
       // (enter a bit 'into' the ChordRest for clarity)
-      _printedLineLength = lastCR->pageX() - pageX() + 1.5*spatium();
+      _printedLineLength = lastCR ? lastCR->pageX() - pageX() + 1.5*spatium() : 3 * spatium();
 
       // get duration indicator line(s) from page position of nextSegm
       QList<System*>* systems = score()->systems();
@@ -1528,9 +1529,8 @@ bool FiguredBass::readConfigFile(const QString& fileName)
 
       QFile f(path);
       if (!f.open(QIODevice::ReadOnly)) {
-            QString s = QT_TRANSLATE_NOOP("file", "Cannot open figured bass description:\n%1\n%2");
-            MScore::lastError = s.arg(f.fileName()).arg(f.errorString());
-qDebug("FiguredBass::read failed: <%s>", qPrintable(path));
+            MScore::lastError = tr("Cannot open figured bass description:\n%1\n%2").arg(f.fileName()).arg(f.errorString());
+            qDebug("FiguredBass::read failed: <%s>", qPrintable(path));
             return false;
             }
       XmlReader e(&f);
@@ -1712,7 +1712,7 @@ FiguredBass* Score::addFiguredBass()
                   QMessageBox::information(0,
                      QMessageBox::tr("MuseScore"),
                      QMessageBox::tr("No note or figured bass selected:\n"
-                        "please select a single note or figured bass and retry.\n"),
+                        "Please select a single note or figured bass and retry.\n"),
                      QMessageBox::Ok, QMessageBox::NoButton);
             return 0;
             }

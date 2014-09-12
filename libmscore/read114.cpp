@@ -37,6 +37,7 @@
 #include "tempo.h"
 #include "tempotext.h"
 #include "clef.h"
+#include "barline.h"
 
 namespace Ms {
 
@@ -168,8 +169,14 @@ void Staff::read114(XmlReader& e)
       {
       while (e.readNextStartElement()) {
             const QStringRef& tag(e.name());
-            if (tag == "lines")
-                  setLines(e.readInt());
+            if (tag == "lines") {
+                  int lines = e.readInt();
+                  setLines(lines);
+                  if (lines != 5) {
+                        _barLineFrom = (lines == 1 ? BARLINE_SPAN_1LINESTAFF_FROM : 0);
+                        _barLineTo   = (lines == 1 ? BARLINE_SPAN_1LINESTAFF_TO   : (lines - 1) * 2);
+                        }
+                  }
             else if (tag == "small")
                   setSmall(e.readInt());
             else if (tag == "invisible")
@@ -214,15 +221,14 @@ void Staff::read114(XmlReader& e)
 
 void Part::read114(XmlReader& e)
       {
-      int rstaff = 0;
       while (e.readNextStartElement()) {
             const QStringRef& tag(e.name());
             if (tag == "Staff") {
-                  Staff* staff = new Staff(_score, this, rstaff);
+                  Staff* staff = new Staff(_score);
+                  staff->setPart(this);
                   _score->staves().push_back(staff);
                   _staves.push_back(staff);
                   staff->read114(e);
-                  ++rstaff;
                   }
             else if (tag == "Instrument") {
                   Instrument* instrument = instr(0);
@@ -275,11 +281,21 @@ void Part::read114(XmlReader& e)
       if (_partName.isEmpty())
             _partName = instr(0)->trackName();
 
-      if (instr(0)->useDrumset()) {
+      if (instr(0)->useDrumset() != DrumsetKind::NONE) {
             foreach(Staff* staff, _staves) {
                   int lines = staff->lines();
+                  int bf    = staff->barLineFrom();
+                  int bt    = staff->barLineTo();
                   staff->setStaffType(StaffType::getDefaultPreset(StaffGroup::PERCUSSION));
-                  staff->setLines(lines);
+
+                  // this allows 2/3-line percussion staves to keep the double spacing they had in 1.3
+
+                  if (lines == 2 || lines == 3)
+                        staff->staffType()->setLineDistance(Spatium(2.0));
+
+                  staff->setLines(lines);       // this also sets stepOffset
+                  staff->setBarLineFrom(bf);
+                  staff->setBarLineTo(bt);
                   }
             }
       //set default articulations
@@ -477,9 +493,9 @@ Score::FileError Score::read114(XmlReader& e)
                         e.initTick(s->tick());      // update current tick
                   if (s->track2() == -1)
                         s->setTrack2(s->track());
-                  if (s->tick2() == -1) {
+                  if (s->ticks() == 0) {
                         delete s;
-                        qDebug("invalid spanner %s tick2: %d", s->name(), s->tick2());
+                        qDebug("zero spanner %s ticks: %d", s->name(), s->ticks());
                         }
                   else {
                         addSpanner(s);
@@ -549,6 +565,8 @@ Score::FileError Score::read114(XmlReader& e)
                         qDebug("read114: Key tick %d", tick);
                         continue;
                         }
+                  if (tick == 0 && i->second == Key::C)
+                        continue;
                   Measure* m = tick2measure(tick);
                   if (!m)           //empty score
                         break;
@@ -669,7 +687,7 @@ Score::FileError Score::read114(XmlReader& e)
       _fileDivision = MScore::division;
 
       //
-      //    sanity check for barLineSpan
+      //    sanity check for barLineSpan and update ottavas
       //
       foreach(Staff* staff, _staves) {
             int barLineSpan = staff->barLineSpan();
@@ -679,11 +697,12 @@ Score::FileError Score::read114(XmlReader& e)
                   qDebug("bad span: idx %d  span %d staves %d", idx, barLineSpan, n);
                   staff->setBarLineSpan(n - idx);
                   }
+            staff->updateOttava();
             }
 
       // adjust some styles
-      if (style(StyleIdx::lyricsDistance) == MScore::baseStyle()->value(StyleIdx::lyricsDistance))
-            style()->set(StyleIdx::lyricsDistance, 2.0f);
+      qreal lmbd = styleD(StyleIdx::lyricsMinBottomDistance);
+      style()->set(StyleIdx::lyricsMinBottomDistance, lmbd + 4.0);
       if (style(StyleIdx::voltaY) == MScore::baseStyle()->value(StyleIdx::voltaY))
             style()->set(StyleIdx::voltaY, -2.0f);
       if (style(StyleIdx::hideEmptyStaves).toBool()) // http://musescore.org/en/node/16228
@@ -708,7 +727,7 @@ Score::FileError Score::read114(XmlReader& e)
             qreal tempo = i->second.tempo;
             if (tempomap()->tempo(tick) != tempo) {
                   TempoText* tt = new TempoText(this);
-                  tt->setText(QString("<sym>noteQuarterUp</sym> = %1").arg(qRound(tempo*60)));
+                  tt->setText(QString("<sym>unicodeNoteQuarterUp</sym> = %1").arg(qRound(tempo*60)));
                   tt->setTempo(tempo);
                   tt->setTrack(0);
                   tt->setVisible(false);
@@ -730,15 +749,16 @@ Score::FileError Score::read114(XmlReader& e)
                   _excerpts.removeOne(excerpt);
                   continue;
                   }
-            Score* nscore = Ms::createExcerpt(excerpt->parts());
-            if (nscore) {
+            if (!excerpt->parts().isEmpty()) {
+                  Score* nscore = new Score(this);
+                  excerpt->setScore(nscore);
+                  Ms::createExcerpt(nscore, excerpt->parts());
                   nscore->setName(excerpt->title());
                   nscore->rebuildMidiMapping();
                   nscore->updateChannel();
                   nscore->updateNotes();
                   nscore->addLayoutFlags(LayoutFlag::FIX_PITCH_VELO);
                   nscore->doLayout();
-                  excerpt->setScore(nscore);
                   }
             }
 

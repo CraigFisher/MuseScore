@@ -430,6 +430,7 @@ bool Score::rewriteMeasures(Measure* fm, Measure* lm, const Fraction& ns)
 
       if (!range.write(rootScore(), fm->tick()))
             qFatal("Cannot write measures");
+      connectTies(true);
 
       return true;
       }
@@ -440,12 +441,14 @@ bool Score::rewriteMeasures(Measure* fm, Measure* lm, const Fraction& ns)
 
 static void warnTupletCrossing()
       {
-      if (!MScore::noGui)
-            QMessageBox::warning(0,
-               QT_TRANSLATE_NOOP("addRemoveTimeSig", "MuseScore"),
-               QT_TRANSLATE_NOOP("addRemoveTimeSig", "Cannot rewrite measures:\n"
-               "tuplet would cross measure")
-               );
+      if (!MScore::noGui) {
+            const char* tt = QT_TRANSLATE_NOOP("addRemoveTimeSig", "MuseScore");
+            const char* mt = QT_TRANSLATE_NOOP("addRemoveTimeSig", "Cannot rewrite measures:\n"
+               "Tuplet would cross measure");
+
+            QMessageBox::warning(0, qApp->translate("addRemoveTimeSig", tt),
+               qApp->translate("addRemoveTimeSig", mt));
+            }
       }
 
 //---------------------------------------------------------
@@ -457,6 +460,7 @@ bool Score::rewriteMeasures(Measure* fm, const Fraction& ns)
       {
       Measure* lm  = fm;
       Measure* fm1 = fm;
+
       //
       // split into Measure segments fm-lm
       //
@@ -535,6 +539,7 @@ void Score::cmdAddTimeSig(Measure* fm, int staffIdx, TimeSig* ts, bool local)
             ts->setParent(seg);
             ts->setTrack(track);
             ts->setStretch((ns / fm->timesig()).reduced());
+            ts->setSelected(false);
             undoAddElement(ts);
             timesigStretchChanged(ts, fm, staffIdx);
             return;
@@ -600,6 +605,7 @@ void Score::cmdAddTimeSig(Measure* fm, int staffIdx, TimeSig* ts, bool local)
                         else {
                               undo(new ChangeTimesig(nsig, false, ts->sig(), ts->stretch(),
                                     ts->numeratorString(), ts->denominatorString(), ts->timeSigType()));
+                              nsig->setSelected(false);
                               nsig->setDropTarget(0);       // DEBUG
                               }
                         }
@@ -890,7 +896,7 @@ qDebug("putNote at tick %d staff %d line %d clef %d",
       const StringData* stringData = 0;
       StaffType* tab = 0;
 
-      switch(st->staffType()->group()) {
+      switch (st->staffType()->group()) {
             case StaffGroup::PERCUSSION: {
                   if (_is.rest())
                         break;
@@ -944,7 +950,7 @@ qDebug("putNote at tick %d staff %d line %d clef %d",
             // retrieve total duration of current chord
             TDuration d = cr->durationType();
             // if not in replace mode AND chord duration == input duration AND not rest input
-            // we need to add to current chord (otherwise, we will need to replace it or create a new onw)
+            // we need to add to current chord (otherwise, we will need to replace it or create a new one)
             if (!replace
                && (d == _is.duration())
                && (cr->type() == Element::Type::CHORD)
@@ -952,8 +958,8 @@ qDebug("putNote at tick %d staff %d line %d clef %d",
                   {
                   if (st->isTabStaff()) {      // TAB
                         // if a note on same string already exists, update to new pitch/fret
-                        foreach(Note * note, static_cast<Chord*>(cr)->notes())
-                              if(note->string() == nval.string) {       // if string is the same
+                        foreach (Note* note, static_cast<Chord*>(cr)->notes())
+                              if (note->string() == nval.string) {       // if string is the same
                                     // if adding a new digit will keep fret number within fret limit,
                                     // add a digit to existing fret number
                                     if (stringData) {
@@ -965,24 +971,10 @@ qDebug("putNote at tick %d staff %d line %d clef %d",
                                           else
                                                 qDebug("can't increase fret to %d", fret);
                                           }
-                                    // set fret number (orignal or combined) in all linked notes
-//                                    int tpc1 = pitch2tpc(nval.pitch, Key::C, Prefer::NEAREST);
-                                    foreach (Element* e, note->linkList()) {
-                                          Note* linkedNote = static_cast<Note*>(e);
-                                          nval.tpc = linkedNote->tpc1default(nval.pitch);
-                                          Staff* staff = linkedNote->staff();
-                                          if (staff->isTabStaff()) {
-                                                (static_cast<Note*>(linkedNote))->undoChangeProperty(P_ID::PITCH, nval.pitch);
-                                                (static_cast<Note*>(linkedNote))->undoChangeProperty(P_ID::TPC1,  nval.tpc);
-                                                (static_cast<Note*>(linkedNote))->undoChangeProperty(P_ID::FRET,  nval.fret);
-                                                (static_cast<Note*>(linkedNote))->undoChangeProperty(P_ID::STRING,nval.string);
-                                                }
-                                          else if (staff->isPitchedStaff()) {
-                                                // TODO: check tpc2
-                                                int tpc2 = linkedNote->tpc2default(nval.pitch);
-                                                undoChangePitch(linkedNote, nval.pitch, nval.tpc, tpc2);
-                                                }
-                                          }
+                                    // set fret number (original or combined) in all linked notes
+                                    int tpc1 = note->tpc1default(nval.pitch);
+                                    int tpc2 = note->tpc2default(nval.pitch);
+                                    undoChangeFretting(note, nval.pitch, nval.string, nval.fret, tpc1, tpc2);
                                     return;
                                     }
                         }
@@ -1228,8 +1220,9 @@ void Score::cmdAddOttava(Ottava::Type type)
       ottava->setOttavaType(type);
 
       ottava->setTrack(cr1->track());
+      ottava->setTrack2(cr1->track());
       ottava->setTick(cr1->tick());
-      ottava->setTick2(cr2->tick());
+      ottava->setTick2(cr2->tick() + cr2->actualTicks());
       undoAddElement(ottava);
       if (!noteEntryMode())
             select(ottava, SelectType::SINGLE, 0);
@@ -1297,7 +1290,12 @@ void Score::cmdFlip()
                      || a->articulationType() == ArticulationType::Tenuto
                      || a->articulationType() == ArticulationType::Sforzatoaccent
                      || a->articulationType() == ArticulationType::FadeIn
-                     || a->articulationType() == ArticulationType::FadeOut) {
+                     || a->articulationType() == ArticulationType::FadeOut
+                     || a->articulationType() == ArticulationType::VolumeSwell
+                     || a->articulationType() == ArticulationType::WiggleSawtooth
+                     || a->articulationType() == ArticulationType::WiggleSawtoothWide
+                     || a->articulationType() == ArticulationType::WiggleVibratoLargeFaster
+                     || a->articulationType() == ArticulationType::WiggleVibratoLargeSlowest) {
                         ArticulationAnchor aa = a->anchor();
                         if (aa == ArticulationAnchor::TOP_CHORD)
                               aa = ArticulationAnchor::BOTTOM_CHORD;
@@ -1486,8 +1484,11 @@ void Score::deleteItem(Element* el)
                   cmdDeleteTuplet(static_cast<Tuplet*>(el), true);
                   break;
 
-            case Element::Type::MEASURE:
-                  undoRemoveMeasures(static_cast<Measure*>(el), static_cast<Measure*>(el));
+            case Element::Type::MEASURE: {
+                  Measure* m = static_cast<Measure*>(el);
+                  undoRemoveMeasures(m, m);
+                  undoInsertTime(m->tick(), -(m->endTick() - m->tick()));
+                  }
                   break;
 
             case Element::Type::BRACKET:
@@ -1526,9 +1527,19 @@ void Score::deleteItem(Element* el)
                               }
                         }
                   else {
+                        if (clef->generated()) {
+                              // find the real clef if this is a cautionary one
+                              Measure* m = clef->measure();
+                              if (m && m->prevMeasure()) {
+                                    int tick = m->tick();
+                                    m = m->prevMeasure();
+                                    Segment* s = m->findSegment(Segment::Type::Clef, tick);
+                                    if (s && s->element(clef->track()))
+                                          clef = static_cast<Clef*>(s->element(clef->track()));
+                                    }
+                              }
                         undoRemoveElement(clef);
                         }
-                  // cmdUpdateNotes();
                   }
                   break;
 
@@ -1619,6 +1630,7 @@ void Score::cmdDeleteSelectedMeasures()
             Measure* ie = score->tick2measure(endTick);
 
             undoRemoveMeasures(is, ie);
+            undoInsertTime(is->tick(), -(ie->endTick() - is->tick()));
 
             // adjust views
             Measure* focusOn = is->prevMeasure() ? is->prevMeasure() : firstMeasure();
@@ -1668,6 +1680,7 @@ void Score::cmdDeleteSelection()
       if (selection().isRange()) {
             Segment* s1 = selection().startSegment();
             Segment* s2 = selection().endSegment();
+
             int stick1 = selection().tickStart();
             int stick2 = selection().tickEnd();
 
@@ -1695,10 +1708,12 @@ void Score::cmdDeleteSelection()
                         }
                   }
             for (int track = track1; track < track2; ++track) {
+                  if (!selectionFilter().canSelectVoice(track))
+                        continue;
                   Fraction f;
                   int tick  = -1;
                   Tuplet* tuplet = 0;
-                  for (Segment* s = s1; s != s2; s = s->next1()) {
+                  for (Segment* s = s1; s && (s->tick() < stick2); s = s->next1()) {
                         if (s->element(track) && s->segmentType() == Segment::Type::Breath) {
                               deleteItem(s->element(track));
                               continue;
@@ -1760,9 +1775,13 @@ void Score::cmdDeleteSelection()
                               }
                         }
                   if (f.isValid() && !f.isZero()) {
+                        fullMeasure = false;          // HACK
+
                         if (fullMeasure) {
                               // handle this as special case to be able to
                               // fix broken measures:
+
+                              // ws: does not work as TimeSig may be already removed
                               for (Measure* m = s1->measure(); m; m = m->nextMeasure()) {
                                     Staff* staff = Score::staff(track / VOICES);
                                     int tick = m->tick();
@@ -1796,6 +1815,7 @@ void Score::cmdDeleteSelection()
             foreach(Element* e, el)
                   deleteItem(e);
             }
+      deselectAll();
       _layoutAll = true;
       }
 
@@ -1867,7 +1887,7 @@ void Score::cmdFullMeasureRest()
 
 //---------------------------------------------------------
 //   addLyrics
-//    called from Keyboard Accelerator & menue
+//    called from Keyboard Accelerator & menu
 //---------------------------------------------------------
 
 Lyrics* Score::addLyrics()
@@ -1901,6 +1921,22 @@ Lyrics* Score::addLyrics()
       undoAddElement(lyrics);
       select(lyrics, SelectType::SINGLE, 0);
       return lyrics;
+      }
+
+//---------------------------------------------------------
+//   addHairpin
+//---------------------------------------------------------
+
+Hairpin* Score::addHairpin(bool decrescendo, int tickStart, int tickEnd, int track)
+      {
+      Hairpin* pin = new Hairpin(this);
+      pin->setHairpinType(decrescendo ? Hairpin::Type::DECRESCENDO : Hairpin::Type::CRESCENDO);
+      pin->setTrack(track);
+      pin->setTrack2(track);
+      pin->setTick(tickStart);
+      pin->setTick2(tickEnd);
+      undoAddElement(pin);
+      return pin;
       }
 
 //---------------------------------------------------------
@@ -2118,17 +2154,18 @@ void Score::nextInputPos(ChordRest* cr, bool doSelect)
       {
       ChordRest* ncr = nextChordRest(cr);
       if ((ncr == 0) && (_is.track() % VOICES)) {
-            Segment* s = tick2segment(cr->tick() + cr->actualTicks());
+            Segment* s = tick2segment(cr->tick() + cr->actualTicks(), false, Segment::Type::ChordRest);
             int track = (cr->track() / VOICES) * VOICES;
             ncr = s ? static_cast<ChordRest*>(s->element(track)) : 0;
             }
-      _is.setSegment(ncr ? ncr->segment() : 0);
-      if (doSelect)
-            select(ncr, SelectType::SINGLE, 0);
-      if (ncr)
+      if (ncr) {
+            _is.setSegment(ncr->segment());
+            if (doSelect)
+                  select(ncr, SelectType::SINGLE, 0);
             setPlayPos(ncr->tick());
-      for (MuseScoreView* v : viewer)
-            v->moveCursor();
+            for (MuseScoreView* v : viewer)
+                  v->moveCursor();
+            }
       }
 
 //---------------------------------------------------------
@@ -2187,9 +2224,11 @@ MeasureBase* Score::insertMeasure(Element::Type type, MeasureBase* measure, bool
 
       QList<pair<Score*, MeasureBase*>> ml;
       for (Score* score : scoreList())
-            ml.append(pair<Score*,MeasureBase*>(score,searchMeasureBase(score, measure)));
+            ml.append(pair<Score*,MeasureBase*>(score, searchMeasureBase(score, measure)));
 
-      MeasureBase* omb = nullptr;
+      MeasureBase* omb = nullptr;   // measure base in "this" score
+      MeasureBase* rmb = nullptr;   // measure base in root score (for linking)
+
       for (pair<Score*, MeasureBase*> p : ml) {
             Score* score    = p.first;
             MeasureBase* im = p.second;
@@ -2203,18 +2242,11 @@ MeasureBase* Score::insertMeasure(Element::Type type, MeasureBase* measure, bool
                   if (score == rootScore())
                         omb = static_cast<Measure*>(mb);
                   bool createEndBar    = false;
-                  bool endBarGenerated = false;
                   if (!measure) {
                         Measure* lm = score->lastMeasure();
                         if (lm && lm->endBarLineType() == BarLineType::END) {
                               createEndBar = true;
-                              if (!lm->endBarLineGenerated()) {
-                                    score->undoChangeEndBarLineType(lm, BarLineType::NORMAL);
-                                    }
-                              else {
-                                    endBarGenerated = true;
-                                    lm->setEndBarLineType(BarLineType::NORMAL, true);
-                                    }
+                              score->undoChangeEndBarLineType(lm, BarLineType::NORMAL);
                               }
                         else if (lm == nullptr)
                               createEndBar = true;
@@ -2288,16 +2320,16 @@ MeasureBase* Score::insertMeasure(Element::Type type, MeasureBase* measure, bool
                         undoAddElement(nClef);
                         }
                   if (createEndBar) {
-                        // Measure* lm = score->lastMeasure();
-                        // if (lm)
-                        //      lm->setEndBarLineType(BarLineType::END, endBarGenerated);
-                        m->setEndBarLineType(BarLineType::END, endBarGenerated);
+                        m->setEndBarLineType(BarLineType::END, false);
                         }
                   score->fixTicks();
                   }
             else {
-                  if (mb != omb)
-                        mb->linkTo(omb);
+                  // a frame, not a measure
+                  if (score == rootScore())
+                        rmb = mb;
+                  else if (rmb && mb != rmb)
+                        mb->linkTo(rmb);
                   undo(new InsertMeasure(mb, im));
                   }
             }
@@ -2327,5 +2359,41 @@ MeasureBase* Score::insertMeasure(Element::Type type, MeasureBase* measure, bool
       return omb;
       }
 
+//---------------------------------------------------------
+//   checkSpanner
+//    check if spanners are still valid as anchors may
+//    have changed or be removed.
+//    Spanners need to have a start anchor. Slurs need a
+//    start and end anchor.
+//---------------------------------------------------------
+
+void Score::checkSpanner(int startTick, int endTick)
+      {
+      QList<Spanner*> sl;
+      auto spanners = _spanner.findOverlapping(startTick, endTick);
+// printf("checkSpanner %d %d\n", startTick, endTick);
+      for (auto i = spanners.begin(); i < spanners.end(); i++) {
+            Spanner* s = i->value;
+
+//            printf("   %s %d %d\n", s->name(), s->tick(), s->tick2());
+
+            if (s->type() == Element::Type::SLUR) {
+                  Segment* seg = tick2segmentMM(s->tick(), false, Segment::Type::ChordRest);
+                  if (!seg || !seg->element(s->track()))
+                        sl.append(s);
+                  seg = tick2segmentMM(s->tick2(), false, Segment::Type::ChordRest);
+                  if (!seg || !seg->element(s->track2()))
+                        sl.append(s);
+                  }
+            else {
+                  // remove spanner if there is no start element
+                  s->computeStartElement();
+                  if (!s->startElement())
+                        sl.append(s);
+                  }
+            }
+      for (auto s : sl)       // actually remove scheduled spanners
+            undo(new RemoveElement(s));
+      }
 }
 

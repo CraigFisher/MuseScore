@@ -43,6 +43,7 @@
 #include "pathlistdialog.h"
 #include "mstyle/mconfig.h"
 #include "libmscore/notationrules.h"
+#include "resourceManager.h"
 
 namespace Ms {
 
@@ -141,7 +142,7 @@ void Preferences::init()
 
       antialiasedDrawing       = true;
       sessionStart             = SessionStart::SCORE;
-      startScore               = ":/data/Promenade_Example.mscz";
+      startScore               = ":/data/My_First_Score.mscx";
       defaultStyleFile         = "";
       showSplashScreen         = true;
 
@@ -220,9 +221,7 @@ void Preferences::init()
          
       exportAudioSampleRate   = exportAudioSampleRates[0];
 
-      workspace               = "default";
-
-      firstStartWeb = true;
+      workspace               = "Basic";
       };
 
 //---------------------------------------------------------
@@ -346,8 +345,6 @@ void Preferences::write()
       s.setValue("exportAudioSampleRate", exportAudioSampleRate);
 
       s.setValue("workspace", workspace);
-
-      s.setValue("firstStartWeb", firstStartWeb);
 
       //update
       s.setValue("checkUpdateStartup", checkUpdateStartup);
@@ -506,8 +503,6 @@ void Preferences::read()
 
       workspace          = s.value("workspace", workspace).toString();
 
-      firstStartWeb = s.value("firstStartWeb", true).toBool();
-
       checkUpdateStartup = s.value("checkUpdateStartup", checkUpdateStartup).toInt();
       if (checkUpdateStartup == 0)
             checkUpdateStartup = UpdateChecker::defaultPeriod();
@@ -635,7 +630,7 @@ PreferenceDialog::PreferenceDialog(QWidget* parent)
       connect(mySoundfontsButton, SIGNAL(clicked()), SLOT(changeSoundfontPaths()));
       connect(mySfzButton, SIGNAL(clicked()), SLOT(changeSfzPaths()));
 
-
+      connect(updateTranslation, SIGNAL(clicked()), SLOT(updateTranslationClicked()));
 
       connect(defaultStyleButton,     SIGNAL(clicked()), SLOT(selectDefaultStyle()));
       connect(partStyleButton,        SIGNAL(clicked()), SLOT(selectPartStyle()));
@@ -1060,7 +1055,11 @@ void PreferenceDialog::updateSCListView()
                   newItem->setIcon(0, *icons[int(s->icon())]);
             newItem->setText(1, s->keysToString());
             newItem->setData(0, Qt::UserRole, s->key());
-            shortcutList->addTopLevelItem(newItem);
+            QString accessibleInfo = tr("Action: %1; Shortcut: %2").arg(newItem->text(0)).arg(newItem->text(1).isEmpty() ? tr("No shortcut defined") : newItem->text(1));
+            newItem->setData(0, Qt::AccessibleTextRole, accessibleInfo);
+            newItem->setData(1, Qt::AccessibleTextRole, accessibleInfo);
+            if (enableExperimental || (strncmp(s->key(), "media", 5) != 0 && strncmp(s->key(), "layer", 5) != 0 && strncmp(s->key(), "insert-fretframe", 16) != 0))
+                shortcutList->addTopLevelItem(newItem);
             }
       shortcutList->resizeColumnToContents(0);
       }
@@ -1722,6 +1721,16 @@ void PreferenceDialog::changeSfzPaths()
       }
 
 //---------------------------------------------------------
+//   updateLanguagesClicked
+//---------------------------------------------------------
+
+void PreferenceDialog::updateTranslationClicked()
+      {
+      ResourceManager r(0);
+      r.exec();
+      }
+
+//---------------------------------------------------------
 //   defineShortcutClicked
 //---------------------------------------------------------
 
@@ -1871,6 +1880,16 @@ void Preferences::updatePluginList()
 
       foreach(QString pluginPath, pluginPathList) {
             Ms::updatePluginList(pluginPathList, pluginPath, pluginList);
+            }
+      //remove non existing files
+      auto i = pluginList.begin();
+      while (i != pluginList.end()) {
+            PluginDescription d = *i;
+            QFileInfo fi(d.path);
+            if (!fi.exists())
+                  i = pluginList.erase(i);
+            else
+                  ++i;
             }
       }
 

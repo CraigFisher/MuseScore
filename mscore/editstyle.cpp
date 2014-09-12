@@ -80,7 +80,7 @@ EditStyle::EditStyle(Score* s, QWidget* parent)
 
             QPixmap ct = cs->scoreFont()->sym2pixmap(ai->upSym, 3.0);
             QIcon icon(ct);
-            QTableWidgetItem* item = new QTableWidgetItem(icon, qApp->translate("articulation", qPrintable(ai->description)));
+            QTableWidgetItem* item = new QTableWidgetItem(icon, qApp->translate("articulation", ai->description.toUtf8().constData()));
 
             item->setFlags(item->flags() & ~Qt::ItemIsEditable);
             articulationTable->setItem(i, 0, item);
@@ -244,6 +244,7 @@ void EditStyle::on_comboFBFont_currentIndexChanged(int index)
 void EditStyle::apply()
       {
       getValues();
+      cs->deselectAll();
       cs->undo(new ChangeStyle(cs, lstyle));
       cs->update();
       }
@@ -309,15 +310,15 @@ void EditStyle::getValues()
       lstyle.set(StyleIdx::clefBarlineDistance,     Spatium(clefBarlineDistance->value()));
       lstyle.set(StyleIdx::staffLineWidth,          Spatium(staffLineWidth->value()));
       lstyle.set(StyleIdx::beamWidth,               Spatium(beamWidth->value()));
-      lstyle.set(StyleIdx::beamDistance,            beamDistance->value() * 0.01);
+      lstyle.set(StyleIdx::beamDistance,            beamDistance->value() / 100.0);
       lstyle.set(StyleIdx::beamMinLen,              Spatium(beamMinLen->value()));
       lstyle.set(StyleIdx::beamNoSlope,             beamNoSlope->isChecked());
 
-      lstyle.set(StyleIdx::graceNoteMag,            graceNoteSize->value() * 0.01);
-      lstyle.set(StyleIdx::smallStaffMag,           smallStaffSize->value() * 0.01);
-      lstyle.set(StyleIdx::smallNoteMag,            smallNoteSize->value() * 0.01);
-      lstyle.set(StyleIdx::smallClefMag,            smallClefSize->value() * 0.01);
-      lstyle.set(StyleIdx::lastSystemFillLimit,     lastSystemFillThreshold->value() * 0.01);
+      lstyle.set(StyleIdx::graceNoteMag,            graceNoteSize->value() / 100.0);
+      lstyle.set(StyleIdx::smallStaffMag,           smallStaffSize->value() / 100.0);
+      lstyle.set(StyleIdx::smallNoteMag,            smallNoteSize->value() / 100.0);
+      lstyle.set(StyleIdx::smallClefMag,            smallClefSize->value() / 100.0);
+      lstyle.set(StyleIdx::lastSystemFillLimit,     lastSystemFillThreshold->value() / 100.0);
       lstyle.set(StyleIdx::hairpinY,                Spatium(hairpinY->value()));
       lstyle.set(StyleIdx::hairpinLineWidth,        Spatium(hairpinLineWidth->value()));
       lstyle.set(StyleIdx::hairpinHeight,           Spatium(hairpinHeight->value()));
@@ -329,7 +330,12 @@ void EditStyle::getValues()
       lstyle.set(StyleIdx::genCourtesyKeysig,       genCourtesyKeysig->isChecked());
       lstyle.set(StyleIdx::genCourtesyClef,         genCourtesyClef->isChecked());
       lstyle.set(StyleIdx::swingRatio,              swingBox->value());
-
+      if (swingEighth->isChecked())
+            lstyle.set(StyleIdx::swingUnit, QString(TDuration(TDuration::DurationType::V_EIGHTH).name()));
+      else if (swingSixteenth->isChecked())
+            lstyle.set(StyleIdx::swingUnit, QString(TDuration(TDuration::DurationType::V_16TH).name()));
+      else if (SwingOff->isChecked())
+            lstyle.set(StyleIdx::swingUnit, QString(TDuration(TDuration::DurationType::V_ZERO).name()));
       bool customChords = false;
       if (chordsStandard->isChecked())
             lstyle.set(StyleIdx::chordStyle, QString("std"));
@@ -364,7 +370,7 @@ void EditStyle::getValues()
 
       lstyle.set(StyleIdx::accidentalNoteDistance,  Spatium(accidentalNoteDistance->value()));
       lstyle.set(StyleIdx::accidentalDistance,      Spatium(accidentalDistance->value()));
-      lstyle.set(StyleIdx::dotMag,                  dotMag->value() * 0.01);
+      lstyle.set(StyleIdx::dotMag,                  dotMag->value() / 100.0);
       lstyle.set(StyleIdx::dotNoteDistance,         Spatium(noteDotDistance->value()));
       lstyle.set(StyleIdx::dotDotDistance,          Spatium(dotDotDistance->value()));
       lstyle.set(StyleIdx::stemWidth,               Spatium(stemWidth->value()));
@@ -379,7 +385,7 @@ void EditStyle::getValues()
       lstyle.set(StyleIdx::propertyDistanceHead,    Spatium(propertyDistanceHead->value()));
       lstyle.set(StyleIdx::propertyDistanceStem,    Spatium(propertyDistanceStem->value()));
       lstyle.set(StyleIdx::propertyDistance,        Spatium(propertyDistance->value()));
-      lstyle.set(StyleIdx::articulationMag,         articulationMag->value() * 0.01);
+      lstyle.set(StyleIdx::articulationMag,         articulationMag->value() / 100.0);
 
       lstyle.set(StyleIdx::shortenStem,             shortenStem->isChecked());
       lstyle.set(StyleIdx::shortStemProgression,    Spatium(shortStemProgression->value()));
@@ -597,16 +603,16 @@ void EditStyle::setValues()
       genCourtesyKeysig->setChecked(lstyle.value(StyleIdx::genCourtesyKeysig).toBool());
       genCourtesyClef->setChecked(lstyle.value(StyleIdx::genCourtesyClef).toBool());
       swingBox->setValue(lstyle.value(StyleIdx::swingRatio).toInt());
-      QVariant unit(lstyle.value(StyleIdx::swingUnit).toInt());
-      if (unit == 240) {
+      QString unit(lstyle.value(StyleIdx::swingUnit).toString());
+      if (unit == TDuration(TDuration::DurationType::V_EIGHTH).name()) {
             swingEighth->setChecked(true);
             swingBox->setEnabled(true);
             }
-      else if (unit == 120) {
+      else if (unit == TDuration(TDuration::DurationType::V_16TH).name()) {
             swingSixteenth->setChecked(true);
             swingBox->setEnabled(true);
             }
-      else if (unit == 0) {
+      else if (unit == TDuration(TDuration::DurationType::V_ZERO).name()) {
             SwingOff->setChecked(true);
             swingBox->setEnabled(false);
       }
@@ -686,12 +692,13 @@ void EditStyle::setValues()
                   continue;
             ArticulationAnchor st  = lstyle.articulationAnchor(i);
             int idx = 0;
-            if (st == ArticulationAnchor::TOP_STAFF)
-                  idx = 0;
-            else if (st == ArticulationAnchor::BOTTOM_STAFF)
-                  idx = 1;
-            else if (st == ArticulationAnchor::CHORD)
-                  idx = 2;
+            switch (st) {
+                  case ArticulationAnchor::TOP_STAFF:       idx = 0;    break;
+                  case ArticulationAnchor::BOTTOM_STAFF:    idx = 1;    break;
+                  case ArticulationAnchor::CHORD:           idx = 2;    break;
+                  case ArticulationAnchor::TOP_CHORD:       idx = 3;    break;
+                  case ArticulationAnchor::BOTTOM_CHORD:    idx = 4;    break;
+                  }
             cb->setCurrentIndex(idx);
             }
 
@@ -714,9 +721,11 @@ void EditStyle::setValues()
             }
       musicalTextFont->clear();
       musicalTextFont->addItem("Emmentaler Text", "MScore Text");
+      musicalTextFont->addItem("Gonville Text", "Gonville Text");
       musicalTextFont->addItem("Bravura Text", "Bravura Text");
+      musicalTextFont->addItem("MuseJazz", "MuseJazz");
       QString tfont(lstyle.value(StyleIdx::MusicalTextFont).toString());
-      idx = tfont == "Bravura Text" ? 1 : 0;
+      idx = musicalTextFont->findData(tfont);
       musicalTextFont->setCurrentIndex(idx);
 
       showHeader->setChecked(lstyle.value(StyleIdx::showHeader).toBool());
@@ -804,15 +813,15 @@ void EditStyle::setSwingParams(bool checked)
       if( !checked)
             return;
       if (SwingOff->isChecked()) {
-            lstyle.set(StyleIdx::swingUnit, 0);
+            lstyle.set(StyleIdx::swingUnit, TDuration(TDuration::DurationType::V_ZERO).name());
             swingBox->setEnabled(false);
             }
       else if (swingEighth->isChecked()) {
-            lstyle.set(StyleIdx::swingUnit, 240);
+            lstyle.set(StyleIdx::swingUnit, TDuration(TDuration::DurationType::V_EIGHTH).name());
             swingBox->setEnabled(true);
             }
       else if (swingSixteenth->isChecked()) {
-            lstyle.set(StyleIdx::swingUnit, 120);
+            lstyle.set(StyleIdx::swingUnit, TDuration(TDuration::DurationType::V_16TH).name());
             swingBox->setEnabled(true);
             }
       }

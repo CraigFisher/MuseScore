@@ -113,7 +113,7 @@ enum class MeasureNumberMode : char {
 class Measure : public MeasureBase {
       Q_OBJECT
 
-      Q_PROPERTY(Ms::Segment* fistSegment       READ last)
+      Q_PROPERTY(Ms::Segment* firstSegment      READ last)
       Q_PROPERTY(Ms::Segment* lastSegment       READ first)
 
       SegmentList _segments;
@@ -246,7 +246,7 @@ class Measure : public MeasureBase {
       void sortStaves(QList<int>& dst);
 
       void dump() const;
-      virtual bool acceptDrop(MuseScoreView*, const QPointF&, Element*) const override;
+      virtual bool acceptDrop(const DropData&) const override;
       virtual Element* drop(const DropData&) override;
 
       int repeatCount() const         { return _repeatCount; }
@@ -281,7 +281,7 @@ class Measure : public MeasureBase {
 
       AccidentalVal findAccidental(Note*) const;
       AccidentalVal findAccidental(Segment* s, int staffIdx, int line) const;
-      void exchangeVoice(int, int, int, int);
+      void exchangeVoice(int voice1, int voice2, int staffIdx);
       void checkMultiVoices(int staffIdx);
       bool hasVoice(int track) const;
       bool isMeasureRest(int staffIdx);
@@ -320,6 +320,10 @@ class Measure : public MeasureBase {
       void setMMRestCount(int n)    { _mmRestCount = n;    }
       Measure* mmRestFirst() const;
       Measure* mmRestLast() const;
+
+      Element* nextElement(int staff);
+      Element* prevElement(int staff);
+      virtual QString accessibleInfo() override;
       };
 
 }     // namespace Ms

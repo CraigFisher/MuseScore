@@ -32,6 +32,8 @@ class InstrumentTemplate;
 //   @P shortName  QString
 //   @P volume     int
 //   @P mute       bool
+//   @P endTrack   int      (read only)
+//   @P startTrack int      (read only)
 //---------------------------------------------------------
 
 class Part : public QObject {
@@ -43,6 +45,8 @@ class Part : public QObject {
       Q_PROPERTY(QString shortName READ shortName WRITE setShortName)
       Q_PROPERTY(int volume READ volume WRITE setVolume)
       Q_PROPERTY(bool mute READ mute WRITE setMute)
+      Q_PROPERTY(int endTrack READ endTrack)
+      Q_PROPERTY(int startTrack READ startTrack)
 
       Score* _score;
 
@@ -60,6 +64,7 @@ class Part : public QObject {
       void read(XmlReader&);
       void read114(XmlReader&);
       void write(Xml& xml) const;
+
       int nstaves() const                       { return _staves.size(); }
       QList<Staff*>* staves()                   { return &_staves; }
       const QList<Staff*>* staves() const       { return &_staves; }
@@ -89,7 +94,7 @@ class Part : public QObject {
       void setVolume(int volume);
       bool mute() const;
       void setMute(bool mute);
-      
+
       int reverb() const;
       int chorus() const;
       int pan() const;
@@ -100,7 +105,7 @@ class Part : public QObject {
       int midiChannel() const;
       void setMidiChannel(int) const;
 
-      void insertStaff(Staff*);
+      void insertStaff(Staff*, int idx);
       void removeStaff(Staff*);
       bool show() const                        { return _show;  }
       void setShow(bool val)                   { _show = val;   }

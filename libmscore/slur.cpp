@@ -211,7 +211,7 @@ void SlurSegment::changeAnchor(MuseScoreView* viewer, int curGrip, Element* elem
                         }
                   case Spanner::Anchor::CHORD:
                         spanner()->setTick(static_cast<Chord*>(element)->tick());
-                        spanner()->setStartChord(static_cast<Chord*>(element));
+                        spanner()->setStartElement(element);
                         break;
                   case Spanner::Anchor::SEGMENT:
                   case Spanner::Anchor::MEASURE:
@@ -232,7 +232,7 @@ void SlurSegment::changeAnchor(MuseScoreView* viewer, int curGrip, Element* elem
                   case Spanner::Anchor::CHORD:
                         spanner()->setTick2(static_cast<Chord*>(element)->tick());
                         spanner()->setTrack2(element->track());
-                        spanner()->setEndChord(static_cast<Chord*>(element));
+                        spanner()->setEndElement(element);
                         break;
 
                   case Spanner::Anchor::SEGMENT:
@@ -582,6 +582,23 @@ void SlurSegment::layout(const QPointF& p1, const QPointF& p2)
       QRectF bbox = path.boundingRect();
 
       // adjust position to avoid staff line if necessary
+      bool reverseAdjust = false;
+      if (slurTie()->type() == Element::Type::TIE) {
+            // multinote chords with ties need special handling
+            // otherwise, adjusted tie might crowd an unadjusted tie unnecessarily
+            Tie* t = static_cast<Tie*>(slurTie());
+            Note* sn = t->startNote();
+            Chord* sc = sn ? sn->chord() : 0;
+            // normally, the adjustment moves ties according to their direction (eg, up if tie is up)
+            // but we will reverse this for notes within chords when appropriate
+            // for two-note chords, it looks better to have ties on notes with spaces outside the lines
+            if (sc) {
+                  int notes = sc->notes().size();
+                  bool onLine = !(sn->line() & 1);
+                  if ((onLine && notes > 1) || (!onLine && notes > 2))
+                        reverseAdjust = true;
+                  }
+            }
       qreal sp = spatium();
       qreal minDistance = 0.5;
       Staff* st = staff();
@@ -601,7 +618,7 @@ void SlurSegment::layout(const QPointF& p1, const QPointF& p2)
                         if (!isNudged() && !isEdited()) {
                               // user has not nudged or edited
                               qreal offY;
-                              if (up)
+                              if (up != reverseAdjust)      // exclusive or
                                     offY = (lineY - minDistance) - topY;
                               else
                                     offY = (lineY + minDistance) - bottomY;
@@ -764,10 +781,6 @@ void Slur::slurPosChord(SlurPos* sp)
 
 void Slur::slurPos(SlurPos* sp)
       {
-//      if (anchor() == Anchor::CHORD) {
-//            slurPosChord(sp);
-//            return;
-//            }
       qreal _spatium = spatium();
 
       if (endCR() == 0) {
@@ -1204,7 +1217,8 @@ Slur::~Slur()
 
 void Slur::write(Xml& xml) const
       {
-      if (!xml.canWrite(this)) return;
+      if (!xml.canWrite(this))
+            return;
       xml.stag(QString("Slur id=\"%1\"").arg(xml.spannerId(this)));
       SlurTie::writeProperties(xml);
       xml.etag();
@@ -1308,7 +1322,7 @@ void Slur::layout()
                track(), track2(), startCR(), endCR(), tick(), tick2());
             return;
             }
-      if (endCR() == 0) {
+      if (endCR() == 0) {     // sanity check
             setEndElement(startCR());
             setTick2(tick());
             }

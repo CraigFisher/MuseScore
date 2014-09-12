@@ -48,8 +48,8 @@ constexpr bool operator& (ArticulationShowIn a1, ArticulationShowIn a2) {
 struct ArticulationInfo {
       SymId upSym;
       SymId downSym;
-      QString name;
-      QString description;    // translated name
+      QString name;           // as stored in score files
+      QString description;    // user-visible, translatable, name
       qreal timeStretch;      // for fermata
       ArticulationShowIn flags;
       };
@@ -134,8 +134,9 @@ class Articulation : public Element {
                                 _articulationType == ArticulationType::Shortfermata ||
                                 _articulationType == ArticulationType::Longfermata ||
                                 _articulationType == ArticulationType::Verylongfermata; }
-      };
 
+      QString accessibleInfo() override;
+      };
 
 }     // namespace Ms
 #endif

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<museScore version="1.24">
+<museScore version="2.00">
   <Score>
     <LayerTag id="0" tag="default"></LayerTag>
     <currentLayer>0</currentLayer>
@@ -49,7 +49,7 @@
     <Part>
       <Staff id="1">
         <StaffType group="pitched">
-          <name>Standard</name>
+          <name>stdNormal</name>
           </StaffType>
         <bracket type="-1" span="0"/>
         </Staff>
@@ -143,7 +143,6 @@
             <tpc>15</tpc>
             </Note>
           <Slur type="stop" id="2"/>
-          <Slur type="stop" id="3"/>
           </Chord>
         <Chord>
           <durationType>quarter</durationType>

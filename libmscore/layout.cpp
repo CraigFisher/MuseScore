@@ -10,7 +10,6 @@
 //  the file LICENCE.GPL
 //=============================================================================
 
-// #include <fenv.h>
 #include "page.h"
 #include "sig.h"
 #include "key.h"
@@ -51,6 +50,7 @@
 #include "notedot.h"
 #include "element.h"
 #include "tremolo.h"
+#include "marker.h"
 
 namespace Ms {
 
@@ -171,35 +171,55 @@ void Score::layoutChords1(Segment* segment, int staffIdx)
             maxDownWidth = qMax(maxDownWidth, hw);
             }
 
-      qreal sp = staff->spatium();
-      qreal upOffset = 0.0;
-      qreal downOffset = 0.0;
-      qreal dotAdjust = 0.0;  // additional chord offset to account for dots
+      qreal sp                      = staff->spatium();
+      qreal upOffset                = 0.0;      // offset to apply to upstem chords
+      qreal downOffset              = 0.0;      // offset to apply to downstem chords
+      qreal dotAdjust               = 0.0;      // additional chord offset to account for dots
+      qreal dotAdjustThreshold      = 0.0;      // if it exceeds this amount
 
       // centering adjustments for whole note, breve, and small chords
-      qreal centerUp = 0.0;
-      qreal oversizeUp = 0.0;
-      qreal centerDown = 0.0;
       qreal headDiff;
-      qreal centerThreshold = 0.1 * sp;
+      qreal centerUp          = 0.0;      // offset to apply in order to center upstem chords
+      qreal oversizeUp        = 0.0;      // adjustment to oversized upstem chord needed if laid out to the right
+      qreal centerDown        = 0.0;      // offset to apply in order to center downstem chords
+      qreal centerAdjustUp    = 0.0;      // adjustment to upstem chord needed after centering donwstem chord
+      qreal centerAdjustDown  = 0.0;      // adjustment to downstem chord needed after centering upstem chord
+
+      // only center chords if they differ from nominal by at least this amount
+      // this avoids unnecessary centering on differences due only to floating point roundoff
+      // it also allows for the possibility of disabling centering
+      // for notes only "slightly" larger than nominal, like half notes
+      // but this will result in them not being aligned with each other between voices
+      // unless you change to left alignment as described in the comments below
+      qreal centerThreshold   = 0.01 * sp;
+
       headDiff = maxUpWidth - nominalWidth;
       if (headDiff > centerThreshold) {
             // larger than nominal
             centerUp = headDiff * 0.5;
-            oversizeUp = headDiff;
+            // to left align rather than center, change the above to
+            //centerUp = headDiff;
             maxUpWidth = nominalWidth + centerUp;
+            oversizeUp = headDiff;
             }
       else if (-headDiff > centerThreshold) {
             // smaller than nominal
             centerUp = headDiff * -0.5;
+            centerAdjustDown = centerUp;
             }
       headDiff = maxDownWidth - nominalWidth;
       if (headDiff > centerThreshold) {
+            // larger than nominal
             centerDown = headDiff * -0.5;
+            // to left align rather than center, change the above to
+            //centerAdjustUp = headDiff;
             maxDownWidth = nominalWidth - centerDown;
             }
-      else if (-headDiff > centerThreshold)
+      else if (-headDiff > centerThreshold) {
+            // smaller than nominal
             centerDown = headDiff * -0.5;
+            centerAdjustUp = centerDown;
+            }
 
       // handle conflict between upstem and downstem chords
 
@@ -207,7 +227,11 @@ void Score::layoutChords1(Segment* segment, int staffIdx)
 
             Note* bottomUpNote = upStemNotes.first();
             Note* topDownNote = downStemNotes.last();
-            int separation = topDownNote->line() - bottomUpNote->line();
+            int separation;
+            if (bottomUpNote->chord()->staffMove() == topDownNote->chord()->staffMove())
+                  separation = topDownNote->line() - bottomUpNote->line();
+            else
+                  separation = 2;   // no conflict
             QList<Note*> overlapNotes;
 
             if (separation == 1) {
@@ -371,6 +395,13 @@ void Score::layoutChords1(Segment* segment, int staffIdx)
                         else
                               downDots = 0; // no need to adjust for dots in this case
                         upOffset = qMax(clearLeft, clearRight);
+                        // if downstem chord is small, don't center
+                        // and we might not need as much dot adjustment either
+                        if (centerDown > 0.0) {
+                              centerDown = 0.0;
+                              centerAdjustUp = 0.0;
+                              dotAdjustThreshold = (upOffset - maxDownWidth) + maxUpWidth - 0.3 * sp;
+                              }
                         }
 
                   }
@@ -396,6 +427,8 @@ void Score::layoutChords1(Segment* segment, int staffIdx)
                   if (dots > 1)
                         dotAdjust += point(styleS(StyleIdx::dotDotDistance)) * (dots - 1);
                   dotAdjust *= mag;
+                  // only by amount over threshold
+                  dotAdjust = qMax(dotAdjust - dotAdjustThreshold, 0.0);
                   }
             if (separation == 1)
                   dotAdjust += 0.1 * sp;
@@ -409,7 +442,7 @@ void Score::layoutChords1(Segment* segment, int staffIdx)
                   Chord* chord = static_cast<Chord*>(e);
                   if (chord->up()) {
                         if (upOffset != 0.0) {
-                              chord->rxpos() += upOffset + oversizeUp;
+                              chord->rxpos() += upOffset + centerAdjustUp + oversizeUp;
                               if (downDots && !upDots)
                                     chord->rxpos() += dotAdjust;
                               }
@@ -418,7 +451,7 @@ void Score::layoutChords1(Segment* segment, int staffIdx)
                         }
                   else {
                         if (downOffset != 0.0) {
-                              chord->rxpos() += downOffset;
+                              chord->rxpos() += downOffset + centerAdjustDown;
                               if (upDots && !downDots)
                                     chord->rxpos() += dotAdjust;
                               }
@@ -576,13 +609,14 @@ static bool resolveAccidentals(AcEl* left, AcEl* right, qreal& lx, qreal pd, qre
       qreal gap = lower->top - upper->bottom;
 
       // no conflict at all if there is sufficient vertical gap between accidentals
-      if (gap >= pd)
+      // the arrangement of accidentals into columns assumes accidentals an octave apart *do* clear
+      if (gap >= pd || lower->line - upper->line >= 7)
             return false;
 
       qreal allowableOverlap = qMax(upper->descent, lower->ascent) - pd;
 
       // accidentals that are "close" (small gap or even slight overlap)
-      if (qAbs(gap) <= 0.25 * sp) {
+      if (qAbs(gap) <= 0.33 * sp) {
             // acceptable with slight offset
             // if one of the accidentals can subsume the overlap
             // and both accidentals allow it
@@ -629,6 +663,10 @@ static bool resolveAccidentals(AcEl* left, AcEl* right, qreal& lx, qreal pd, qre
 static qreal layoutAccidental(AcEl* me, AcEl* above, AcEl* below, qreal colOffset, QList<Note*>& leftNotes, qreal pnd, qreal pd, qreal sp)
       {
       qreal lx = colOffset;
+      Accidental* acc = me->note->accidental();
+      qreal mag = acc->mag();
+      pnd *= mag;
+      pd *= mag;
 
       // extra space for ledger lines
       if (me->line <= -2 || me->line >= me->note->staff()->lines() * 2)
@@ -644,9 +682,9 @@ static qreal layoutAccidental(AcEl* me, AcEl* above, AcEl* below, qreal colOffse
             if (me->top - lnBottom <= pnd && lnTop - me->bottom <= pnd) {
                   // undercut note above if possible
                   if (lnBottom - me->top <= me->ascent - pnd)
-                        lx = qMin(lx, ln->x() + ln->chord()->x() + me->rightClear - pnd);
+                        lx = qMin(lx, ln->x() + ln->chord()->x() + me->rightClear);
                   else
-                        lx = qMin(lx, ln->x() + ln->chord()->x() - pnd);
+                        lx = qMin(lx, ln->x() + ln->chord()->x());
                   }
             else if (lnTop > me->bottom)
                   break;
@@ -655,7 +693,6 @@ static qreal layoutAccidental(AcEl* me, AcEl* above, AcEl* below, qreal colOffse
       // clear other accidentals
       bool conflictAbove = false;
       bool conflictBelow = false;
-      Accidental* acc = me->note->accidental();
 
       if (above)
             conflictAbove = resolveAccidentals(me, above, lx, pd, sp);
@@ -664,9 +701,9 @@ static qreal layoutAccidental(AcEl* me, AcEl* above, AcEl* below, qreal colOffse
       if (conflictAbove || conflictBelow)
             me->x = lx - acc->width() - acc->bbox().x();
       else if (colOffset != 0.0)
-            me->x = lx - pd * acc->mag() - acc->width() - acc->bbox().x();
+            me->x = lx - pd - acc->width() - acc->bbox().x();
       else
-            me->x = lx - pnd * acc->mag() - acc->width() - acc->bbox().x();
+            me->x = lx - pnd - acc->width() - acc->bbox().x();
 
       return me->x;
 
@@ -738,11 +775,16 @@ void Score::layoutChords3(QList<Note*>& notes, Staff* staff, Segment* segment)
                   aclist.append(acel);
                   ++nAcc;
                   }
-            qreal hw = note->headWidth();
 
+            qreal hw     = note->headWidth();   // actual head width, including note & chord mag
             Chord* chord = note->chord();
             bool _up     = chord->up();
-            qreal stemX  = chord->stemPosX();
+            qreal stemX  = chord->stemPosX();   // stem position for nominal notehead, but allowing for mag
+
+            // for small upstem chords, set stem to minimum of actual and nominal head width
+            // this allows the chord alignment code in layoutChords() to function correctly
+            if (_up && chord->small())
+                  stemX = qMin(noteHeadWidth(), hw);
 
             qreal overlapMirror;
             if (chord->stem()) {
@@ -923,7 +965,7 @@ void Score::layoutChords3(QList<Note*>& notes, Staff* staff, Segment* segment)
                               below = k;
                               }
                         // check to see if accidental can fit in slot
-                        qreal myPd = pd * me->note->mag();
+                        qreal myPd = pd * me->note->accidental()->mag();
                         bool conflict = false;
                         if (above != -1 && me->top - aclist[above].bottom < myPd)
                               conflict = true;
@@ -1249,6 +1291,14 @@ void Score::layoutStage3()
 
 void Score::doLayout()
       {
+// printf("doLayout %p cmd %d undo empty %d\n", this, undo()->active(), undo()->isEmpty());
+      if (!undo()->active() && !undo()->isEmpty() && !undoRedo()) {
+            qDebug("layout outside cmd and dirty undo");
+            // _layoutAll = false;
+            // abort();
+            // return;
+            }
+
       _scoreFont = ScoreFont::fontFactory(_style.value(StyleIdx::MusicalSymbolFont).toString());
       _noteHeadWidth = _scoreFont->width(SymId::noteheadBlack, spatium() / (MScore::DPI * SPATIUM20));
 
@@ -1290,6 +1340,8 @@ void Score::doLayout()
             page->setNo(0);
             page->setPos(0.0, 0.0);
             page->rebuildBspTree();
+            qDebug("layout: empty score");
+            _layoutAll = false;
             return;
             }
 
@@ -1353,13 +1405,17 @@ void Score::doLayout()
                         e->layout();
                   }
             }
+
+      if (lastSegment())
+            checkSpanner(0, lastSegment()->tick());
+
       for (auto s : _spanner.map()) {
             Spanner* sp = s.second;
-            if (sp->type() == Element::Type::OTTAVA && sp->tick2() == -1) {
+            if (sp->type() == Element::Type::OTTAVA && sp->ticks() == 0) {
                   sp->setTick2(lastMeasure()->endTick());
                   sp->staff()->updateOttava();
                   }
-            // 1.3 scores can have ties in this list
+            // 1.3 scores can have ties in this list (ws: should not happen anymore)
             if (sp->type() != Element::Type::TIE) {
                   if (sp->tick() == -1) {
                         qDebug("bad spanner %s %d - %d", sp->name(), sp->tick(), sp->tick2());
@@ -1510,23 +1566,25 @@ void Score::addSystemHeader(Measure* m, bool isFirstSystem)
                         clef = new Clef(this);
                         clef->setTrack(i * VOICES);
                         clef->setSmall(false);
-                        clef->setGenerated(staff->clef(tick) == staff->clef(tick-1));
+                        clef->setGenerated(true);
 
                         Segment* s = m->undoGetSegment(Segment::Type::Clef, tick);
                         clef->setParent(s);
                         clef->layout();
-                        clef->setClefType(staff->clefTypeList(tick));  // set before add !
-                        undoAddElement(clef);
+                        clef->setClefType(staff->clefType(tick));  // set before add !
+                        undo(new AddElement(clef));
+                        // undoAddElement(clef);
                         }
                   else if (clef->generated()) {
-                        ClefTypeList cl = staff->clefTypeList(tick);
+                        ClefTypeList cl = staff->clefType(tick);
                         if (cl != clef->clefTypeList())
                               undo(new ChangeClefType(clef, cl._concertClef, cl._transposingClef));
                         }
                   }
             else {
                   if (clef && clef->generated())
-                        undoRemoveElement(clef);
+                        undo(new RemoveElement(clef));
+                        // undoRemoveElement(clef);
                   }
             ++i;
             }
@@ -1583,7 +1641,10 @@ static bool validMMRestMeasure(Measure* m)
 
       for (Segment* s = m->first(); s; s = s->next()) {
             for (Element* e : s->annotations()) {
-                  if (e->type() != Element::Type::REHEARSAL_MARK && e->type() != Element::Type::TEMPO_TEXT && e->type() != Element::Type::STAFF_TEXT)
+                  if (e->type() != Element::Type::REHEARSAL_MARK &&
+                      e->type() != Element::Type::TEMPO_TEXT &&
+                      e->type() != Element::Type::HARMONY &&
+                      e->type() != Element::Type::STAFF_TEXT)
                         return false;
                   }
             }
@@ -1607,11 +1668,35 @@ static bool breakMultiMeasureRest(Measure* m)
                   return true;
             }
 
+      // break for marker in this measure
+      for (Element* e : *m->el()) {
+            if (e->type() == Element::Type::MARKER) {
+                  Marker* mark = static_cast<Marker*>(e);
+                  if (!(mark->textStyle().align() & AlignmentFlags::RIGHT))
+                        return true;
+                  }
+            }
+
+      // break for marker & jump in previous measure
+      Measure* pm = m->prevMeasure();
+      if (pm) {
+            for (Element* e : *pm->el()) {
+                  if (e->type() == Element::Type::JUMP) {
+                        return true;
+                        }
+                  else if (e->type() == Element::Type::MARKER) {
+                        Marker* mark = static_cast<Marker*>(e);
+                        if (mark->textStyle().align() & AlignmentFlags::RIGHT)
+                              return true;
+                        }
+                  }
+            }
+
       for (Segment* s = m->first(); s; s = s->next()) {
             for (Element* e : s->annotations()) {
                   if (e->type() == Element::Type::REHEARSAL_MARK ||
                       e->type() == Element::Type::TEMPO_TEXT ||
-                      (e->type() == Element::Type::STAFF_TEXT && (e->systemFlag() || m->score()->staff(e->staffIdx())->show())))
+                      ((e->type() == Element::Type::HARMONY || e->type() == Element::Type::STAFF_TEXT) && (e->systemFlag() || m->score()->staff(e->staffIdx())->show())))
                         return true;
                   }
             }
@@ -1690,6 +1775,11 @@ void Score::createMMRests()
                   qDeleteAll(*mmr->el());
                   mmr->el()->clear();
 
+                  for (Element* e : *m->el()) {
+                        if (e->type() == Element::Type::MARKER)
+                              mmr->add(e->clone());
+                        }
+
                   for (Element* e : *lm->el())
                         mmr->add(e->clone());
 
@@ -1764,15 +1854,18 @@ void Score::createMMRests()
                               ns = mmr->undoGetSegment(Segment::Type::KeySig, m->tick());
                         for (int staffIdx = 0; staffIdx < _staves.size(); ++staffIdx) {
                               int track = staffIdx * VOICES;
-                              KeySig* ts = static_cast<KeySig*>(cs->element(track));
+                              KeySig* ts  = static_cast<KeySig*>(cs->element(track));
+                              KeySig* nts = static_cast<KeySig*>(ns->element(track));
                               if (ts) {
-                                    if (ns->element(track) == 0) {
+                                    if (!nts) {
                                           KeySig* nks = ts->clone();
                                           nks->setParent(ns);
                                           undo(new AddElement(nks));
                                           }
                                     else {
-                                          //TODO: check if same key signature
+                                          if (nts->keySigEvent() != ts->keySigEvent()) {
+                                                undo(new ChangeKeySig(nts, ts->keySigEvent(), nts->showCourtesy()));
+                                                }
                                           }
                                     }
                               }
@@ -1781,12 +1874,15 @@ void Score::createMMRests()
                         undo(new RemoveElement(ns));
 
                   //
-                  // check for rehearsal mark and tempo text
+                  // check for rehearsal mark etc.
                   //
                   cs = m->findSegment(Segment::Type::ChordRest, m->tick());
                   if (cs) {
                         for (Element* e : cs->annotations()) {
-                              if (e->type() != Element::Type::REHEARSAL_MARK && e->type() != Element::Type::TEMPO_TEXT && e->type() != Element::Type::STAFF_TEXT)
+                              if (e->type() != Element::Type::REHEARSAL_MARK &&
+                                  e->type() != Element::Type::TEMPO_TEXT &&
+                                  e->type() != Element::Type::HARMONY &&
+                                  e->type() != Element::Type::STAFF_TEXT)
                                     continue;
 
                               bool found = false;
@@ -1804,7 +1900,10 @@ void Score::createMMRests()
                               }
                         }
                   for (Element* e : s->annotations()) {
-                        if (e->type() != Element::Type::REHEARSAL_MARK && e->type() != Element::Type::TEMPO_TEXT &&  e->type() != Element::Type::STAFF_TEXT)
+                        if (e->type() != Element::Type::REHEARSAL_MARK &&
+                            e->type() != Element::Type::TEMPO_TEXT &&
+                            e->type() != Element::Type::HARMONY &&
+                            e->type() != Element::Type::STAFF_TEXT)
                               continue;
                         bool found = false;
                         for (Element* ee : cs->annotations()) {
@@ -1821,8 +1920,11 @@ void Score::createMMRests()
                   mmr->setPrev(m->prev());
                   m = lm;
                   }
-            else if (m->mmRest())
-                  undo(new ChangeMMRest(m, 0));
+            else {
+                  if (m->mmRest())
+                        undo(new ChangeMMRest(m, 0));
+                  m->setMMRestCount(0);
+                  }
             }
 /* Update Notes After creating mmRest Because on load, mmRest->next() was not set
 on first pass in updateNotes() and break occur */
@@ -1904,7 +2006,6 @@ bool Score::layoutSystem(qreal& minWidth, qreal w, bool isFirstSystem, bool long
       {
       if (undoRedo())   // no change possible in this state
             return layoutSystem1(minWidth, isFirstSystem, longName);
-
       System* system = getNextSystem(isFirstSystem, false);
 
       qreal xo = 0;
@@ -2057,7 +2158,6 @@ bool Score::layoutSystem(qreal& minWidth, qreal w, bool isFirstSystem, bool long
       return continueFlag && curMeasure;
       }
 
-
 //---------------------------------------------------------
 //   hideEmptyStaves
 //---------------------------------------------------------
@@ -2069,6 +2169,8 @@ void Score::hideEmptyStaves(System* system, bool isFirstSystem)
       //
       int staves = _staves.size();
       int staffIdx = 0;
+      bool systemIsEmpty = true;
+
       foreach (Staff* staff, _staves) {
             SysStaff* s  = system->staff(staffIdx);
             bool oldShow = s->show();
@@ -2119,8 +2221,12 @@ void Score::hideEmptyStaves(System* system, bool isFirstSystem)
                               }
                         }
                   s->setShow(hideStaff ? false : staff->show());
+                  if (s->show()) {
+                        systemIsEmpty = false;
+                        }
                   }
             else {
+                  systemIsEmpty = false;
                   s->setShow(true);
                   }
 
@@ -2132,6 +2238,14 @@ void Score::hideEmptyStaves(System* system, bool isFirstSystem)
                         }
                   }
             ++staffIdx;
+            }
+      if (systemIsEmpty) {
+            foreach (Staff* staff, _staves) {
+                  SysStaff* s  = system->staff(staff->idx());
+                  if (staff->showIfEmpty() && !s->show()) {
+                        s->setShow(true);
+                        }
+                  }
             }
       }
 
@@ -2325,7 +2439,7 @@ Page* Score::addPage()
 ///   Rebuild tie connections.
 //---------------------------------------------------------
 
-void Score::connectTies()
+void Score::connectTies(bool silent)
       {
       int tracks = nstaves() * VOICES;
       Measure* m = firstMeasure();
@@ -2347,9 +2461,11 @@ void Score::connectTies()
                         else
                               nnote = searchTieNote(n);
                         if (nnote == 0) {
-                              qDebug("next note at %d track %d for tie not found", s->tick(), i);
-                              delete tie;
-                              n->setTieFor(0);
+                              if (!silent) {
+                                    qDebug("next note at %d track %d for tie not found (version %d)", s->tick(), i, _mscVersion);
+                                    delete tie;
+                                    n->setTieFor(0);
+                                    }
                               }
                         else {
                               tie->setEndNote(nnote);
@@ -3414,7 +3530,7 @@ qreal Score::computeMinWidth(Segment* fs)
                                     }
                               else {
                                     // if (pt & (Segment::Type::KeySig | Segment::Type::Clef))
-                                    bool firstClef = (segmentIdx == 1) && (pt == Segment::Type::Clef);
+                                    bool firstClef = (pt == Segment::Type::Clef) && (pSeg && pSeg->rtick() == 0);
                                     if ((pt & Segment::Type::KeySig) || firstClef)
                                           minDistance = qMax(minDistance, clefKeyRightMargin);
                                     }
@@ -3490,6 +3606,10 @@ qreal Score::computeMinWidth(Segment* fs)
                               minDistance = styleP(StyleIdx::clefLeftMargin);
                         else if (segType == Segment::Type::StartRepeatBarLine)
                               minDistance = .5 * _spatium;
+                        else if (segType == Segment::Type::TimeSig && pt == Segment::Type::Clef) {
+                              // missing key signature, but allocate default margin anyhow
+                              minDistance = styleP(StyleIdx::keysigLeftMargin);
+                              }
                         else if ((segType == Segment::Type::EndBarLine) && segmentIdx) {
                               if (pt == Segment::Type::Clef)
                                     minDistance = styleP(StyleIdx::clefBarlineDistance);

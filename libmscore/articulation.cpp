@@ -46,18 +46,14 @@ ArticulationInfo Articulation::articulationList[int(ArticulationType::ARTICULATI
             "verylongfermata", QT_TRANSLATE_NOOP("articulation", "very long fermata"),
             1.0, ArticulationShowIn::PITCHED_STAFF | ArticulationShowIn::TABLATURE
             },
-      { SymId::stringsThumbPosition, SymId::stringsThumbPosition,
-            "thumb", QT_TRANSLATE_NOOP("articulation", "thumb"),
-            1.0, ArticulationShowIn::PITCHED_STAFF | ArticulationShowIn::TABLATURE
-            },
       { SymId::articAccentAbove,   SymId::articAccentBelow,
             "sforzato", QT_TRANSLATE_NOOP("articulation", "sforzato"),
             1.0, ArticulationShowIn::PITCHED_STAFF | ArticulationShowIn::TABLATURE
             },
 // <> not available in smufl?
-//      { esprSym, esprSym             ,
+//      { SymId::esprSym, SymId::esprSym             ,
 //            "espressivo", QT_TRANSLATE_NOOP("articulation", "espressivo"),
-//            1.0,ArticulationShowIn::PITCHED_STAFF | ArticulationShowIn::TABLATURE
+//            1.0, ArticulationShowIn::PITCHED_STAFF | ArticulationShowIn::TABLATURE
 //            },
       { SymId::articStaccatoAbove, SymId::articStaccatoBelow,
             "staccato", QT_TRANSLATE_NOOP("articulation", "staccato"),
@@ -85,6 +81,26 @@ ArticulationInfo Articulation::articulationList[int(ArticulationType::ARTICULATI
             },
       { SymId::guitarFadeOut, SymId::guitarFadeOut,
             "fadeout", QT_TRANSLATE_NOOP("articulation", "fade out"),
+            1.0, ArticulationShowIn::PITCHED_STAFF | ArticulationShowIn::TABLATURE
+            },
+      { SymId::guitarVolumeSwell, SymId::guitarVolumeSwell,
+            "volumeswell", QT_TRANSLATE_NOOP("articulation", "volume swell"),
+            1.0, ArticulationShowIn::PITCHED_STAFF | ArticulationShowIn::TABLATURE
+            },
+      { SymId::wiggleSawtooth, SymId::wiggleSawtooth,
+            "wigglesawtooth", QT_TRANSLATE_NOOP("articulation", "wiggle sawtooth"),
+            1.0, ArticulationShowIn::PITCHED_STAFF | ArticulationShowIn::TABLATURE
+            },
+      { SymId::wiggleSawtoothWide, SymId::wiggleSawtoothWide,
+            "wigglesawtoothwide", QT_TRANSLATE_NOOP("articulation", "wiggle sawtooth wide"),
+            1.0, ArticulationShowIn::PITCHED_STAFF | ArticulationShowIn::TABLATURE
+            },
+      { SymId::wiggleVibratoLargeFaster, SymId::wiggleVibratoLargeFaster,
+            "wigglevibratolargefaster", QT_TRANSLATE_NOOP("articulation", "wiggle vibrato large faster"),
+            1.0, ArticulationShowIn::PITCHED_STAFF | ArticulationShowIn::TABLATURE
+            },
+      { SymId::wiggleVibratoLargeSlowest, SymId::wiggleVibratoLargeSlowest,
+            "wigglevibratolargeslowest", QT_TRANSLATE_NOOP("articulation", "wiggle vibrato large slowest"),
             1.0, ArticulationShowIn::PITCHED_STAFF | ArticulationShowIn::TABLATURE
             },
       { SymId::brassMuteOpen, SymId::brassMuteOpen,
@@ -169,19 +185,42 @@ ArticulationInfo Articulation::articulationList[int(ArticulationType::ARTICULATI
             },
 
 #if 0
-      { letterTSym, letterTSym,
+      { SymId::letterTSym, SymId::letterTSym,
             "tapping", QT_TRANSLATE_NOOP("articulation", "tapping"),
             1.0, ArticulationShowIn::TABLATURE
             },
-      { letterSSym, letterSSym,
+      { SymId::letterSSym, SymId::letterSSym,
             "slapping", QT_TRANSLATE_NOOP("articulation", "slapping"),
             1.0, ArticulationShowIn::TABLATURE
             },
-      { letterPSym, letterPSym,
+      { SymId::letterPSym, SymId::letterPSym,
             "popping", QT_TRANSLATE_NOOP("articulation", "popping"),
             1.0, ArticulationShowIn::TABLATURE
             },
 #endif
+
+      // Fingerings
+
+      { SymId::stringsThumbPosition, SymId::stringsThumbPosition,
+            "thumb", QT_TRANSLATE_NOOP("articulation", "thumb pos."),
+            1.0, ArticulationShowIn::PITCHED_STAFF | ArticulationShowIn::TABLATURE
+            },
+      { SymId::luteFingeringRHThumb, SymId::luteFingeringRHThumb,
+            "lutefingeringthumb", QT_TRANSLATE_NOOP("articulation", "lute thumb fing."),
+            1.0, ArticulationShowIn::TABLATURE
+            },
+      { SymId::luteFingeringRHFirst, SymId::luteFingeringRHFirst,
+            "lutefingering1st", QT_TRANSLATE_NOOP("articulation", "lute 1 fing."),
+            1.0, ArticulationShowIn::TABLATURE
+            },
+      { SymId::luteFingeringRHSecond, SymId::luteFingeringRHSecond,
+            "lutefingering2nd", QT_TRANSLATE_NOOP("articulation", "lute 2 fing."),
+            1.0, ArticulationShowIn::TABLATURE
+            },
+      { SymId::luteFingeringRHThird, SymId::luteFingeringRHThird,
+            "lutefingering3rd", QT_TRANSLATE_NOOP("articulation", "lute 3 fing."),
+            1.0, ArticulationShowIn::TABLATURE
+            },
       };
 
 //---------------------------------------------------------
@@ -250,7 +289,8 @@ void Articulation::read(XmlReader& e)
 
 void Articulation::write(Xml& xml) const
       {
-      if (!xml.canWrite(this)) return;
+      if (!xml.canWrite(this))
+            return;
       xml.stag("Articulation");
       if (!_channelName.isEmpty())
             xml.tagE(QString("channel name=\"%1\"").arg(_channelName));
@@ -300,23 +340,28 @@ void Articulation::setSubtype(const QString& s)
                   bool up;
                   ArticulationType type;
                   } al[] = {
-                  { "fadein",           true,  ArticulationType::FadeIn },
-                  { "fadeout",          true,  ArticulationType::FadeOut },
-                  { "umarcato",         true,  ArticulationType::Marcato },
-                  { "dmarcato",         false, ArticulationType::Marcato },
-                  { "ufermata",         true,  ArticulationType::Fermata },
-                  { "dfermata",         false, ArticulationType::Fermata },
-                  { "ushortfermata",    true,  ArticulationType::Shortfermata },
-                  { "dshortfermata",    false, ArticulationType::Shortfermata },
-                  { "ulongfermata",     true,  ArticulationType::Longfermata },
-                  { "dlongfermata",     false, ArticulationType::Longfermata },
-                  { "uverylongfermata", true,  ArticulationType::Verylongfermata },
-                  { "dverylongfermata", false, ArticulationType::Verylongfermata },
+                  { "fadein",                 true,  ArticulationType::FadeIn },
+                  { "fadeout",                true,  ArticulationType::FadeOut },
+                  { "volumeswell",            true,  ArticulationType::VolumeSwell },
+                  { "wigglesawtooth",         true,  ArticulationType::WiggleSawtooth },
+                  { "wigglesawtoothwide",     true,  ArticulationType::WiggleSawtoothWide },
+                  { "wigglevibratolargefaster",  true,  ArticulationType::WiggleVibratoLargeFaster },
+                  { "wigglevibratolargeslowest", true,  ArticulationType::WiggleVibratoLargeSlowest },
+                  { "umarcato",               true,  ArticulationType::Marcato },
+                  { "dmarcato",               false, ArticulationType::Marcato },
+                  { "ufermata",               true,  ArticulationType::Fermata },
+                  { "dfermata",               false, ArticulationType::Fermata },
+                  { "ushortfermata",          true,  ArticulationType::Shortfermata },
+                  { "dshortfermata",          false, ArticulationType::Shortfermata },
+                  { "ulongfermata",           true,  ArticulationType::Longfermata },
+                  { "dlongfermata",           false, ArticulationType::Longfermata },
+                  { "uverylongfermata",       true,  ArticulationType::Verylongfermata },
+                  { "dverylongfermata",       false, ArticulationType::Verylongfermata },
                   // watch out, bug in 1.2 uportato and dportato are reversed
-                  { "dportato",         true,  ArticulationType::Portato },
-                  { "uportato",         false, ArticulationType::Portato },
-                  { "ustaccatissimo",   true,  ArticulationType::Staccatissimo },
-                  { "dstaccatissimo",   false, ArticulationType::Staccatissimo }
+                  { "dportato",               true,  ArticulationType::Portato },
+                  { "uportato",               false, ArticulationType::Portato },
+                  { "ustaccatissimo",         true,  ArticulationType::Staccatissimo },
+                  { "dstaccatissimo",         false, ArticulationType::Staccatissimo }
                   };
 
             int i;
@@ -407,7 +452,7 @@ ChordRest* Articulation::chordRest() const
 
 QString Articulation::subtypeUserName() const
       {
-      return articulationList[int(articulationType())].description;
+      return qApp->translate("articulation", articulationList[int(articulationType())].description.toUtf8().constData());
       }
 
 //---------------------------------------------------------
@@ -600,6 +645,16 @@ qreal Articulation::mag() const
       {
       return parent() ? parent()->mag() * score()->styleD(StyleIdx::articulationMag): 1.0;
       }
+
+//---------------------------------------------------------
+//   accessibleInfo
+//---------------------------------------------------------
+
+QString Articulation::accessibleInfo()
+      {
+      return QString("%1: %2").arg(Element::accessibleInfo()).arg(subtypeUserName());
+      }
+
 }
 
 

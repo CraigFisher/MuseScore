@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<museScore version="1.24">
+<museScore version="2.00">
   <Score>
     <LayerTag id="0" tag="default"></LayerTag>
     <currentLayer>0</currentLayer>
@@ -49,14 +49,14 @@
     <Part>
       <Staff id="1">
         <StaffType group="pitched">
-          <name>Standard</name>
+          <name>stdNormal</name>
           </StaffType>
         <bracket type="1" span="2"/>
         <barLineSpan>2</barLineSpan>
         </Staff>
       <Staff id="2">
         <StaffType group="pitched">
-          <name>Standard</name>
+          <name>stdNormal</name>
           </StaffType>
         <bracket type="-1" span="0"/>
         <barLineSpan>0</barLineSpan>
@@ -93,7 +93,7 @@
     <Part>
       <Staff id="3">
         <StaffType group="pitched">
-          <name>Standard</name>
+          <name>stdNormal</name>
           </StaffType>
         <bracket type="-1" span="0"/>
         </Staff>
@@ -232,11 +232,6 @@
             <tpc>13</tpc>
             </Note>
           </Chord>
-        <BarLine>
-          <subtype>normal</subtype>
-          <span>2</span>
-          <lid>9</lid>
-          </BarLine>
         </Measure>
       <Measure number="5">
         <Rest>
@@ -349,11 +344,6 @@
           <durationType>measure</durationType>
           <duration z="2" n="4"/>
           </Rest>
-        <BarLine>
-          <subtype>normal</subtype>
-          <span>1</span>
-          <lid>19</lid>
-          </BarLine>
         </Measure>
       <Measure number="5">
         <Rest>
@@ -413,7 +403,7 @@
         <Staff id="1">
           <linkedTo>1</linkedTo>
           <StaffType group="pitched">
-            <name>Standard</name>
+            <name>stdNormal</name>
             </StaffType>
           <bracket type="1" span="2"/>
           <barLineSpan>2</barLineSpan>
@@ -421,7 +411,7 @@
         <Staff id="2">
           <linkedTo>2</linkedTo>
           <StaffType group="pitched">
-            <name>Standard</name>
+            <name>stdNormal</name>
             </StaffType>
           <bracket type="-1" span="0"/>
           <barLineSpan>0</barLineSpan>
@@ -566,11 +556,6 @@
               <tpc>13</tpc>
               </Note>
             </Chord>
-          <BarLine>
-            <subtype>normal</subtype>
-            <span>2</span>
-            <lid>9</lid>
-            </BarLine>
           </Measure>
         <Measure number="5">
           <Rest>
@@ -679,7 +664,7 @@
         <Staff id="1">
           <linkedTo>3</linkedTo>
           <StaffType group="pitched">
-            <name>Standard</name>
+            <name>stdNormal</name>
             </StaffType>
           <bracket type="-1" span="0"/>
           </Staff>
@@ -757,10 +742,6 @@
           </Measure>
         <Measure number="1" len="10/4">
           <multiMeasureRest>5</multiMeasureRest>
-          <Clef>
-            <concertClefType>G</concertClefType>
-            <transposingClefType>G</transposingClefType>
-            </Clef>
           <TimeSig>
             <sigN>2</sigN>
             <sigD>4</sigD>

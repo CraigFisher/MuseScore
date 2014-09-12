@@ -32,22 +32,24 @@ namespace Ms {
 enum Column : char { PITCH, NOTE, SHORTCUT, NAME };
 
 //---------------------------------------------------------
-//   noteHeadNames
+//   noteHeadNames (see also libmscore/note.{h,cpp})
+//   same order as NoteHead::Group, sol and altbrevis omitted,
+//   as not being useful for drums
 //---------------------------------------------------------
 
 const char* noteHeadNames[int(NoteHead::Group::HEAD_GROUPS)] = {
-      QT_TRANSLATE_NOOP("noteheadnames", "normal"),
-      QT_TRANSLATE_NOOP("noteheadnames", "cross"),
-      QT_TRANSLATE_NOOP("noteheadnames", "diamond"),
-      QT_TRANSLATE_NOOP("noteheadnames", "triangle"),
-      QT_TRANSLATE_NOOP("noteheadnames", "mi"),
-      QT_TRANSLATE_NOOP("noteheadnames", "slash"),
-      QT_TRANSLATE_NOOP("noteheadnames", "xcircle"),
-      QT_TRANSLATE_NOOP("noteheadnames", "do"),
-      QT_TRANSLATE_NOOP("noteheadnames", "re"),
-      QT_TRANSLATE_NOOP("noteheadnames", "fa"),
-      QT_TRANSLATE_NOOP("noteheadnames", "la"),
-      QT_TRANSLATE_NOOP("noteheadnames", "ti"),
+      QT_TRANSLATE_NOOP("EditDrumset", "normal"),
+      QT_TRANSLATE_NOOP("EditDrumset", "cross"),
+      QT_TRANSLATE_NOOP("EditDrumset", "diamond"),
+      QT_TRANSLATE_NOOP("EditDrumset", "triangle"),
+      QT_TRANSLATE_NOOP("EditDrumset", "mi"),
+      QT_TRANSLATE_NOOP("EditDrumset", "slash"),
+      QT_TRANSLATE_NOOP("EditDrumset", "xcircle"),
+      QT_TRANSLATE_NOOP("EditDrumset", "do"),
+      QT_TRANSLATE_NOOP("EditDrumset", "re"),
+      QT_TRANSLATE_NOOP("EditDrumset", "fa"),
+      QT_TRANSLATE_NOOP("EditDrumset", "la"),
+      QT_TRANSLATE_NOOP("EditDrumset", "ti"),
       };
 
 //---------------------------------------------------------
@@ -70,7 +72,7 @@ EditDrumset::EditDrumset(Drumset* ds, QWidget* parent)
 
       noteHead->addItem(tr("invalid"));
       for (int i = 0; i < int(NoteHead::Group::HEAD_GROUPS) - 2 ; ++i)
-            noteHead->addItem(noteHeadNames[i]);
+            noteHead->addItem(tr(noteHeadNames[i]));
 
       connect(pitchList, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)),
          SLOT(itemChanged(QTreeWidgetItem*, QTreeWidgetItem*)));
@@ -102,7 +104,7 @@ void EditDrumset::updateList()
                   QString s(QChar(nDrumset.shortcut(i)));
                   item->setText(Column::SHORTCUT, s);
                   }
-            item->setText(Column::NAME, qApp->translate("drumset", qPrintable(nDrumset.name(i))));
+            item->setText(Column::NAME, qApp->translate("drumset", nDrumset.name(i).toUtf8().constData()));
             item->setData(0, Qt::UserRole, i);
             }
       }
@@ -118,7 +120,7 @@ void EditDrumset::updateList2()
                   QString s(QChar(nDrumset.shortcut(pitch)));
                   item->setText(Column::SHORTCUT, s);
                   }
-            item->setText(Column::NAME, qApp->translate("drumset", qPrintable(nDrumset.name(pitch))));
+            item->setText(Column::NAME, qApp->translate("drumset", nDrumset.name(pitch).toUtf8().constData()));
             item->setData(0, Qt::UserRole, pitch);
             }
       }
@@ -224,7 +226,7 @@ void EditDrumset::itemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previou
             else
                   nDrumset.drum(pitch).shortcut = "ABCDEFG"[shortcut->currentIndex()];
             nDrumset.drum(pitch).stemDirection = MScore::Direction(stemDirection->currentIndex());
-            previous->setText(Column::NAME, qApp->translate("drumset", qPrintable(nDrumset.name(pitch))));
+            previous->setText(Column::NAME, qApp->translate("drumset", nDrumset.name(pitch).toUtf8().constData()));
             }
       if (current == 0)
             return;
@@ -235,7 +237,7 @@ void EditDrumset::itemChanged(QTreeWidgetItem* current, QTreeWidgetItem* previou
       noteHead->blockSignals(true);
 
       int pitch = current->data(0, Qt::UserRole).toInt();
-      name->setText(qApp->translate("drumset", qPrintable(nDrumset.name(pitch))));
+      name->setText(qApp->translate("drumset", nDrumset.name(pitch).toUtf8().constData()));
       staffLine->setValue(nDrumset.line(pitch));
       qDebug("BEFORE %d", nDrumset.voice(pitch));
       voice->setCurrentIndex(nDrumset.voice(pitch));
@@ -320,7 +322,7 @@ void EditDrumset::updateExample()
       stem->setLen((up ? -3.0 : 3.0) * gscore->spatium());
       chord->setStem(stem);
       stem->setPos(chord->stemPos());
-      drumNote->add(0,  chord, qApp->translate("drumset", qPrintable(nDrumset.name(pitch))));
+      drumNote->add(0,  chord, qApp->translate("drumset", nDrumset.name(pitch).toUtf8().constData()));
       }
 
 //---------------------------------------------------------

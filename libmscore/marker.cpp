@@ -14,8 +14,26 @@
 #include "score.h"
 #include "sym.h"
 #include "xml.h"
+#include "measure.h"
 
 namespace Ms {
+
+//must be in sync with Marker::Type enum
+const MarkerTypeItem markerTypeTable[] = {
+      { Marker::Type::SEGNO   , QT_TRANSLATE_NOOP("markerType", "Segno")          },
+      { Marker::Type::VARSEGNO, QT_TRANSLATE_NOOP("markerType", "Segno Variation")},
+      { Marker::Type::CODA    , QT_TRANSLATE_NOOP("markerType", "Coda")           },
+      { Marker::Type::VARCODA , QT_TRANSLATE_NOOP("markerType", "Varied coda")    },
+      { Marker::Type::CODETTA , QT_TRANSLATE_NOOP("markerType", "Codetta")        },
+      { Marker::Type::FINE    , QT_TRANSLATE_NOOP("markerType", "Fine")           },
+      { Marker::Type::TOCODA  , QT_TRANSLATE_NOOP("markerType", "To Coda")        },
+      { Marker::Type::USER    , QT_TRANSLATE_NOOP("markerType", "Custom")         }
+      };
+
+int markerTypeTableSize()
+      {
+      return sizeof(markerTypeTable)/sizeof(MarkerTypeItem) - 1; //-1 for the user defined
+      }
 
 //---------------------------------------------------------
 //   Marker
@@ -26,7 +44,8 @@ Marker::Marker(Score* s)
       {
       _markerType = Type::FINE;
       setFlags(ElementFlag::MOVABLE | ElementFlag::SELECTABLE | ElementFlag::ON_STAFF);
-      setTextStyleType(TextStyleType::REPEAT);
+      setTextStyleType(TextStyleType::REPEAT_LEFT);
+      setLayoutToParentWidth(true);
       }
 
 //---------------------------------------------------------
@@ -36,39 +55,42 @@ Marker::Marker(Score* s)
 void Marker::setMarkerType(Type t)
       {
       _markerType = t;
+      const char* txt = 0;
       switch (t) {
             case Type::SEGNO:
-                  setText("<sym>segno</sym>");
+                  txt = "<sym>segno</sym>";
                   setLabel("segno");
                   break;
 
             case Type::VARSEGNO:
-                  setText("<sym>segnoSerpent1</sym>");
+                  txt = "<sym>segnoSerpent1</sym>";
                   setLabel("varsegno");
                   break;
 
             case Type::CODA:
-                  setText("<sym>coda</sym>");
+                  txt = "<sym>coda</sym>";
                   setLabel("codab");
                   break;
 
             case Type::VARCODA:
-                  setText("<sym>codaSquare</sym>");
+                  txt = "<sym>codaSquare</sym>";
                   setLabel("varcoda");
                   break;
 
             case Type::CODETTA:
-                  setText("<sym>coda</sym><sym>coda</sym>");
+                  txt = "<sym>coda</sym><sym>coda</sym>";
                   setLabel("codetta");
                   break;
 
             case Type::FINE:
-                  setText("Fine");
+                  txt = "Fine";
+                  setTextStyleType(TextStyleType::REPEAT_RIGHT);
                   setLabel("fine");
                   break;
 
             case Type::TOCODA:
-                  setText("To Coda");
+                  txt = "To Coda";
+                  setTextStyleType(TextStyleType::REPEAT_RIGHT);
                   setLabel("coda");
                   break;
 
@@ -79,6 +101,13 @@ void Marker::setMarkerType(Type t)
                   qDebug("unknown marker type %hhd", t);
                   break;
             }
+      if (isEmpty() && txt)
+            setText(txt);
+      }
+
+QString Marker::markerTypeUserName()
+      {
+      return qApp->translate("markerType", markerTypeTable[static_cast<int>(_markerType)].name.toUtf8().constData());
       }
 
 //---------------------------------------------------------
@@ -97,7 +126,9 @@ void Marker::styleChanged()
 void Marker::adjustReadPos()
       {
       if (!readPos().isNull()) {
+
             QPointF uo;
+/*
             if (score()->mscVersion() <= 114) {
                   // rebase from Measure to Segment
                   uo = userOff();
@@ -107,6 +138,7 @@ void Marker::adjustReadPos()
                         uo.rx() -= bbox().width() * .5;
                   }
             else
+*/
                   uo = readPos() - ipos();
             setUserOff(uo);
             setReadPos(QPointF());
@@ -138,6 +170,21 @@ Marker::Type Marker::markerType(const QString& s) const
       }
 
 //---------------------------------------------------------
+//   layout
+//---------------------------------------------------------
+
+void Marker::layout()
+      {
+      setPos(textStyle().offset(spatium()));
+      Text::layout1();
+      // although normally laid out to parent (measure) width,
+      // force to center over barline if left-aligned
+      if (layoutToParentWidth() && !(textStyle().align() & (AlignmentFlags::RIGHT|AlignmentFlags::HCENTER)))
+            rxpos() -= width() * 0.5;
+      adjustReadPos();
+      }
+
+//---------------------------------------------------------
 //   read
 //---------------------------------------------------------
 
@@ -151,11 +198,13 @@ void Marker::read(XmlReader& e)
                   QString s(e.readElementText());
                   setLabel(s);
                   mt = markerType(s);
-                  qDebug("Marker::read type %d <%s>", int(mt), qPrintable(s));
                   }
             else if (!Text::readProperties(e))
                   e.unknown();
             }
+      // REPEAT is obsolete, but was previously used for both left and right aligned text
+      if (textStyleType() == TextStyleType::REPEAT)
+            setTextStyleType(TextStyleType::REPEAT_LEFT);
       setMarkerType(mt);
       }
 
@@ -248,6 +297,43 @@ QVariant Marker::propertyDefault(P_ID propertyId) const
       }
 
 
+//---------------------------------------------------------
+//   nextElement
+//---------------------------------------------------------
+
+Element* Marker::nextElement()
+      {
+      Segment* seg;
+      if (markerType() == Marker::Type::FINE) {
+            seg = measure()->last();
+            return seg->firstElement(staffIdx());
+            }
+      Measure* prevMeasure = measure()->prevMeasureMM();
+      if (prevMeasure) {
+            seg = prevMeasure->last();
+            return seg->firstElement(staffIdx());
+            }
+      return Element::nextElement();
+      }
+
+//---------------------------------------------------------
+//   prevElement
+//---------------------------------------------------------
+
+Element* Marker::prevElement()
+      {
+      //it's the same barline
+      return nextElement();
+      }
+
+//---------------------------------------------------------
+//   accessibleInfo
+//---------------------------------------------------------
+
+QString Marker::accessibleInfo()
+      {
+      return QString("%1: %2").arg(Element::accessibleInfo()).arg(markerTypeUserName());
+      }
 
 }
 

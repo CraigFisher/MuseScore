@@ -1573,7 +1573,7 @@ void Beam::layout2(QList<ChordRest*>crl, SpannerSegmentType, int frag)
                         bool b64 = (beamLevel >= 2) && (bm == Mode::BEGIN64);
 
                         if ((l >= beamLevel && (b32 || b64)) || (l < beamLevel)) {
-                              if (i && crl[i-1]->type() == Element::Type::REST) {
+                              if (i > 1 && crl[i-1]->type() == Element::Type::REST) {
                                     --i;
                                     }
                               break;
@@ -2011,10 +2011,11 @@ void Beam::startEdit(MuseScoreView*, const QPointF& p)
 //   acceptDrop
 //---------------------------------------------------------
 
-bool Beam::acceptDrop(MuseScoreView*, const QPointF&, Element* e) const
+bool Beam::acceptDrop(const DropData& data) const
       {
-      return (e->type() == Element::Type::ICON) && ((static_cast<Icon*>(e)->iconType() == IconType::FBEAM1)
-         || (static_cast<Icon*>(e)->iconType() == IconType::FBEAM2));
+      return (data.element->type() == Element::Type::ICON)
+         && ((static_cast<Icon*>(data.element)->iconType() == IconType::FBEAM1)
+         || (static_cast<Icon*>(data.element)->iconType() == IconType::FBEAM2));
       }
 
 //---------------------------------------------------------

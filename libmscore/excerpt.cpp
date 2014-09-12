@@ -97,14 +97,11 @@ static void localSetScore(void* score, Element* element)
 //   createExcerpt
 //---------------------------------------------------------
 
-Score* createExcerpt(const QList<Part*>& parts)
+void createExcerpt(Score* score, const QList<Part*>& parts)
       {
-      if (parts.isEmpty())
-            return 0;
       QList<int> srcStaves;
 
       Score* oscore = parts.front()->score();
-      Score* score  = new Score(oscore);
 
       // clone layer:
       for (int i = 0; i < 32; ++i) {
@@ -120,17 +117,17 @@ Score* createExcerpt(const QList<Part*>& parts)
 
       foreach (Part* part, parts) {
             Part* p = new Part(score);
-            p->setInstrument(*part->instr());
-            int idx = 0;
+            p->setInstrument(*part->instr(), 0);
+
             foreach (Staff* staff, *part->staves()) {
-                  Staff* s = new Staff(score, p, idx);
-                  s->setInitialClef(staff->initialClefTypeList());
+                  Staff* s = new Staff(score);
+                  s->setPart(p);
                   s->setStaffType(staff->staffType());
-                  s->linkTo(staff);
+                  s->setDefaultClefType(staff->defaultClefType());
+                  score->undo(new LinkStaff(s, staff));
                   p->staves()->append(s);
                   score->staves().append(s);
                   srcStaves.append(oscore->staffIdx(staff));
-                  ++idx;
                   }
             score->appendPart(p);
             }
@@ -139,18 +136,25 @@ Score* createExcerpt(const QList<Part*>& parts)
       //
       // create excerpt title
       //
-      MeasureBase* measure = score->first();
-      if (!measure || (measure->type() != Element::Type::VBOX)) {
-            MeasureBase* nmeasure = new VBox(score);
-            nmeasure->setTick(0);
-            score->addMeasure(nmeasure, measure);
-            measure = nmeasure;
-            }
+      MeasureBase* measure = oscore->first();
+
+      // create title frame for all scores if not already there
+      if (!measure || (measure->type() != Element::Type::VBOX))
+            measure = oscore->insertMeasure(Element::Type::VBOX, measure);
+
+      VBox* titleFrameScore = static_cast<VBox*>(measure);
+      measure = score->first();
+
+      Q_ASSERT(measure->type() == Element::Type::VBOX);
+
+      VBox* titleFramePart = static_cast<VBox*>(measure);
+      titleFramePart->copyValues(titleFrameScore);
       QString partLabel = parts.front()->longName();
       if (!partLabel.isEmpty()) {
             Text* txt = new Text(score);
             txt->setTextStyleType(TextStyleType::INSTRUMENT_EXCERPT);
             txt->setText(partLabel);
+            txt->setTrack(0);
             measure->add(txt);
             }
 
@@ -201,7 +205,6 @@ Score* createExcerpt(const QList<Part*>& parts)
 
       score->setLayoutAll(true);
       score->doLayout();
-      return score;
       }
 
 //---------------------------------------------------------
@@ -301,8 +304,7 @@ void cloneStaves(Score* oscore, Score* score, const QList<int>& map)
                               }
                         Tremolo* tremolo = 0;
                         for (Segment* oseg = m->first(); oseg; oseg = oseg->next()) {
-                              Segment* ns = nm->getSegment(oseg->segmentType(), oseg->tick());
-
+                              Segment* ns = nullptr; //create segment later, on demand
                               foreach (Element* e, oseg->annotations()) {
                                     if (e->generated())
                                           continue;
@@ -315,6 +317,8 @@ void cloneStaves(Score* oscore, Score* score, const QList<int>& map)
                                           ne->setReadPos(QPointF());
                                           ne->setTrack(track == -1 ? 0 : track);
                                           ne->setScore(score);
+                                          if (!ns)
+                                                ns = nm->getSegment(oseg->segmentType(), oseg->tick());
                                           ns->add(ne);
                                           // for chord symbols,
                                           // re-render with new style settings
@@ -356,7 +360,8 @@ void cloneStaves(Score* oscore, Score* score, const QList<int>& map)
                                     if (ot) {
                                           Tuplet* nt = tupletMap.findNew(ot);
                                           if (nt == 0) {
-                                                nt = new Tuplet(*ot);
+                                                // nt = new Tuplet(*ot);
+                                                nt = static_cast<Tuplet*>(ot->linkedClone());
                                                 nt->clear();
                                                 nt->setTrack(track);
                                                 nt->setScore(score);
@@ -418,6 +423,8 @@ void cloneStaves(Score* oscore, Score* score, const QList<int>& map)
                                                 }
                                           }
                                     }
+                              if (!ns)
+                                    ns = nm->getSegment(oseg->segmentType(), oseg->tick());
                               ns->add(ne);
                               }
                         }
@@ -504,9 +511,6 @@ void cloneStaff(Staff* srcStaff, Staff* dstStaff)
       int srcStaffIdx = score->staffIdx(srcStaff);
       int dstStaffIdx = score->staffIdx(dstStaff);
 
-      if (srcStaff->staffGroup() == dstStaff->staffGroup())
-            dstStaff->setInitialClef(srcStaff->initialClefTypeList());
-
       for (Measure* m = score->firstMeasure(); m; m = m->nextMeasure()) {
             int sTrack = srcStaffIdx * VOICES;
             int eTrack = sTrack + VOICES;
@@ -525,7 +529,7 @@ void cloneStaff(Staff* srcStaff, Staff* dstStaff)
                               Clef* clef = static_cast<Clef*>(oe);
                               int   tick = seg->tick();
                               if (ClefInfo::staffGroup(clef->concertClef()) == dstStaff->staffGroup()
-                                          && dstStaff->clefTypeList(tick) != clef->clefTypeList()) {
+                                          && dstStaff->clefType(tick) != clef->clefTypeList()) {
                                     ne = oe->clone();
                                     }
                               }
@@ -535,6 +539,12 @@ void cloneStaff(Staff* srcStaff, Staff* dstStaff)
                               ne->setTrack(dstTrack);
                               ne->setParent(seg);
                               ne->setScore(score);
+                              if (ne->isChordRest()) {
+                                    ChordRest* ncr = static_cast<ChordRest*>(ne);
+                                    if (ncr->tuplet()) {
+                                          ncr->setTuplet(0); //TODO nested tuplets
+                                          }
+                                    }
                               score->undoAddElement(ne);
                               }
                         if (oe->isChordRest()) {
@@ -542,16 +552,18 @@ void cloneStaff(Staff* srcStaff, Staff* dstStaff)
                               ChordRest* ncr = static_cast<ChordRest*>(ne);
                               Tuplet* ot     = ocr->tuplet();
                               if (ot) {
+                                    ot->setTrack(ocr->track());
                                     Tuplet* nt = tupletMap.findNew(ot);
                                     if (nt == 0) {
-                                          nt = new Tuplet(*ot);
+                                          // nt = new Tuplet(*ot);
+                                          nt = static_cast<Tuplet*>(ot->linkedClone());
                                           nt->clear();
                                           nt->setTrack(dstTrack);
                                           nt->setParent(m);
                                           tupletMap.add(ot, nt);
                                           }
-                                    ncr->setTuplet(nt);
                                     nt->add(ncr);
+                                    ncr->setTuplet(nt);
                                     }
                               foreach (Element* e, seg->annotations()) {
                                     if (e->generated() || e->systemFlag())
@@ -640,7 +652,6 @@ void cloneStaff2(Staff* srcStaff, Staff* dstStaff, int stick, int etick)
 
       TieMap tieMap;
 
-      dstStaff->setInitialClef(srcStaff->initialClefTypeList());
       int srcStaffIdx = oscore->staffIdx(srcStaff);
       int dstStaffIdx = score->staffIdx(dstStaff);
 
@@ -670,7 +681,8 @@ void cloneStaff2(Staff* srcStaff, Staff* dstStaff, int stick, int etick)
                               if (ot) {
                                     Tuplet* nt = tupletMap.findNew(ot);
                                     if (nt == 0) {
-                                          nt = new Tuplet(*ot);
+                                          // nt = new Tuplet(*ot);
+                                          nt = static_cast<Tuplet*>(ot->linkedClone());
                                           nt->clear();
                                           nt->setTrack(dstTrack);
                                           nt->setParent(m);

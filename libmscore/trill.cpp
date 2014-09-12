@@ -23,6 +23,20 @@
 
 namespace Ms {
 
+
+// must be in sync with Trill::Type
+const TrillTableItem trillTable[] = {
+      { Trill::Type::TRILL_LINE,      "trill",      QT_TRANSLATE_NOOP("trillType", "Trill line")          },
+      { Trill::Type::UPPRALL_LINE,    "upprall",    QT_TRANSLATE_NOOP("trillType", "Upprall line")        },
+      { Trill::Type::DOWNPRALL_LINE,  "downprall",  QT_TRANSLATE_NOOP("trillType", "Downprall line")      },
+      { Trill::Type::PRALLPRALL_LINE, "prallprall", QT_TRANSLATE_NOOP("trillType", "Prallprall line")     },
+      { Trill::Type::PURE_LINE      , "pure",       QT_TRANSLATE_NOOP("trillType", "Wavy line")           }
+};
+
+int trillTableSize() {
+      return sizeof(trillTable)/sizeof(TrillTableItem);
+      }
+
 //---------------------------------------------------------
 //   draw
 //---------------------------------------------------------
@@ -156,9 +170,9 @@ void TrillSegment::layout()
 //   acceptDrop
 //---------------------------------------------------------
 
-bool TrillSegment::acceptDrop(MuseScoreView*, const QPointF&, Element* e) const
+bool TrillSegment::acceptDrop(const DropData& data) const
       {
-      if (e->type() == Element::Type::ACCIDENTAL)
+      if (data.element->type() == Element::Type::ACCIDENTAL)
             return true;
       return false;
       }
@@ -286,20 +300,24 @@ void Trill::remove(Element* e)
 
 void Trill::layout()
       {
-      qreal _spatium = spatium();
-
       SLine::layout();
       if (score() == gscore)
             return;
+      if (spannerSegments().empty())
+            return;
       TrillSegment* ls = static_cast<TrillSegment*>(frontSegment());
+#if 0
+// this is now handled differently, in SLine::linePos
       //
       // special case:
       // if end segment is first chord/rest segment in measure,
       // shorten trill line so it ends at end of previous measure
       //
+      qreal _spatium = spatium();
       Segment* seg1  = startSegment();
       Segment* seg2  = endSegment();
-      if (seg2
+      if (seg1
+         && seg2
          && (seg1->system() == seg2->system())
          && (spannerSegments().size() == 1)
          && (seg2->tick() == seg2->measure()->tick())
@@ -314,6 +332,9 @@ void Trill::layout()
                   ls->layout();
                   }
             }
+#endif
+      if (spannerSegments().empty())
+            qDebug("Trill: no segments");
       if (_accidental)
             _accidental->setParent(ls);
       }
@@ -336,7 +357,8 @@ LineSegment* Trill::createLineSegment()
 
 void Trill::write(Xml& xml) const
       {
-      if (!xml.canWrite(this)) return;
+      if (!xml.canWrite(this))
+            return;
       xml.stag(QString("%1 id=\"%2\"").arg(name()).arg(xml.spannerId(this)));
       xml.tag("subtype", trillTypeName());
       SLine::writeProperties(xml);
@@ -410,6 +432,15 @@ QString Trill::trillTypeName() const
                   qDebug("unknown Trill subtype %hhd", trillType());
                   return "?";
             }
+      }
+
+//---------------------------------------------------------
+//   trillTypeName
+//---------------------------------------------------------
+
+QString Trill::trillTypeUserName()
+      {
+      return qApp->translate("trillType", trillTable[static_cast<int>(trillType())].userName.toUtf8().constData());
       }
 
 //---------------------------------------------------------
@@ -489,6 +520,15 @@ void Trill::undoSetTrillType(Type val)
 void Trill::setYoff(qreal val)
       {
       rUserYoffset() += (val - score()->styleS(StyleIdx::trillY).val()) * spatium();
+      }
+
+//---------------------------------------------------------
+//   accessibleInfo
+//---------------------------------------------------------
+
+QString Trill::accessibleInfo()
+      {
+      return QString("%1: %2").arg(Element::accessibleInfo()).arg(trillTypeUserName());
       }
 }
 

@@ -558,6 +558,7 @@ void Debugger::updateElement(Element* el)
       {
       if (el == 0 || !isVisible())
             return;
+
       if (cs != el->score())
             updateList(el->score());
       for (int i = 0;; ++i) {
@@ -620,7 +621,9 @@ void Debugger::updateElement(Element* el)
                   case Element::Type::HBOX:
                   case Element::Type::FBOX:
                   case Element::Type::TBOX:             ew = new BoxView;             break;
+                  case Element::Type::TRILL:            ew = new SpannerView;         break;
 
+                  case Element::Type::INSTRUMENT_NAME:
                   case Element::Type::FINGERING:
                   case Element::Type::MARKER:
                   case Element::Type::JUMP:
@@ -1417,6 +1420,7 @@ void HarmonyView::setElement(Element* e)
       else
             hb.bassName->setText(harmony->baseName());
       hb.chordId->setValue(harmony->id());
+      //hb.chordName->setText(harmony->parsedForm()->handle());
       hb.chordName->setText(harmony->hTextName());
       hb.userName->setText(harmony->hUserName());
 
@@ -1471,7 +1475,7 @@ void SpannerView::setElement(Element* e)
       Spanner* spanner = static_cast<Spanner*>(e);
       ShowElementBase::setElement(e);
       sp.tick->setValue(spanner->tick());
-      sp.tick2->setValue(spanner->tick2());
+      sp.ticks->setValue(spanner->ticks());
       sp.anchor->setCurrentIndex(int(spanner->anchor()));
       sp.track2->setValue(spanner->track2());
 
@@ -1993,7 +1997,7 @@ VoltaView::VoltaView()
       connect(tlb.beginText,    SIGNAL(clicked()), SLOT(beginTextClicked()));
       connect(tlb.continueText, SIGNAL(clicked()), SLOT(continueTextClicked()));
       connect(tlb.endText,      SIGNAL(clicked()), SLOT(endTextClicked()));
-      connect(sp.segments,      SIGNAL(itemClicked(QListWidgetItem*)), SLOT(gotoElement(QListWidgetItem*)));
+      connect(sp.segments,      SIGNAL(itemClicked(QTreeWidgetItem*,int)), SLOT(gotoElement(QTreeWidgetItem*)));
       }
 
 //---------------------------------------------------------
@@ -2021,7 +2025,7 @@ void VoltaView::setElement(Element* e)
             }
 
       sp.tick->setValue(volta->tick());
-      sp.tick2->setValue(volta->tick2());
+      sp.ticks->setValue(volta->ticks());
       sp.track2->setValue(volta->track2());
       sp.startElement->setEnabled(volta->startElement() != 0);
       sp.endElement->setEnabled(volta->endElement() != 0);
@@ -2103,6 +2107,16 @@ LineSegmentView::LineSegmentView()
    : ShowElementBase()
       {
       lb.setupUi(addWidget());
+      connect(lb.lineButton, SIGNAL(clicked()), SLOT(lineClicked()));
+      }
+
+//---------------------------------------------------------
+//   lineClicked
+//---------------------------------------------------------
+
+void LineSegmentView::lineClicked()
+      {
+      emit elementChanged(((LineSegment*)element())->spanner());
       }
 
 //---------------------------------------------------------
@@ -2119,6 +2133,8 @@ void LineSegmentView::setElement(Element* e)
       lb.pos2y->setValue(vs->pos2().y());
       lb.offset2x->setValue(vs->userOff2().x());
       lb.offset2y->setValue(vs->userOff2().y());
+
+      emit elementChanged(((Chord*)element())->hook());
       }
 
 //---------------------------------------------------------
@@ -2586,7 +2602,7 @@ void TextLineSegmentView::setElement(Element* e)
       lb.pos2y->setValue(vs->pos2().y());
       lb.offset2x->setValue(vs->userOff2().x());
       lb.offset2y->setValue(vs->userOff2().y());
-      connect(lb.line, SIGNAL(clicked()), SLOT(lineClicked()));
+      connect(lb.lineButton, SIGNAL(clicked()), SLOT(lineClicked()));
       }
 
 //---------------------------------------------------------

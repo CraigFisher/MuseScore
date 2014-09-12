@@ -252,7 +252,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       MeasuresDialog* measuresDialog;
       InsertMeasuresDialog* insertMeasuresDialog;
       MasterPalette* masterPalette;
-      PluginCreator* pluginCreator;
+      PluginCreator* _pluginCreator;
       PluginManager* pluginManager;
       SelectionWindow* selectionWindow;
 
@@ -263,7 +263,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       QMenu* menuStyle;
       AlbumManager* albumManager;
 
-      QWidget* searchDialog;
+      QWidget* _searchDialog;
       QComboBox* searchCombo;
 
       PlayPanel* playPanel;
@@ -285,7 +285,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       NewWizard* newWizard;
 
       PaletteBox* paletteBox;
-      Inspector* inspector;
+      Inspector* _inspector;
       OmrPanel* omrPanel;
 
       bool _midiinEnabled;
@@ -508,7 +508,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       void updateDrumTools();
       void showWebPanel(bool on);
       void showPluginCreator(QAction*);
-      void showPluginManager(QAction*);
+      void showPluginManager();
 
       void updateTabNames();
       QProgressBar* showProgressBar();
@@ -614,6 +614,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       Q_INVOKABLE QString getLocaleISOCode() const;
       Navigator* navigator() const;
       NScrollArea* navigatorScrollArea() const { return _navigator; }
+      QWidget*   searchDialog() const;
       void updateLayer();
       void updatePlayMode();
       bool loop() const              { return loopAction->isChecked(); }
@@ -651,8 +652,8 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       static Palette* newBarLinePalette();
       static Palette* newLinesPalette();
 
-      Inspector* getInspector()           { return inspector; }
-      PluginCreator* getPluginCreator()   { return pluginCreator; }
+      Inspector* inspector()           { return _inspector; }
+      PluginCreator* pluginCreator()   { return _pluginCreator; }
       ScoreView* currentScoreView() const { return cv; }
       void showMessage(const QString& s, int timeout);
       void helpBrowser(const QString = QString()) const;
@@ -670,6 +671,7 @@ Driver* driverFactory(Seq*, QString driver);
 
 extern QAction* getAction(const char*);
 extern Shortcut* midiActionMap[128];
+extern void loadTranslation(QString fileName, QString localeName);
 extern void setMscoreLocale(QString localeName);
 extern QPixmap sym2pixmap(const Sym* s, qreal mag);
 

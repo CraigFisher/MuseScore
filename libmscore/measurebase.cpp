@@ -296,6 +296,8 @@ void MeasureBase::layout()
                   element->setPos(x, y);
                   breakCount++;
                   }
+            else
+                  element->layout();
             }
       }
 
@@ -339,7 +341,7 @@ bool MeasureBase::setProperty(P_ID id, const QVariant& property)
       {
       switch(id) {
             case P_ID::BREAK_HINT:
-                  setBreakHint(property.toBool());
+                  _breakHint = property.toBool();
                   break;
             default:
                   if (!Element::setProperty(id, property))

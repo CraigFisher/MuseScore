@@ -157,7 +157,7 @@ void Box::endEdit()
 void Box::updateGrips(int* grips, int* defaultGrip, QRectF* grip) const
       {
       *grips = 1;
-      *defaultGrip = 1;
+      *defaultGrip = 0;
       QRectF r(abbox());
       if (type() == Element::Type::HBOX)
             grip[0].translate(QPointF(r.right(), r.top() + r.height() * .5));
@@ -223,9 +223,14 @@ void Box::read(XmlReader& e)
                   else {
                         t = new Text(score());
                         t->read(e);
-                        add(t);
-                        if (score()->mscVersion() <= 114)
-                              t->setLayoutToParentWidth(true);
+                        if (t->isEmpty()) {
+                              qDebug("read empty text");
+                              }
+                        else {
+                              add(t);
+                              if (score()->mscVersion() <= 114)
+                                    t->setLayoutToParentWidth(true);
+                              }
                         }
                   }
             else if (tag == "Symbol") {
@@ -382,6 +387,24 @@ QVariant Box::propertyDefault(P_ID id) const
       }
 
 //---------------------------------------------------------
+//   copyValues
+//---------------------------------------------------------
+
+void Box::copyValues(Box* origin)
+      {
+      _boxHeight = origin->boxHeight();
+      _boxWidth = origin->boxWidth();
+
+      qreal factor = magS() / origin->magS();
+      _bottomGap = origin->bottomGap() * factor;
+      _topGap = origin->topGap() * factor;
+      _bottomMargin = origin->bottomMargin() * factor;
+      _topMargin = origin->topMargin() * factor;
+      _leftMargin = origin->leftMargin() * factor;
+      _rightMargin = origin->rightMargin() * factor;
+      }
+
+//---------------------------------------------------------
 //   HBox
 //---------------------------------------------------------
 
@@ -427,12 +450,12 @@ void HBox::layout2()
 //   acceptDrop
 //---------------------------------------------------------
 
-bool Box::acceptDrop(MuseScoreView*, const QPointF&, Element* e) const
+bool Box::acceptDrop(const DropData& data) const
       {
-      Element::Type type = e->type();
-      if(e->flag(ElementFlag::ON_STAFF))
+      Element::Type type = data.element->type();
+      if (data.element->flag(ElementFlag::ON_STAFF))
             return false;
-      switch(type) {
+      switch (type) {
             case Element::Type::LAYOUT_BREAK:
             case Element::Type::TEXT:
             case Element::Type::STAFF_TEXT:
@@ -440,7 +463,7 @@ bool Box::acceptDrop(MuseScoreView*, const QPointF&, Element* e) const
             case Element::Type::SYMBOL:
                   return true;
             case Element::Type::ICON:
-                  switch(static_cast<Icon*>(e)->iconType()) {
+                  switch(static_cast<Icon*>(data.element)->iconType()) {
                         case IconType::VFRAME:
                         case IconType::TFRAME:
                         case IconType::FFRAME:

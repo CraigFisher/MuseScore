@@ -18,7 +18,6 @@
 //  along with this program; if not, write to the Free Software
 //  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 //=============================================================================
-
 #include "shortcutcapturedialog.h"
 #include "musescore.h"
 #include "shortcut.h"
@@ -40,6 +39,7 @@ ShortcutCaptureDialog::ShortcutCaptureDialog(Shortcut* _s, QMap<QString, Shortcu
       addButton->setEnabled(false);
       replaceButton->setEnabled(false);
       oshrtLabel->setText(s->keysToString());
+      oshrtTextLabel->setAccessibleDescription(s->keysToString());
       oshrtLabel->setEnabled(false);
       connect(clearButton, SIGNAL(clicked()), SLOT(clearClicked()));
       connect(addButton, SIGNAL(clicked()), SLOT(addClicked()));
@@ -83,13 +83,18 @@ ShortcutCaptureDialog::~ShortcutCaptureDialog()
 //---------------------------------------------------------
 
 bool ShortcutCaptureDialog::eventFilter(QObject* /*o*/, QEvent* e)
-    {    
-    if (e->type() == QEvent::KeyPress) {
-        keyPress(static_cast<QKeyEvent*>(e));
-        return true;
-        }
-    return false;
-    }
+      {
+      if (e->type() == QEvent::KeyPress) {
+            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
+            if(keyEvent->key() == Qt::Key_Tab || keyEvent->key() == Qt::Key_Backtab){
+                  QWidget::keyPressEvent(keyEvent);
+                  return true;
+                  }
+            keyPress(keyEvent);
+            return true;
+            }
+      return false;
+      }
 
 
 //---------------------------------------------------------
@@ -137,7 +142,17 @@ void ShortcutCaptureDialog::keyPress(QKeyEvent* e)
             if (conflict)
                   break;
             }
+
       messageLabel->setText(msgString);
+
+      if (conflict) {
+            if (!nshrtLabel->accessibleName().contains(tr("Shortcut conflicts with")))
+                  nshrtLabel->setAccessibleName(msgString);
+            }
+      else {
+            if (!nshrtLabel->accessibleName().contains("New shortcut"))
+                  nshrtLabel->setAccessibleName(tr("New shortcut"));
+            }
       addButton->setEnabled(conflict == false);
       replaceButton->setEnabled(conflict == false);
 //      nshrtLabel->setText(key.toString(QKeySequence::NativeText));
@@ -163,6 +178,12 @@ qDebug("capture key 0x%x  modifiers 0x%x virt 0x%x scan 0x%x <%s><%s>",
 
 void ShortcutCaptureDialog::clearClicked()
       {
+      if (!nshrtLabel->accessibleName().contains("New shortcut"))
+            nshrtLabel->setAccessibleName(tr("New shortcut"));
+
+      nshrtLabel->setAccessibleName(tr("New shortcut"));
+      addButton->setEnabled(false);
+      replaceButton->setEnabled(false);
       nshrtLabel->setText("");
       key = 0;
       }

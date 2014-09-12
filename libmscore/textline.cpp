@@ -125,7 +125,9 @@ void TextLineSegment::draw(QPainter* painter) const
       else
             endHookWidth = 0;
 
-      painter->drawLine(QLineF(pp1.x(), pp1.y(), pp2.x(), pp2.y()));
+      // don't draw backwards lines (or hooks) if text is longer than nominal line length
+      if (pp1.x() < pp2.x())
+            painter->drawLine(QLineF(pp1.x(), pp1.y(), pp2.x(), pp2.y()));
 
       if (tl->beginHook()
          && (spannerSegmentType() == SpannerSegmentType::SINGLE
@@ -134,7 +136,8 @@ void TextLineSegment::draw(QPainter* painter) const
             qreal hh = tl->beginHookHeight().val() * _spatium;
             painter->drawLine(QLineF(pp1.x(), pp1.y(), pp1.x() - beginHookWidth, pp1.y() + hh));
             }
-      if (tl->endHook()
+
+      if (tl->endHook() && pp1.x() < pp2.x()
          && (spannerSegmentType() == SpannerSegmentType::SINGLE
              || spannerSegmentType() == SpannerSegmentType::END)
          ) {
@@ -209,6 +212,7 @@ void TextLineSegment::layout1()
                   }
             else {
                   _endText->setTextStyleType(tl->_endText->textStyleType());
+                  _endText->setTextStyle(tl->_endText->textStyle());
                   _endText->setText(tl->_endText->text());
                   }
             }
@@ -536,7 +540,8 @@ void TextLine::setEndText(const QString& s)
 
 void TextLine::write(Xml& xml) const
       {
-      if (!xml.canWrite(this)) return;
+      if (!xml.canWrite(this))
+            return;
       xml.stag(QString("%1 id=\"%2\"").arg(name()).arg(xml.spannerId(this)));
       writeProperties(xml);
       xml.etag();
@@ -624,17 +629,12 @@ QString TextLine::endText() const
 
 void TextLine::writeProperties(Xml& xml) const
       {
-      if (_beginHook) {
-            writeProperty(xml, P_ID::BEGIN_HOOK);
-            writeProperty(xml, P_ID::BEGIN_HOOK_HEIGHT);
-            writeProperty(xml, P_ID::BEGIN_HOOK_TYPE);
-            }
-      if (_endHook) {
-            writeProperty(xml, P_ID::END_HOOK);
-            writeProperty(xml, P_ID::END_HOOK_HEIGHT);
-            writeProperty(xml, P_ID::END_HOOK_TYPE);
-            }
-
+      writeProperty(xml, P_ID::BEGIN_HOOK);
+      writeProperty(xml, P_ID::BEGIN_HOOK_HEIGHT);
+      writeProperty(xml, P_ID::BEGIN_HOOK_TYPE);
+      writeProperty(xml, P_ID::END_HOOK);
+      writeProperty(xml, P_ID::END_HOOK_HEIGHT);
+      writeProperty(xml, P_ID::END_HOOK_TYPE);
       writeProperty(xml, P_ID::BEGIN_TEXT_PLACE);
       writeProperty(xml, P_ID::CONTINUE_TEXT_PLACE);
       writeProperty(xml, P_ID::END_TEXT_PLACE);
@@ -644,6 +644,8 @@ void TextLine::writeProperties(Xml& xml) const
       if (_beginText) {
             bool textDiff  = _beginText->text() != propertyDefault(P_ID::BEGIN_TEXT).toString();
             bool styleDiff = _beginText->textStyle() != propertyDefault(P_ID::BEGIN_TEXT_STYLE).value<TextStyle>();
+            if (styleDiff)
+                  textDiff = true;
             if (textDiff || styleDiff) {
                   xml.stag("beginText");
                   _beginText->writeProperties(xml, textDiff, styleDiff);
@@ -653,6 +655,8 @@ void TextLine::writeProperties(Xml& xml) const
       if (_continueText) {
             bool textDiff  = _continueText->text() != propertyDefault(P_ID::CONTINUE_TEXT).toString();
             bool styleDiff = _continueText->textStyle() != propertyDefault(P_ID::CONTINUE_TEXT_STYLE).value<TextStyle>();
+            if (styleDiff)
+                  textDiff = true;
             if (textDiff || styleDiff) {
                   xml.stag("continueText");
                   _continueText->writeProperties(xml, textDiff, styleDiff);
@@ -662,6 +666,8 @@ void TextLine::writeProperties(Xml& xml) const
       if (_endText) {
             bool textDiff  = _endText->text() != propertyDefault(P_ID::END_TEXT).toString();
             bool styleDiff = _endText->textStyle() != propertyDefault(P_ID::END_TEXT_STYLE).value<TextStyle>();
+            if (styleDiff)
+                  textDiff = true;
             if (textDiff || styleDiff) {
                   xml.stag("endText");
                   _endText->writeProperties(xml, textDiff, styleDiff);

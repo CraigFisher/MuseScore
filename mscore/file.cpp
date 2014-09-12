@@ -160,33 +160,33 @@ static QString createDefaultFileName(QString fn)
 
 static bool readScoreError(const QString& name, Score::FileError error, bool ask)
       {
-      QString msg = QString(QT_TRANSLATE_NOOP(file, "Cannot read file %1:\n")).arg(name);
+      QString msg = QObject::tr("Cannot read file %1:\n").arg(name);
       bool canIgnore = false;
       switch(error) {
             case Score::FileError::FILE_NO_ERROR:
                   return false;
             case Score::FileError::FILE_BAD_FORMAT:
-                  msg += QT_TRANSLATE_NOOP(file, "bad format");
+                  msg +=  QObject::tr("bad format");
                   break;
             case Score::FileError::FILE_UNKNOWN_TYPE:
-                  msg += QT_TRANSLATE_NOOP(file, "unknown type");
+                  msg += QObject::tr("unknown type");
                   break;
             case Score::FileError::FILE_NO_ROOTFILE:
                   break;
             case Score::FileError::FILE_TOO_OLD:
-                  msg += QT_TRANSLATE_NOOP(file, "It was last saved with version 0.9.5 or older.<br>"
+                  msg += QObject::tr("It was last saved with version 0.9.5 or older.<br>"
                          "You can convert this score by opening and then saving with"
                          " MuseScore version 1.x</a>");
                   canIgnore = true;
                   break;
             case Score::FileError::FILE_TOO_NEW:
-                  msg += QT_TRANSLATE_NOOP(file, "This score was saved using a newer version of MuseScore.<br>\n"
+                  msg += QObject::tr("This score was saved using a newer version of MuseScore.<br>\n"
                          "Visit the <a href=\"http://musescore.org\">MuseScore website</a>"
                          " to obtain the latest version.");
                   canIgnore = true;
                   break;
             case Score::FileError::FILE_NOT_FOUND:
-                  msg = QString(QT_TRANSLATE_NOOP(file, "File not found %1")).arg(name);
+                  msg = QObject::tr("File not found %1").arg(name);
                   break;
             case Score::FileError::FILE_ERROR:
             case Score::FileError::FILE_OPEN_ERROR:
@@ -201,7 +201,7 @@ static bool readScoreError(const QString& name, Score::FileError error, bool ask
             }
       if (canIgnore && ask)  {
             QMessageBox msgBox;
-            msgBox.setWindowTitle(QT_TRANSLATE_NOOP(file, "MuseScore: Load Error"));
+            msgBox.setWindowTitle(QObject::tr("MuseScore: Load Error"));
             msgBox.setText(msg);
             msgBox.setTextFormat(Qt::RichText);
             msgBox.setIcon(QMessageBox::Warning);
@@ -211,7 +211,7 @@ static bool readScoreError(const QString& name, Score::FileError error, bool ask
             return msgBox.exec() == QMessageBox::Ignore;
             }
       else
-            QMessageBox::critical(0, QT_TRANSLATE_NOOP(file, "MuseScore: Load Error"), msg);
+            QMessageBox::critical(0, QObject::tr("MuseScore: Load Error"), msg);
       return rv;
       }
 
@@ -333,7 +333,6 @@ Score* MuseScore::readScore(const QString& name)
             score = 0;
             }
       allowShowMidiPanel(name);
-
       return score;
       }
 
@@ -512,7 +511,7 @@ void MuseScore::newFile()
                         s = ns;
                         }
                   }
-            foreach(Excerpt* excerpt, score->excerpts()) {
+            foreach (Excerpt* excerpt, score->excerpts()) {
                   Score* exScore =  excerpt->score();
                   if (exScore->firstMeasure()) {
                         for (Segment* s = exScore->firstMeasure()->first(); s;) {
@@ -525,7 +524,7 @@ void MuseScore::newFile()
                                           }
                                     }
                               s->measure()->remove(s);
-                              if(s->measure()->segments()->size() == 0){
+                              if (s->measure()->segments()->size() == 0){
                                     exScore->measures()->remove(s->measure(), s->measure());
                                     delete s->measure();
                                     }
@@ -551,30 +550,34 @@ void MuseScore::newFile()
       if (!newWizard->title().isEmpty())
             score->fileInfo()->setFile(newWizard->title());
       Measure* pm = score->firstMeasure();
+
+      Measure* nm;
       for (int i = 0; i < measures; ++i) {
-            Measure* m;
             if (pm) {
-                  m  = pm;
+                  nm  = pm;
                   pm = pm->nextMeasure();
                   }
             else {
-                  m = new Measure(score);
-                  score->measures()->add(m);
+                  nm = new Measure(score);
+                  score->measures()->add(nm);
                   }
-            m->setTimesig(timesig);
-            m->setLen(timesig);
+            nm->setTimesig(timesig);
+            nm->setLen(timesig);
             if (pickupMeasure) {
                   if (i == 0) {
-                        m->setIrregular(true);        // dont count pickup measure
-                        m->setLen(Fraction(pickupTimesigZ, pickupTimesigN));
+                        nm->setIrregular(true);        // dont count pickup measure
+                        nm->setLen(Fraction(pickupTimesigZ, pickupTimesigN));
                         }
                   /*else if (i == (measures - 1)) {
                         // last measure is shorter
                         m->setLen(timesig - Fraction(pickupTimesigZ, pickupTimesigN));
                         }*/
                   }
-            m->setEndBarLineType(i == (measures - 1) ? BarLineType::END : BarLineType::NORMAL, false);
+            nm->setEndBarLineType(i == (measures - 1) ? BarLineType::END : BarLineType::NORMAL, i != (measures - 1));
             }
+      //delete unused measures if any
+      if (nm->nextMeasure())
+      	score->undoRemoveMeasures(nm->nextMeasure(), score->lastMeasure());
 
       int tick = 0;
       for (MeasureBase* mb = score->measures()->first(); mb; mb = mb->next()) {
@@ -595,7 +598,7 @@ void MuseScore::newFile()
                         Segment* s = measure->getSegment(ts, 0);
                         s->add(ts);
                         Part* part = staff->part();
-                        if (!part->instr()->useDrumset()) {
+                        if (part->instr()->useDrumset() == DrumsetKind::NONE) {
                               //
                               // transpose key
                               //
@@ -740,7 +743,7 @@ void MuseScore::newFile()
       if (newWizard->createTempo()) {
             double tempo = newWizard->tempo();
             TempoText* tt = new TempoText(score);
-            tt->setText(QString("<sym>noteQuarterUp</sym> = %1").arg(tempo));
+            tt->setText(QString("<sym>unicodeNoteQuarterUp</sym> = %1").arg(tempo));
             tempo /= 60;      // bpm -> bps
 
             tt->setTempo(tempo);
@@ -1938,9 +1941,18 @@ Score::FileError readScore(Score* score, QString name, bool ignoreVersionError)
             score->connectTies();
             score->setCreated(true); // force save as for imported files
             }
-      score->rebuildMidiMapping();
+
+      score->setLayoutAll(true);
+      for (Score* s : score->scoreList()) {
+            s->setPlaylistDirty(true);
+            s->rebuildMidiMapping();
+            s->updateChannel();
+            s->updateNotes();
+            s->setSoloMute();
+            s->addLayoutFlags(LayoutFlag::FIX_TICKS | LayoutFlag::FIX_PITCH_VELO);
+            }
       score->setSaved(false);
-      score->updateNotes();
+      score->update();
       return Score::FileError::FILE_NO_ERROR;
       }
 

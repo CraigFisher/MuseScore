@@ -136,6 +136,7 @@ class UndoStack {
       bool canUndo() const          { return curIdx > 0;           }
       bool canRedo() const          { return curIdx < list.size(); }
       bool isClean() const          { return cleanIdx == curIdx;   }
+      bool isEmpty() const          { return !canUndo() && !canRedo();  }
       UndoCommand* current() const  { return curCmd;               }
       void undo();
       void redo();
@@ -195,7 +196,7 @@ class RemovePart : public UndoCommand {
 
 class InsertStaff : public UndoCommand {
       Staff* staff;
-      int idx;
+      int ridx;
 
    public:
       InsertStaff(Staff*, int idx);
@@ -210,10 +211,10 @@ class InsertStaff : public UndoCommand {
 
 class RemoveStaff : public UndoCommand {
       Staff* staff;
-      int idx;
+      int ridx;
 
    public:
-      RemoveStaff(Staff*, int idx);
+      RemoveStaff(Staff*);
       virtual void undo();
       virtual void redo();
       UNDO_NAME("RemoveStaff")
@@ -331,6 +332,24 @@ class ChangePitch : public UndoCommand {
       };
 
 //---------------------------------------------------------
+//   ChangeFretting
+//---------------------------------------------------------
+
+class ChangeFretting : public UndoCommand {
+      Note* note;
+      int pitch;
+      int string;
+      int fret;
+      int tpc1;
+      int tpc2;
+      void flip();
+
+   public:
+      ChangeFretting(Note* note, int pitch, int string, int fret, int tpc1, int tpc2);
+      UNDO_NAME("ChangeFretting")
+      };
+
+//---------------------------------------------------------
 //   ChangeKeySig
 //---------------------------------------------------------
 
@@ -437,6 +456,7 @@ class ChangeChordNoStem : public UndoCommand {
 class ChangeEndBarLineType : public UndoCommand {
       Measure* measure;
       BarLineType subtype;
+      bool endBarLineGenerated;
       void flip();
 
    public:
@@ -512,10 +532,10 @@ class TransposeHarmony : public UndoCommand {
 class ExchangeVoice : public UndoCommand {
       Measure* measure;
       int val1, val2;
-      int staff1, staff2;
+      int staff;
 
    public:
-      ExchangeVoice(Measure*, int val1, int val2, int staff1, int staff2);
+      ExchangeVoice(Measure*, int val1, int val2, int staff);
       virtual void undo();
       virtual void redo();
       UNDO_NAME("ExchangeVoice")
@@ -716,17 +736,20 @@ class ChangePageFormat : public UndoCommand {
 //---------------------------------------------------------
 
 class ChangeStaff : public UndoCommand {
-      Staff*      staff;
-      bool        small;
-      bool        invisible;
-      qreal       userDist;
-      QColor      color;
-      bool        neverHide;
+      Staff* staff;
+      bool   small;
+      bool   invisible;
+      qreal  userDist;
+      QColor color;
+      bool   neverHide;
+      bool   showIfEmpty;
+      qreal  mag;
 
       void flip();
 
    public:
-      ChangeStaff(Staff*, bool small, bool invisible, qreal userDist, QColor _color, bool _neverHide);
+      ChangeStaff(Staff*, bool small, bool invisible, qreal userDist, QColor _color, bool _neverHide,
+         bool _showIfEmpty, qreal _mag);
       UNDO_NAME("ChangeStaff")
       };
 
@@ -735,14 +758,13 @@ class ChangeStaff : public UndoCommand {
 //---------------------------------------------------------
 
 class ChangeStaffType : public UndoCommand {
-      ClefTypeList initialClef;
       Staff*       staff;
       StaffType    staffType;
 
+      void flip();
+
    public:
       ChangeStaffType(Staff* s, const StaffType& t) : staff(s), staffType(t) {}
-      virtual void undo();
-      virtual void redo();
       UNDO_NAME("ChangeStaffType")
       };
 
@@ -759,7 +781,6 @@ class ChangePart : public UndoCommand {
 
    public:
       ChangePart(Part*, const Instrument&, const QString& name);
-
       UNDO_NAME("ChangePart")
       };
 
@@ -1416,6 +1437,21 @@ class LinkStaff : public UndoCommand {
       virtual void undo();
       virtual void redo();
       UNDO_NAME("LinkStaff")
+      };
+
+//---------------------------------------------------------
+//   UnlinkStaff
+//---------------------------------------------------------
+
+class UnlinkStaff : public UndoCommand {
+      Staff* s1;
+      Staff* s2;
+
+   public:
+      UnlinkStaff(Staff* _s1, Staff* _s2) : s1(_s1), s2(_s2) {}
+      virtual void undo();
+      virtual void redo();
+      UNDO_NAME("UnlinkStaff")
       };
 
 //---------------------------------------------------------

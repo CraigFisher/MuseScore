@@ -31,15 +31,19 @@
 namespace Ms {
 
 bool Workspace::workspacesRead = false;
-QList<Workspace*> Workspace::_workspaces;
 Workspace* Workspace::currentWorkspace;
 
 Workspace Workspace::_advancedWorkspace {
-      QString("Advanced"), QString("Advanced"), false, true
+      QT_TR_NOOP("Advanced"), QString("Advanced"), false, true
       };
 
 Workspace Workspace::_basicWorkspace {
-      QString("Basic"), QString("Basic"), false, true
+      QT_TR_NOOP("Basic"), QString("Basic"), false, true
+      };
+
+QList<Workspace*> Workspace::_workspaces {
+      &_basicWorkspace,
+      &_advancedWorkspace
       };
 
 //---------------------------------------------------------
@@ -71,10 +75,10 @@ void MuseScore::showWorkspaceMenu()
 
       const QList<Workspace*> pl = Workspace::workspaces();
       foreach (Workspace* p, pl) {
-            QAction* a = workspaces->addAction(p->name());
+            QAction* a = workspaces->addAction(qApp->translate("Ms::Workspace", p->name().toUtf8()));
             a->setCheckable(true);
             a->setData(p->path());
-            a->setChecked(a->text() == preferences.workspace);
+            a->setChecked(p->name() == preferences.workspace);
             menuWorkspaces->addAction(a);
             }
 
@@ -168,12 +172,12 @@ void MuseScore::changeWorkspace(QAction* a)
       preferences.workspace = a->text();
       preferences.dirty = true;
       foreach(Workspace* p, Workspace::workspaces()) {
-            if (p->name() == a->text()) {
+            if (qApp->translate("Ms::Workspace", p->name().toUtf8()) == a->text()) {
                   changeWorkspace(p);
                   return;
                   }
             }
-      qDebug("   workspace not found");
+      qDebug("   workspace \"%s\" not found", qPrintable(a->text()));
       }
 
 //---------------------------------------------------------
@@ -199,11 +203,8 @@ void Workspace::initWorkspace()
                   break;
                   }
             }
-      if (currentWorkspace == 0) {
-            currentWorkspace = new Workspace;
-            currentWorkspace->setName("default");
-            Workspace::workspaces().append(currentWorkspace);
-            }
+      if (currentWorkspace == 0)
+            currentWorkspace = Workspace::workspaces().at(0);
       }
 
 //---------------------------------------------------------
@@ -398,9 +399,6 @@ void Workspace::save()
 QList<Workspace*>& Workspace::workspaces()
       {
       if (!workspacesRead) {
-            _workspaces.append(&_advancedWorkspace);
-            _workspaces.append(&_basicWorkspace);
-
             QStringList path;
             path << mscoreGlobalShare + "workspaces";
             path << dataPath + "/workspaces";

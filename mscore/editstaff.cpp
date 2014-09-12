@@ -50,6 +50,7 @@ EditStaff::EditStaff(Staff* s, QWidget* parent)
       orgStaff = s;
       setupUi(this);
       setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
+      setModal(true);
 
       Part* part        = orgStaff->part();
       instrument        = *part->instr();
@@ -62,6 +63,8 @@ EditStaff::EditStaff(Staff* s, QWidget* parent)
       staff->setStaffType(orgStaff->staffType());
       staff->setPart(part);
       staff->setNeverHide(orgStaff->neverHide());
+      staff->setShowIfEmpty(orgStaff->showIfEmpty());
+      staff->setUserMag(orgStaff->userMag());
 
       // hide string data controls if instrument has no strings
       stringDataFrame->setVisible(instrument.stringData() && instrument.stringData()->strings() > 0);
@@ -72,15 +75,16 @@ EditStaff::EditStaff(Staff* s, QWidget* parent)
       color->setColor(s->color());
       partName->setText(part->partName());
       neverHide->setChecked(staff->neverHide());
-
+      showIfEmpty->setChecked(staff->showIfEmpty());
+      mag->setValue(staff->userMag() * 100.0);
       updateStaffType();
       updateInstrument();
 
       connect(buttonBox,            SIGNAL(clicked(QAbstractButton*)), SLOT(bboxClicked(QAbstractButton*)));
       connect(changeInstrument,     SIGNAL(clicked()),            SLOT(showInstrumentDialog()));
       connect(changeStaffType,      SIGNAL(clicked()),            SLOT(showStaffTypeDialog()));
-      connect(editShortName,        SIGNAL(clicked()),            SLOT(editShortNameClicked()));
-      connect(editLongName,         SIGNAL(clicked()),            SLOT(editLongNameClicked()));
+//      connect(editShortName,        SIGNAL(clicked()),            SLOT(editShortNameClicked()));
+//      connect(editLongName,         SIGNAL(clicked()),            SLOT(editLongNameClicked()));
       connect(minPitchASelect,      SIGNAL(clicked()),            SLOT(minPitchAClicked()));
       connect(maxPitchASelect,      SIGNAL(clicked()),            SLOT(maxPitchAClicked()));
       connect(minPitchPSelect,      SIGNAL(clicked()),            SLOT(minPitchPClicked()));
@@ -105,7 +109,7 @@ void EditStaff::updateStaffType()
       showClef->setChecked(staffType->genClef());
       showTimesig->setChecked(staffType->genTimesig());
       showBarlines->setChecked(staffType->showBarlines());
-      staffGroupName->setText(staffType->groupName());
+      staffGroupName->setText(qApp->translate("Staff type group name", staffType->groupName()));
       }
 
 //---------------------------------------------------------
@@ -118,11 +122,12 @@ void EditStaff::updateInstrument()
 
       QList<StaffName>& snl = instrument.shortNames();
       QString df = snl.isEmpty() ? "" : snl[0].name;
-      shortName->setText(df);
+      shortName->setPlainText(df);
 
       QList<StaffName>& lnl = instrument.longNames();
       df = lnl.isEmpty() ? "" : lnl[0].name;
-      longName->setText(df);
+
+      longName->setPlainText(df);
 
       if (partName->text() == instrumentName->text())    // Updates part name if no custom name has been set before
             partName->setText(instrument.trackName());
@@ -227,7 +232,10 @@ void EditStaff::apply()
       instrument.setMaxPitchA(_maxPitchA);
       instrument.setMinPitchP(_minPitchP);
       instrument.setMaxPitchP(_maxPitchP);
+      Text text(0);
+//      instrument.setShortName(text.convertFromHtml(shortName->toHtml()));
       instrument.setShortName(shortName->toPlainText());
+//      instrument.setLongName(text.convertFromHtml(longName->toHtml()));
       instrument.setLongName(longName->toPlainText());
 
       bool s         = small->isChecked();
@@ -235,12 +243,15 @@ void EditStaff::apply()
       qreal userDist = spinExtraDistance->value();
       QColor col     = color->color();
       bool nhide     = neverHide->isChecked();
+      bool ifEmpty   = showIfEmpty->isChecked();
+      qreal scale    = mag->value() / 100.0;
 
-      if (!(instrument == *part->instr()) || part->partName() != partName->text()) {
+      QString newPartName = partName->text().simplified();
+      if (!(instrument == *part->instr()) || part->partName() != newPartName) {
             Interval v1 = instrument.transpose();
             Interval v2 = part->instr()->transpose();
 
-            score->undo(new ChangePart(part, instrument, partName->text()));
+            score->undo(new ChangePart(part, instrument, newPartName));
             emit instrumentChanged();
 
             if (v1 != v2)
@@ -252,8 +263,11 @@ void EditStaff::apply()
          || userDist != staff->userDist()
          || col != staff->color()
          || nhide != staff->neverHide()
-         )
-            score->undo(new ChangeStaff(orgStaff, s, inv, userDist * score->spatium(), col, nhide));
+         || ifEmpty != staff->showIfEmpty()
+         || scale != staff->userMag()
+         ) {
+            score->undo(new ChangeStaff(orgStaff, s, inv, userDist * score->spatium(), col, nhide, ifEmpty, scale));
+            }
 
       if ( !(*orgStaff->staffType() == *staff->staffType()) ) {
             // updateNeeded |= (orgStaff->staffGroup() == StaffGroup::TAB || staff->staffGroup() == StaffGroup::TAB);
@@ -265,30 +279,14 @@ void EditStaff::apply()
       }
 
 //---------------------------------------------------------
-//   edit...NameClicked
-//---------------------------------------------------------
-
-void EditStaff::editShortNameClicked()
-      {
-      QString s = editHtml(shortName->toHtml(), tr("Edit Short Name"));
-      shortName->setHtml(s);
-      }
-
-void EditStaff::editLongNameClicked()
-      {
-      QString s = editHtml(longName->toHtml(), tr("Edit Long Name"));
-      longName->setHtml(s);
-      }
-
-//---------------------------------------------------------
 //   <Pitch>Clicked
 //---------------------------------------------------------
 
 void EditStaff::minPitchAClicked()
       {
       int         newCode;
-
       EditPitch* ep = new EditPitch(this, instrument.minPitchA() );
+      ep->setWindowModality(Qt::WindowModal);
       if ( (newCode=ep->exec()) != -1) {
             minPitchA->setText(midiCodeToStr(newCode));
             _minPitchA = newCode;
@@ -298,8 +296,8 @@ void EditStaff::minPitchAClicked()
 void EditStaff::maxPitchAClicked()
       {
       int         newCode;
-
       EditPitch* ep = new EditPitch(this, instrument.maxPitchA() );
+      ep->setWindowModality(Qt::WindowModal);
       if ( (newCode=ep->exec()) != -1) {
             maxPitchA->setText(midiCodeToStr(newCode));
             _maxPitchA = newCode;
@@ -309,8 +307,8 @@ void EditStaff::maxPitchAClicked()
 void EditStaff::minPitchPClicked()
       {
       int         newCode;
-
       EditPitch* ep = new EditPitch(this, instrument.minPitchP() );
+      ep->setWindowModality(Qt::WindowModal);
       if ( (newCode=ep->exec()) != -1) {
             minPitchP->setText(midiCodeToStr(newCode));
             _minPitchP = newCode;
@@ -320,8 +318,8 @@ void EditStaff::minPitchPClicked()
 void EditStaff::maxPitchPClicked()
       {
       int         newCode;
-
       EditPitch* ep = new EditPitch(this, instrument.maxPitchP() );
+      ep->setWindowModality(Qt::WindowModal);
       if ( (newCode=ep->exec()) != -1) {
             maxPitchP->setText(midiCodeToStr(newCode));
             _maxPitchP = newCode;
@@ -364,6 +362,7 @@ void EditStaff::showBarlinesChanged()
 void EditStaff::showInstrumentDialog()
       {
       SelectInstrument si(instrument, this);
+      si.setWindowModality(Qt::WindowModal);
       if (si.exec()) {
             instrument = Instrument::fromTemplate(si.instrTemplate());
             updateInstrument();
@@ -376,13 +375,47 @@ void EditStaff::showInstrumentDialog()
 
 void EditStaff::editStringDataClicked()
       {
-      int         frets = instrument.stringData()->frets();
-      QList<int>  stringList = instrument.stringData()->stringList();
+      int                     frets = instrument.stringData()->frets();
+      QList<instrString>      stringList = instrument.stringData()->stringList();
 
       EditStringData* esd = new EditStringData(this, &stringList, &frets);
+      esd->setWindowModality(Qt::WindowModal);
       if (esd->exec()) {
             StringData stringData(frets, stringList);
-            // detect number of strings going from 0 to !0 or vice versa
+
+            // update instrument pitch ranges as necessary
+            if (stringList.size() > 0) {
+                  // get new string range bottom and top
+                  // as we have to choose an int size, INT16 are surely beyond midi pitch limits
+                  int oldHighestStringPitch     = INT16_MIN;
+                  int highestStringPitch        = INT16_MIN;
+                  int lowestStringPitch         = INT16_MAX;
+                  for (const instrString& str : stringList) {
+                        if (str.pitch > highestStringPitch) highestStringPitch = str.pitch;
+                        if (str.pitch < lowestStringPitch)  lowestStringPitch  = str.pitch;
+                        }
+                  // get old string range bottom
+                  for (const instrString& str : instrument.stringData()->stringList())
+                        if (str.pitch > oldHighestStringPitch) oldHighestStringPitch = str.pitch;
+                  // if there were no string, arbitrarely set old top to maxPitchA
+                  if (oldHighestStringPitch == INT16_MIN)
+                        oldHighestStringPitch = instrument.maxPitchA();
+
+                  // range bottom is surely the pitch of the lowest string
+                  instrument.setMinPitchA(lowestStringPitch);
+                  instrument.setMinPitchP(lowestStringPitch);
+                  // range top should keep the same interval with the highest string it has now
+                  instrument.setMaxPitchA(instrument.maxPitchA() + highestStringPitch - oldHighestStringPitch);
+                  instrument.setMaxPitchP(instrument.maxPitchP() + highestStringPitch - oldHighestStringPitch);
+                  // update dlg controls
+                  minPitchA->setText(midiCodeToStr(instrument.minPitchA()));
+                  maxPitchA->setText(midiCodeToStr(instrument.maxPitchA()));
+                  minPitchP->setText(midiCodeToStr(instrument.minPitchP()));
+                  maxPitchP->setText(midiCodeToStr(instrument.maxPitchP()));
+                  // if no longer there is any string, leave everything as it is now
+                  }
+
+            // update instrument data and dlg controls
             instrument.setStringData(stringData);
             numOfStrings->setText(QString::number(stringData.strings()));
             }
@@ -410,7 +443,7 @@ static const char* g_cNoteName[] = {
 
 QString EditStaff::midiCodeToStr(int midiCode)
       {
-      return QString("%1 %2").arg(g_cNoteName[midiCode % 12]).arg(midiCode / 12 - 1);
+      return QString("%1 %2").arg(qApp->translate("editstaff", g_cNoteName[midiCode % 12])).arg(midiCode / 12 - 1);
       }
 
 //---------------------------------------------------------
@@ -420,6 +453,7 @@ QString EditStaff::midiCodeToStr(int midiCode)
 void EditStaff::showStaffTypeDialog()
       {
       EditStaffType editor(this, staff);
+      editor.setWindowModality(Qt::WindowModal);
       if (editor.exec()) {
             staff->setStaffType(editor.getStaffType());
             updateStaffType();

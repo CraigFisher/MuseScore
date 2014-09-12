@@ -185,8 +185,8 @@ void ScoreView::createElementPropertyMenu(Element* e, QMenu* popup)
             QAction* a;
             if (!ts->generated() && !_track && ts->measure() != score()->firstMeasure()) {
                   a = popup->addAction(ts->showCourtesySig()
-                     ? QT_TRANSLATE_NOOP("TimeSig", "Hide Courtesy Time Signature")
-                     : QT_TRANSLATE_NOOP("TimeSig", "Show Courtesy Time Signature") );
+                     ? tr("Hide Courtesy Time Signature")
+                     : tr("Show Courtesy Time Signature") );
                   a->setData("ts-courtesy");
                   }
             if (!ts->generated()) {
@@ -200,8 +200,8 @@ void ScoreView::createElementPropertyMenu(Element* e, QMenu* popup)
             // if the clef is not generated (= not courtesy) add the specific menu item
             if (!e->generated() && clef->measure() != score()->firstMeasure()) {
                   QAction* a = popup->addAction(static_cast<Clef*>(e)->showCourtesy()
-                     ? QT_TRANSLATE_NOOP("Clef", "Hide courtesy clef")
-                     : QT_TRANSLATE_NOOP("Clef", "Show courtesy clef") );
+                     ? tr("Hide courtesy clef")
+                     : tr("Show courtesy clef") );
                         a->setData("clef-courtesy");
                   }
             }
@@ -245,8 +245,8 @@ void ScoreView::createElementPropertyMenu(Element* e, QMenu* popup)
             KeySig* ks = static_cast<KeySig*>(e);
             if (!e->generated() && ks->measure() != score()->firstMeasure()) {
                   QAction* a = popup->addAction(ks->showCourtesy()
-                     ? QT_TRANSLATE_NOOP("KeySig", "Hide Courtesy Key Signature")
-                     : QT_TRANSLATE_NOOP("KeySig", "Show Courtesy Key Signature") );
+                     ? tr("Hide Courtesy Key Signature")
+                     : tr("Show Courtesy Key Signature") );
                   a->setData("key-courtesy");
                   }
             }
@@ -320,8 +320,10 @@ void ScoreView::elementPropertyAction(const QString& cmd, Element* e)
       else if (cmd == "b-props") {
             Bend* bend = static_cast<Bend*>(e);
             BendProperties bp(bend, 0);
-            if (bp.exec())
-                  score()->undo(new ChangeBend(bend, bp.points()));
+            if (bp.exec()) {
+                  for (Element* b : bend->linkList())
+                        b->score()->undo(new ChangeBend(static_cast<Bend*>(b), bp.points()));
+                  }
             }
       else if (cmd == "f-props") {
             BoxProperties vp(static_cast<Box*>(e), 0);
@@ -405,8 +407,9 @@ void ScoreView::elementPropertyAction(const QString& cmd, Element* e)
                   QList<int> l = vp.getEndings();
                   if (txt != vs->volta()->text())
                         score()->undoChangeVoltaText(vs->volta(), txt);
-                  if (l != vs->volta()->endings())
+                  if (l != vs->volta()->endings()) {
                         score()->undoChangeVoltaEnding(vs->volta(), l);
+                        }
                   }
             }
       else if (cmd == "l-props") {
@@ -547,10 +550,13 @@ void ScoreView::elementPropertyAction(const QString& cmd, Element* e)
             FretDiagram* nFret = const_cast<FretDiagram*>(fd->clone());
             FretDiagramProperties fp(nFret, 0);
             int rv = fp.exec();
+            nFret->layout();
             if (rv) {
-                  nFret->layout();
-                  score()->undoChangeElement(fd, nFret);
-                  return;
+                  for (Element* e : fd->linkList()) {
+                        FretDiagram* f = static_cast<FretDiagram*>(nFret->clone());
+                        f->setScore(e->score());
+                        e->score()->undoChangeElement(e, f);
+                        }
                   }
             delete nFret;
             }

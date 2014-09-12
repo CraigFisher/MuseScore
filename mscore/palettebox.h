@@ -11,8 +11,8 @@
 //  the file LICENSE.GPL
 //=============================================================================
 
-#ifndef __PALETTE_BOX__
-#define __PALETTE_BOX__
+#ifndef __PALETTE_BOX_H__
+#define __PALETTE_BOX_H__
 
 namespace Ms {
 

@@ -104,6 +104,7 @@ void KeySig::layout()
 
       if (staff() && !staff()->genKeySig()) {     // no key sigs on TAB staves
             qDeleteAll(keySymbols);
+            keySymbols.clear();
             return;
             }
 
@@ -269,9 +270,9 @@ void KeySig::draw(QPainter* p) const
 //   acceptDrop
 //---------------------------------------------------------
 
-bool KeySig::acceptDrop(MuseScoreView*, const QPointF&, Element* e) const
+bool KeySig::acceptDrop(const DropData& data) const
       {
-      return e->type() == Element::Type::KEYSIG;
+      return data.element->type() == Element::Type::KEYSIG;
       }
 
 //---------------------------------------------------------
@@ -280,13 +281,11 @@ bool KeySig::acceptDrop(MuseScoreView*, const QPointF&, Element* e) const
 
 Element* KeySig::drop(const DropData& data)
       {
-      Element* e = data.element;
-      if (e->type() != Element::Type::KEYSIG) {
-            delete e;
+      KeySig* ks = static_cast<KeySig*>(data.element);
+      if (ks->type() != Element::Type::KEYSIG) {
+            delete ks;
             return 0;
             }
-
-      KeySig* ks    = static_cast<KeySig*>(e);
       KeySigEvent k = ks->keySigEvent();
       if (k.custom() && (score()->customKeySigIdx(ks) == -1))
             score()->addCustomKeySig(ks);
@@ -299,7 +298,7 @@ Element* KeySig::drop(const DropData& data)
             }
       else {
             // apply to all staves:
-            foreach(Staff* s, score()->staves())
+            foreach(Staff* s, score()->rootScore()->staves())
                   score()->undoChangeKeySig(s, tick(), k.key());
             }
       return this;
@@ -503,6 +502,44 @@ QVariant KeySig::propertyDefault(P_ID id) const
             case P_ID::SHOW_COURTESY:      return true;
             default:                   return Element::propertyDefault(id);
             }
+      }
+
+//---------------------------------------------------------
+//   nextElement
+//---------------------------------------------------------
+
+Element* KeySig::nextElement()
+      {
+      return segment()->firstInNextSegments(staffIdx());
+      }
+
+//---------------------------------------------------------
+//   prevElement
+//---------------------------------------------------------
+
+Element* KeySig::prevElement()
+      {
+      return segment()->lastInPrevSegments(staffIdx());
+      }
+
+//---------------------------------------------------------
+//   accessibleInfo
+//---------------------------------------------------------
+
+QString KeySig::accessibleInfo()
+      {
+      QString keySigType;
+      if (isCustom())
+            return tr("%1: Custom").arg(Element::accessibleInfo());
+
+      if (key() == Key::C)
+            return QString("%1: %2").arg(Element::accessibleInfo()).arg(qApp->translate("MuseScore", keyNames[14]));
+      int keyInt = static_cast<int>(key());
+      if (keyInt < 0)
+            keySigType = qApp->translate("MuseScore", keyNames[(7 + keyInt) * 2 + 1]);
+      else
+            keySigType = qApp->translate("MuseScore", keyNames[(keyInt - 1) * 2]);
+      return QString("%1: %2").arg(Element::accessibleInfo()).arg(keySigType);
       }
 
 }
