@@ -17,7 +17,6 @@
 #include "property.h"
 #include "spatium.h"
 #include "fraction.h"
-#include "notationrules.h"
 
 class QPainter;
 

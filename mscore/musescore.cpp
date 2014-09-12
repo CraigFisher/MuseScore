@@ -353,13 +353,15 @@ void MuseScore::preferencesChanged()
                   }
             }
           
-      //      //cc
-      if (preferences.useAlternateNotationFile) {
-          if (!preferences.alternateNotationFile.isEmpty()) {
-              QFile f(preferences.alternateNotationFile);
-              // silently ignore style file on error
+      //cc
+      if (preferences.useAltNotationFile) {
+          if (!preferences.altNotationFile.isEmpty()) {
+              QFile f(preferences.altNotationFile);
               if (f.open(QIODevice::ReadOnly))
-                  NotationRules::load(&f);
+                    NotationRules::load(&f);
+              else {
+                    MScore::lastError = tr("Notation File failed to load.");
+                    }
           }
       }
 

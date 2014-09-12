@@ -1,0 +1,132 @@
+<Notation>
+	<NotePositions>
+		<OctaveDistance>7</OctaveDistance>
+		<ClefOffsets>
+			<G>0</G>
+			<G1>7</G1>
+			<G2>14</G2>
+			<G3>-7</G3>
+			<F>-12</F>
+			<F8>-19</F8>
+			<F15>-26</F15>
+			<F_B>-10</F_B>
+			<F_C>-14</F_C>
+			<C1>-2</C1>
+			<C2>-4</C2>
+			<C3>-6</C3>
+			<C4>-8</C4>
+			<C5>-10</C5>
+			<G4>2</G4>
+			<F_8VA>-5</F_8VA>
+			<F_15MA>2</F_15MA>
+			<INVALID>0</INVALID>
+		</ClefOffsets>
+		<Mappings>
+			<_0>14</_0>
+			<_7>13</_7>
+			<_14>12</_14>
+			<_21>11</_21>
+			<_28>10</_28>
+			          
+			<_2>12</_2>
+			<_9>11</_9>
+			<_16>10</_16>
+			<_23>9</_23>
+			<_30>8</_30>
+
+			<_4>10</_4>
+			<_11>9</_11>
+			<_18>8</_18>
+			<_25>7</_25>
+			<_32>6</_32>
+
+			<_-1>9</_-1>
+			<_6>8</_6>
+			<_13>7</_13>
+			<_20>6</_20>
+			<_27>5</_27>
+
+			<_1>7</_1>
+			<_8>6</_8>
+			<_15>5</_15>
+			<_22>4</_22>
+			<_29>3</_29>
+
+			<_3>5</_3>
+			<_10>4</_10>
+			<_17>3</_17>
+			<_24>2</_24>
+			<_31>1</_31>
+
+			<_5>3</_5>
+			<_12>2</_12>
+			<_19>1</_19>
+			<_26>0</_26>
+			<_33>-1</_33>
+		</Mappings>
+	</NotePositions>
+
+	<NoteHeads>
+		<_0>CROSS</_0>
+		<_7>NORMAL</_7>
+		<_14>NORMAL</_14>
+		<_21>TRIANGLE</_21>
+		<_28>NORMAL</_28>
+		          
+		<_2>NORMAL</_2>
+		<_9>CROSS</_9>
+		<_16>NORMAL</_16>
+		<_23>TRIANGLE</_23>
+		<_30>NORMAL</_30>
+
+		<_4>NORMAL</_4>
+		<_11>CROSS</_11>
+		<_18>NORMAL</_18>
+		<_25>NORMAL</_25>
+		<_32>TRIANGLE</_32>
+
+		<_-1>CROSS</_-1>
+		<_6>NORMAL</_6>
+		<_13>NORMAL</_13>
+		<_20>TRIANGLE</_20>
+		<_27>NORMAL</_27>
+
+		<_1>NORMAL</_1>
+		<_8>CROSS</_8>
+		<_15>NORMAL</_15>
+		<_22>TRIANGLE</_22>
+		<_29>NORMAL</_29>
+
+		<_3>NORMAL</_3>
+		<_10>CROSS</_10>
+		<_17>NORMAL</_17>
+		<_24>TRIANGLE</_24>
+		<_31>NORMAL</_31>
+
+		<_5>NORMAL</_5>
+		<_12>CROSS</_12>
+		<_19>NORMAL</_19>
+		<_26>NORMAL</_26>
+		<_33>TRIANGLE</_33>
+	</NoteHeads>
+
+	<UseAccidentals>1</UseAccidentals>
+
+	<StaffLines>
+	     <line>solid</line>
+	     <line>hidden</line>
+	     <line>solid</line>
+	     <line>hidden</line>
+	     <line>solid</line>
+
+	     <line>hidden</line>
+	     <line>ledger</line>
+	     <line>hidden</line>
+	     
+	     <line>solid</line>
+	     <line>hidden</line>
+	     <line>solid</line>
+	     <line>hidden</line>
+	     <line>solid</line>   
+	</StaffLines>
+</Notation>

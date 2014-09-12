@@ -83,7 +83,7 @@
 #include "noteline.h"
 #include "bagpembell.h"
 #include "ambitus.h"
-#include "mscore/preferences.h"
+#include "notationrules.h" //cc
 
 namespace Ms {
 
@@ -976,10 +976,10 @@ void StaffLines::draw(QPainter* painter) const
       //cc
       if(_altStaffLines) {
           qreal halfDist = dist / 2;
-          int length = NotationRules::staffLines().size();
+          int length = NotationRules::staffLines()->size();
           ll.resize(length);
           for (int i = 0; i < length; ++i) {
-              if((*(NotationRules::staffLines()))[i]) {
+              if(NotationRules::staffLines()->at(i)) {
                   ll[i].setLine(x1, y, x2, y);
               }
               y += halfDist;

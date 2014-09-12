@@ -44,7 +44,7 @@ class NotationRules {
         static int _staffLinesHeight;
 
     public:
-        static void load(QFile* f);
+        static bool load(QFile* f);
 
         static const std::map<int, int>* notePositions() { return &_notePositions; }
         static const std::map<int, NoteHead::Group>* noteHeads() { return &_noteHeads; }

@@ -881,14 +881,14 @@ QString MuseScore::getNotationFilename(bool open)
                   fn = QFileDialog::getOpenFileName(
                      this, tr("MuseScore: Load Alternative Notation"),
                      QString(),
-                     tr("MuseScore Styles (*.mss);;" "All Files (*)")
+                     tr("Notation File (*.xml);;" "All Files (*)")
                      );
                   }
             else {
                   fn = QFileDialog::getSaveFileName(
                      this, tr("MuseScore: Save Alternative Notation"),
                      QString(),
-                     tr("MuseScore Style File (*.mss)")
+                     tr("Notation File (*.xml)")
                      );
                   }
             return fn;
@@ -907,7 +907,7 @@ QString MuseScore::getNotationFilename(bool open)
                   loadNotationDialog->setFileMode(QFileDialog::ExistingFile);
                   loadNotationDialog->setOption(QFileDialog::DontUseNativeDialog, true);
                   loadNotationDialog->setWindowTitle(tr("MuseScore: Load Notation"));
-                  loadNotationDialog->setNameFilter(tr("MuseScore Style File (*.mss)"));
+                  loadNotationDialog->setNameFilter(tr("Notation File (*.xml)"));
                   loadNotationDialog->setDirectory(QString());
 
                   QSettings settings;
@@ -925,7 +925,7 @@ QString MuseScore::getNotationFilename(bool open)
                   saveNotationDialog->setOption(QFileDialog::DontConfirmOverwrite, false);
                   saveNotationDialog->setOption(QFileDialog::DontUseNativeDialog, true);
                   saveNotationDialog->setWindowTitle(tr("MuseScore: Save Notation"));
-                  saveNotationDialog->setNameFilter(tr("MuseScore Style File (*.mss)"));
+                  saveNotationDialog->setNameFilter(tr("Notation File (*.xml)"));
                   saveNotationDialog->setDirectory(QString());
 
                   QSettings settings;

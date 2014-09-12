@@ -691,7 +691,7 @@ void Chord::addLedgerLines(int move)
                   const Note* note = _notes.at(i);
 
                   int l = note->line();
-                  if (!(NotationRules::useInnerLedgers) || !standardStaff)) { //cc
+                  if (!(NotationRules::useInnerLedgers) || !standardStaff) { //cc
                         if ( (!j && l < lineBelow) || // if 1st pass and note not below staff
                              (j && l >= 0) )          // or 2nd pass and note not above staff
                              break;                  // stop this pass
@@ -736,8 +736,8 @@ void Chord::addLedgerLines(int move)
 
                   //cc
                   if (NotationRules::useInnerLedgers && standardStaff) {
-                        vector<int>::iterator itr = NotationRules::innerLedgers->begin();
-                        vector<int>::iterator stopItr = NotationRules::innerLedgers()->end();                      
+                        vector<int>::const_iterator itr = NotationRules::innerLedgers()->begin();
+                        vector<int>::const_iterator stopItr = NotationRules::innerLedgers()->end();
                         while (itr != stopItr) {
                               //TODO: SEE IF minX, maxX can be left as is
                               if (*itr == original_l) { //if our note line is equal to one of the designated ledger lines

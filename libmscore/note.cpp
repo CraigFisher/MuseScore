@@ -459,7 +459,7 @@ SymId Note::noteHead() const
       SymId t;
       bool standardStaff = staff() && staff()->staffType()->group() == StaffGroup::STANDARD;
       if(NotationRules::alternateNoteheads && standardStaff) {
-            t = noteHead(up, (*(NotationRules::noteHeads()))[_tpc[0]], ht);
+            t = noteHead(up, NotationRules::noteHeads()->at(_tpc[0]), ht);
       } else {      
             t = noteHead(up, _headGroup, ht);
       }
@@ -1866,14 +1866,11 @@ void Note::setSmall(bool val)
 //cc
 int Note::computeAlternativeLine() const
      {
-     const std::map<int, int>& notePositions = NotationRules::notePositions();
-     const std::map<ClefType, int>& clefOffsets = NotationRules::clefOffsets();
-
      Staff* s = score()->staff(staffIdx() + chord()->staffMove());
      ClefType clef = s->clef(chord()->tick());
-     int clefOffset = notePositions[clef];
+     int clefOffset = NotationRules::clefOffsets()->at(clef);
      int octave = ((_pitch / 12) * -1) + 5;
-     return notePositions[_tpc[0]] + (octave * NotationRules::altOctaveDistance) + clefOffset;
+     return NotationRules::notePositions()->at(_tpc[0]) + (octave * NotationRules::octaveDistance()) + clefOffset;
      }
 //---------------------------------------------------------
 //   setLine
