@@ -35,19 +35,7 @@ bool NotationRules::noAccidentals;
 
 bool NotationRules::load(QFile* f) {
       XmlReader e(f);
-      _notePositions.clear();
-      _noteHeads.clear();
-      _clefOffsets.clear();
-      _innerLedgers.clear();
-      _staffLines.clear();
-      _staffLinesHeight = -1;
-      _octaveDistance = -1;
-    
-      alternateNotePositions = false;
-      alternateNoteheads = false;
-      alternateStaffLines = false;
-      useInnerLedgers = false;
-      noAccidentals = false;
+      reset();
 
       while (e.readNextStartElement()) {
             if (e.name().toString() == "Notation") {
@@ -62,7 +50,7 @@ bool NotationRules::load(QFile* f) {
                         else if (tag == "StaffLines") {
                               readStaffLines(e);
                               }
-                        else if (tag == "UseAccidentals") {
+                        else if (tag == "NoAccidentals") {
                               noAccidentals = e.readBool();
                               }
                         else
@@ -84,6 +72,22 @@ bool NotationRules::load(QFile* f) {
             useInnerLedgers = true;
     
       return true;
+      }
+
+void NotationRules::reset() {
+      _notePositions.clear();
+      _noteHeads.clear();
+      _clefOffsets.clear();
+      _innerLedgers.clear();
+      _staffLines.clear();
+      _staffLinesHeight = -1;
+      _octaveDistance = -1;
+    
+      alternateNotePositions = false;
+      alternateNoteheads = false;
+      alternateStaffLines = false;
+      useInnerLedgers = false;
+      noAccidentals = false;
       }
 
 void NotationRules::readNotePositions(XmlReader& e) {

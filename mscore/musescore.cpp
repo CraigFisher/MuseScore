@@ -357,16 +357,17 @@ void MuseScore::preferencesChanged()
             }
           
       //cc
-      if (preferences.useAltNotationFile) {
-          if (!preferences.altNotationFile.isEmpty()) {
-              QFile f(preferences.altNotationFile);
-              if (f.open(QIODevice::ReadOnly))
-                    NotationRules::load(&f);
-              else {
-                    MScore::lastError = tr("Notation File failed to load.");
-                    }
-          }
-      }
+      if (preferences.useAltNotationFile && !preferences.altNotationFile.isEmpty()) {
+            QFile f(preferences.altNotationFile);
+            if (f.open(QIODevice::ReadOnly))
+                  NotationRules::load(&f);
+            else {
+                  MScore::lastError = tr("Notation File failed to load.");
+                  }
+            }
+      else {
+            NotationRules::reset();
+            }
 
       transportTools->setEnabled(!noSeq);
       playId->setEnabled(!noSeq);

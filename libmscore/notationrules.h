@@ -45,6 +45,7 @@ class NotationRules {
 
     public:
         static bool load(QFile* f);
+        static void reset();
 
         static const std::map<int, int>* notePositions() { return &_notePositions; }
         static const std::map<int, NoteHead::Group>* noteHeads() { return &_noteHeads; }

@@ -1464,20 +1464,10 @@ void PreferenceDialog::apply()
       //cc
       prefs.useAltNotationFile = useAltNotationFile->isChecked();
       if (prefs.useAltNotationFile /* && notationFileChanged*/) {
-            prefs.altNotationFile =  altNotationFile->text();
+            prefs.altNotationFile = altNotationFile->text();
             }
       else {
             prefs.altNotationFile = "";
-            }
-      //ccs
-      if (!prefs.altNotationFile.isEmpty()) {
-           QFile f(prefs.altNotationFile);
-          
-            if (f.open(QIODevice::ReadOnly))
-                  NotationRules::load(&f);
-            else {
-                  MScore::lastError = tr("Notation File failed to load.");
-                 }
             }
           
       preferences = prefs;

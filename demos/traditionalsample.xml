@@ -22,95 +22,95 @@
 			<INVALID>0</INVALID>
 		</ClefOffsets>
 		<Mappings>
-			<_0 name="Cbb">14</_0>
-			<_7 name="Cb">13</_7>
-			<_14 name="C">12</_14>
-			<_21 name="C#">11</_21>
+			<_0 name="Cbb">10</_0>
+			<_7 name="Cb">10</_7>
+			<_14 name="C">10</_14>
+			<_21 name="C#">10</_21>
 			<_28 name="C##">10</_28>
 			          
-			<_2 name="Dbb">12</_2>
-			<_9 name="Db">11</_9>
-			<_16 name="D">10</_16>
+			<_2 name="Dbb">9</_2>
+			<_9 name="Db">9</_9>
+			<_16 name="D">9</_16>
 			<_23 name="D#">9</_23>
-			<_30 name="D##">8</_30>
+			<_30 name="D##">9</_30>
 
-			<_4 name="Ebb">10</_4>
-			<_11 name="Eb">9</_11>
+			<_4 name="Ebb">8</_4>
+			<_11 name="Eb">8</_11>
 			<_18 name="E">8</_18>
-			<_25 name="E#">7</_25>
-			<_32 name="E##">6</_32>
+			<_25 name="E#">8</_25>
+			<_32 name="E##">8</_32>
 
-			<_-1 name="Fbb">9</_-1>
-			<_6 name="Fb">8</_6>
+			<_-1 name="Fbb">7</_-1>
+			<_6 name="Fb">7</_6>
 			<_13 name="F">7</_13>
-			<_20 name="F#">6</_20>
-			<_27 name="F##">5</_27>
+			<_20 name="F#">7</_20>
+			<_27 name="F##">7</_27>
 
-			<_1 name="Gbb">7</_1>
+			<_1 name="Gbb">6</_1>
 			<_8 name="Gb">6</_8>
-			<_15 name="G">5</_15>
-			<_22 name="G#">4</_22>
-			<_29 name="G##">3</_29>
+			<_15 name="G">6</_15>
+			<_22 name="G#">6</_22>
+			<_29 name="G##">6</_29>
 
 			<_3 name="Abb">5</_3>
-			<_10 name="Ab">4</_10>
-			<_17 name="A">3</_17>
-			<_24 name="A#">2</_24>
-			<_31 name="A##">1</_31>
+			<_10 name="Ab">5</_10>
+			<_17 name="A">5</_17>
+			<_24 name="A#">5</_24>
+			<_31 name="A##">5</_31>
 
-			<_5 name="Bbb">3</_5>
-			<_12 name="Bb">2</_12>
-			<_19 name="B">1</_19>
-			<_26 name="B#">0</_26>
-			<_33 name="B##">-1</_33>
+			<_5 name="Bbb">4</_5>
+			<_12 name="Bb">4</_12>
+			<_19 name="B">4</_19>
+			<_26 name="B#">4</_26>
+			<_33 name="B##">4</_33>
 		</Mappings>
 	</NotePositions>
 
 	<NoteHeads>
-		<_0 name="Cbb">CROSS</_0>
+		<_0 name="Cbb">NORMAL</_0>
 		<_7 name="Cb">NORMAL</_7>
 		<_14 name="C">NORMAL</_14>
-		<_21 name="C#">TRIANGLE</_21>
+		<_21 name="C#">NORMAL</_21>
 		<_28 name="C##">NORMAL</_28>
 		          
 		<_2 name="Dbb">NORMAL</_2>
-		<_9 name="Db">CROSS</_9>
+		<_9 name="Db">NORMAL</_9>
 		<_16 name="D">NORMAL</_16>
-		<_23 name="D#">TRIANGLE</_23>
+		<_23 name="D#">NORMAL</_23>
 		<_30 name="D##">NORMAL</_30>
 
 		<_4 name="Ebb">NORMAL</_4>
-		<_11 name="Eb">CROSS</_11>
+		<_11 name="Eb">NORMAL</_11>
 		<_18 name="E">NORMAL</_18>
 		<_25 name="E#">NORMAL</_25>
-		<_32 name="E##">TRIANGLE</_32>
+		<_32 name="E##">NORMAL</_32>
 
-		<_-1 name="Fbb">CROSS</_-1>
+		<_-1 name="Fbb">NORMAL</_-1>
 		<_6 name="Fb">NORMAL</_6>
 		<_13 name="F">NORMAL</_13>
-		<_20 name="F#">TRIANGLE</_20>
+		<_20 name="F#">NORMAL</_20>
 		<_27 name="F##">NORMAL</_27>
 
 		<_1 name="Gbb">NORMAL</_1>
-		<_8 name="Gb">CROSS</_8>
+		<_8 name="Gb">NORMAL</_8>
 		<_15 name="G">NORMAL</_15>
-		<_22 name="G#">TRIANGLE</_22>
+		<_22 name="G#">NORMAL</_22>
 		<_29 name="G##">NORMAL</_29>
 
 		<_3 name="Abb">NORMAL</_3>
-		<_10 name="Ab">CROSS</_10>
+		<_10 name="Ab">NORMAL</_10>
 		<_17 name="A">NORMAL</_17>
-		<_24 name="A#">TRIANGLE</_24>
+		<_24 name="A#">NORMAL</_24>
 		<_31 name="A#">NORMAL</_31>
 
 		<_5 name="Bbb">NORMAL</_5>
-		<_12 name="Bb">CROSS</_12>
+		<_12 name="Bb">NORMAL</_12>
 		<_19 name="B">NORMAL</_19>
 		<_26 name="B#">NORMAL</_26>
-		<_33 name="F##">TRIANGLE</_33>
+		<_33 name="F##">NORMAL</_33>
 	</NoteHeads>
 
-	<NoAccidentals>1</NoAccidentals>
+	<NoAccidentals>0</NoAccidentals>
 
 	<StaffLines>
 	     <line>solid</line>
@@ -118,15 +118,9 @@
 	     <line>solid</line>
 	     <line>hidden</line>
 	     <line>solid</line>
-
-	     <line>hidden</line>
-	     <line>ledger</line>
-	     <line>hidden</line>
-	     
-	     <line>solid</line>
 	     <line>hidden</line>
 	     <line>solid</line>
 	     <line>hidden</line>
-	     <line>solid</line>   
+	     <line>solid</line>
 	</StaffLines>
 </Notation>
