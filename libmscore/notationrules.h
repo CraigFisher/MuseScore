@@ -33,27 +33,38 @@ class NotationRules {
 
         static void readNotePositions(XmlReader& e); 
         static void readNoteHeads(XmlReader& e);
+        static void readInnerLedgers(XmlReader& e);        
         static void readStaffLines(XmlReader& e);
 
         static std::map<int, int> _notePositions;
         static std::map<int, NoteHead::Group> _noteHeads;
         static std::map<ClefType, int> _clefOffsets;
         static int _octaveDistance;
-        static std::vector<int> _innerLedgers;
+        static std::map<int, std::vector<int>*> _innerLedgers;
         static std::vector<bool> _staffLines;
         static int _staffLinesHeight;
+      
+        static const int NOTATION_FILE_VERSION = 2;
 
     public:
-        static bool load(QFile* f);
+        enum class FileError : char {
+            NO_ERROR,
+            FILE_ERROR,
+            BAD_FORMAT,
+            TOO_OLD,
+            TOO_NEW,
+            };
+
+        static NotationRules::FileError load(QFile* f);
         static void reset();
 
         static const std::map<int, int>* notePositions() { return &_notePositions; }
         static const std::map<int, NoteHead::Group>* noteHeads() { return &_noteHeads; }
         static const std::map<ClefType, int>* clefOffsets() { return &_clefOffsets; }
-        static const std::vector<int>* innerLedgers() { return &_innerLedgers; }
+        static const std::map<int, std::vector<int>*>* innerLedgers() { return &_innerLedgers; }
         static const std::vector<bool>* staffLines() { return &_staffLines; }
-        static const int octaveDistance() { return _octaveDistance; }
-        static const int staffLinesHeight() { return _staffLinesHeight; }
+        static int octaveDistance() { return _octaveDistance; }
+        static int staffLinesHeight() { return _staffLinesHeight; }
 
         static bool alternateNotePositions; //TODO: make these consts as well?
         static bool alternateNoteheads;

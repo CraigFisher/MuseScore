@@ -25,6 +25,7 @@
 #include "note.h"
 #include "chord.h"
 #include "key.h"
+#include "notationrules.h" //cc
 
 namespace Ms {
 
@@ -758,13 +759,23 @@ Note* searchTieNote114(Note* note)
 
 int absStep(int tpc, int pitch)
       {
-      int line     = tpc2step(tpc) + (pitch / 12) * 7;
-      int tpcPitch = tpc2pitch(tpc);
+      int line;
+      //cc
+      if(NotationRules::alternateNotePositions) { //cc
+            int octave = pitch / 12;
+            int octaveDistance = NotationRules::octaveDistance();
+            int correction = 5 * (octaveDistance - 7); //necessary when octaveDistance != 7
+            line = NotationRules::notePositions()->at(tpc) + (octave * octaveDistance) - correction;
+            }
+      else {
+            line = tpc2step(tpc) + (pitch / 12) * 7;
+            int tpcPitch = tpc2pitch(tpc);
 
-      if (tpcPitch < 0)
-            line += 7;
-      else
-            line -= (tpcPitch / 12) * 7;
+            if (tpcPitch < 0)
+                  line += 7;
+            else
+                  line -= (tpcPitch / 12) * 7;
+            }
       return line;
       }
 
@@ -789,7 +800,12 @@ int absStep(int line, ClefType clef)
 
 int relStep(int line, ClefType clef)
       {
-      return ClefInfo::pitchOffset(clef) - line;
+      //cc
+      
+      if (NotationRules::alternateNotePositions) //cc
+            return NotationRules::clefOffsets()->at(clef) - line;
+      else
+            return ClefInfo::pitchOffset(clef) - line;
       }
 
 int relStep(int pitch, int tpc, ClefType clef)

@@ -241,7 +241,7 @@ class Note : public Element {
       int concertPitchIdx() const;
       void updateRelLine(int relLine, bool undoable);
 
-      int computeAlternativeLine() const; //cc
+      // int computeAlternativeLine() const; //cc
 
    public:
       Note(Score* s = 0);

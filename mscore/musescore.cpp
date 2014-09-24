@@ -358,12 +358,31 @@ void MuseScore::preferencesChanged()
           
       //cc
       if (preferences.useAltNotationFile && !preferences.altNotationFile.isEmpty()) {
+            NotationRules::FileError result;
+            
             QFile f(preferences.altNotationFile);
             if (f.open(QIODevice::ReadOnly))
-                  NotationRules::load(&f);
-            else {
-                  MScore::lastError = tr("Notation File failed to load.");
-                  }
+                  result = NotationRules::load(&f);
+            else
+                  result = NotationRules::FileError::FILE_ERROR;
+            if (result != NotationRules::FileError::NO_ERROR) {
+                  QString msg = "Cannot read file: ";
+                  switch (result) {
+                        case NotationRules::FileError::FILE_ERROR :
+                              msg += "failed to open."; break;
+                        case NotationRules::FileError::BAD_FORMAT :
+                              msg += "improperly formated."; break;
+                        case NotationRules::FileError::TOO_OLD :
+                              msg += "outdated.\nThis version of the AltNotation Project now "
+                                    "uses a newer file format."; break;
+                        case NotationRules::FileError::TOO_NEW :
+                              msg += "\nThis file requires a newer version of the AltNotation project."; break;
+                        default :
+                              break;
+                        }
+                 NotationRules::reset();
+                 QMessageBox::warning(0, QObject::tr("MuseScore: Load Error"), msg);
+                 }
             }
       else {
             NotationRules::reset();

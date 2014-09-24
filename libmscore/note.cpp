@@ -240,8 +240,7 @@ Note::Note(const Note& n, bool link)
       if (link)
             linkTo((Note*)&n);      // HACK!
       _subchannel        = n._subchannel;
-     // _line              = n._line;
-          setLine(n._line); //cc BAD PRACTICE
+      _line              = n._line;
       _fret              = n._fret;
       _string            = n._string;
       _fretConflict      = n._fretConflict;
@@ -922,8 +921,7 @@ void Note::read(XmlReader& e)
             else if (tag == "veloType")
                   setProperty(P_ID::VELO_TYPE, Ms::getProperty(P_ID::VELO_TYPE, e));
             else if (tag == "line")
-                 // _line = e.readInt();
-                    setLine(e.readInt()); //cc BAD PRACTICE
+                 _line = e.readInt();
             else if (tag == "Tie") {
                   _tieFor = new Tie(score());
                   _tieFor->setTrack(track());
@@ -1910,22 +1908,6 @@ void Note::setSmall(bool val)
       _small = val;
       }
 
-//---------------------------------------==============//cc
-//   computeAlternativeLine
-//---------------------------------------------------------       
-//cc
-int Note::computeAlternativeLine() const
-     {
-     Staff* s = score()->staff(staffIdx() + chord()->staffMove());
-     ClefType clef = s->clef(chord()->tick());
-     int clefOffset = NotationRules::clefOffsets()->at(clef);
-     int octave = ((_pitch / 12) * -1) + 5;
-     return NotationRules::notePositions()->at(_tpc[0]) + (octave * NotationRules::octaveDistance()) + clefOffset;
-     }
-//---------------------------------------------------------
-//   setLine
-//---------------------------------------------------------
-
 void Note::setAccidentalType(Accidental::Type type)
       {
       if (_score)
@@ -1938,16 +1920,8 @@ void Note::setAccidentalType(Accidental::Type type)
 
 void Note::setLine(int n)
       {
-      //cc
-      bool standardStaff = staff() && staff()->staffType()->group() == StaffGroup::STANDARD; //cc
-      if (NotationRules::alternateNotePositions && standardStaff) { //cc
-           _line = computeAlternativeLine();
-            } 
-      else {
-            _line = n;
-            }
-
       _line = n;
+
       int off = 0;
       if (staff())
             off = staff()->staffType()->stepOffset();
@@ -2107,21 +2081,13 @@ void Note::updateAccidental(AccidentalState* as)
 
 void Note::updateRelLine(int relLine, bool undoable)
       {
-      int line; //cc
-          
-      bool standardStaff = staff() && staff()->staffType()->group() == StaffGroup::STANDARD; //cc
-      if (NotationRules::alternateNotePositions && standardStaff) { //cc
-            line = _line - 1; //cc ensure line != line
-            }
-      else {
-            int idx = staffIdx() + chord()->staffMove();
-            if (idx < 0 && chord()->staffMove())                    // can happen if a staff is removed
-                  chord()->undoChangeProperty(P_ID::STAFF_MOVE, 0);
+      int idx = staffIdx() + chord()->staffMove();
+      if (idx < 0 && chord()->staffMove())                    // can happen if a staff is removed
+            chord()->undoChangeProperty(P_ID::STAFF_MOVE, 0);
 
-            Staff* s = score()->staff(staffIdx() + chord()->staffMove());
-            ClefType clef = s->clef(chord()->tick());
-            line = relStep(relLine, clef);
-            }
+      Staff* s = score()->staff(staffIdx() + chord()->staffMove());
+      ClefType clef = s->clef(chord()->tick());
+      int line = relStep(relLine, clef);
       if (line != _line) {
             if (undoable)
                   undoChangeProperty(P_ID::LINE, line);
@@ -2244,8 +2210,7 @@ bool Note::setProperty(P_ID propertyId, const QVariant& v)
                         chord()->measure()->cmdUpdateNotes(chord()->staffIdx());
                   break;
             case P_ID::LINE:
-                 // _line = v.toInt();
-              setLine(v.toInt()); //cc BAD PRACTICE
+                  _line = v.toInt();
                   break;
             case P_ID::SMALL:
                   setSmall(v.toBool());

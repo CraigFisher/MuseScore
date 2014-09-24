@@ -713,16 +713,16 @@ void Chord::addLedgerLines(int move)
                   const Note* note = _notes.at(i);
 
                   int l = note->line();
-                 if (!(NotationRules::useInnerLedgers) || !standardStaff) { //cc
+                  if (!(NotationRules::useInnerLedgers) || !standardStaff) { //cc
                         if ( (!j && l < lineBelow) || // if 1st pass and note not below staff
                              (j && l >= 0) )          // or 2nd pass and note not above staff
                              break;                  // stop this pass
+                        // round line number to even number toward 0
+                        if (l < 0)
+                              l = (l+1) & ~ 1;
+                        else  
+                              l = l & ~ 1;
                        }
-                
-                  int original_l = l;
-                  // round line number to even number toward 0
-                  if (l < 0)        l = (l+1) & ~ 1;
-                  else              l = l & ~ 1;
 
                   if (note->visible())          // if one note is visible,
                         visible = true;         // all lines between it and the staff are visible
@@ -758,40 +758,16 @@ void Chord::addLedgerLines(int move)
 
                   //cc
                   if (NotationRules::useInnerLedgers && standardStaff) {
-                        vector<int>::const_iterator itr = NotationRules::innerLedgers()->begin();
-                        vector<int>::const_iterator stopItr = NotationRules::innerLedgers()->end();
-                        while (itr != stopItr) {
-                              //TODO: SEE IF minX, maxX can be left as is
-                              if (*itr == original_l) { //if our note line is equal to one of the designated ledger lines
-                                    if (*itr % 2 == 1) {
-                                          lld.line = original_l - 1;
-                                          lld.minX = minX;
-                                          lld.maxX = maxX;
-                                          lld.visible = visible;
-                                          lld.accidental = false;
-                                          vecLines.push_back(lld);
-                                          lld.line = original_l + 1;
-                                          lld.minX = minX;
-                                          lld.maxX = maxX;
-                                          lld.visible = visible;
-                                          lld.accidental = false;
-                                          vecLines.push_back(lld);
-                                          }
-                                    else {
-                                          lld.line = original_l;
-                                          lld.minX = minX;
-                                          lld.maxX = maxX;
-                                          lld.visible = visible;
-                                          lld.accidental = false;
-                                          vecLines.push_back(lld);
-                                          }
-                                    break;
+                        if(NotationRules::innerLedgers()->find(l) != NotationRules::innerLedgers()->end()) {
+                              const vector<int>* ledgers = NotationRules::innerLedgers()->at(l);
+                              for (vector<int>::const_iterator itr = ledgers->begin(); itr != ledgers->end(); itr++) {
+                                    lld.line = *itr;
+                                    lld.minX = minX;
+                                    lld.maxX = maxX;
+                                    lld.visible = visible;
+                                    lld.accidental = false;
+                                    vecLines.push_back(lld);                                    
                                     }
-                              itr++;
-                              }
-                        if ((!j && l < lineBelow) || (j && l >= 0) ) {// if 1st pass and note not below staff
-                                                                      // or 2nd pass and note not above staff
-                              break;                  // stop this pass
                               }
                         }
                 

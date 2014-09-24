@@ -1,6 +1,6 @@
 <Notation version="2">
 	<NotePositions>
-		<OctaveDistance>7</OctaveDistance>
+		<OctaveDistance>6</OctaveDistance>
 		<ClefOffsets>
 			<G>45</G>
 			<G8va>52</G8va>
@@ -26,44 +26,44 @@
 		</ClefOffsets>
 		<Mappings>
 			<_0 name="Cbb">0</_0>
-			<_7 name="Cb">0</_7>
+			<_7 name="Cb">-1</_7>
 			<_14 name="C">0</_14>
 			<_21 name="C#">0</_21>
 			<_28 name="C##">0</_28>
 			          
 			<_2 name="Dbb">1</_2>
-			<_9 name="Db">1</_9>
+			<_9 name="Db">0</_9>
 			<_16 name="D">1</_16>
 			<_23 name="D#">1</_23>
 			<_30 name="D##">1</_30>
 
 			<_4 name="Ebb">2</_4>
-			<_11 name="Eb">2</_11>
+			<_11 name="Eb">1</_11>
 			<_18 name="E">2</_18>
 			<_25 name="E#">2</_25>
 			<_32 name="E##">2</_32>
 
 			<_-1 name="Fbb">3</_-1>
-			<_6 name="Fb">3</_6>
-			<_13 name="F">3</_13>
+			<_6 name="Fb">2</_6>
+			<_13 name="F">2</_13>
 			<_20 name="F#">3</_20>
 			<_27 name="F##">3</_27>
 
 			<_1 name="Gbb">4</_1>
-			<_8 name="Gb">4</_8>
-			<_15 name="G">4</_15>
+			<_8 name="Gb">3</_8>
+			<_15 name="G">3</_15>
 			<_22 name="G#">4</_22>
 			<_29 name="G##">4</_29>
 
 			<_3 name="Abb">5</_3>
-			<_10 name="Ab">5</_10>
-			<_17 name="A">5</_17>
+			<_10 name="Ab">4</_10>
+			<_17 name="A">4</_17>
 			<_24 name="A#">5</_24>
 			<_31 name="A##">5</_31>
 
 			<_5 name="Bbb">6</_5>
-			<_12 name="Bb">6</_12>
-			<_19 name="B">6</_19>
+			<_12 name="Bb">5</_12>
+			<_19 name="B">5</_19>
 			<_26 name="B#">6</_26>
 			<_33 name="B##">6</_33>
 		</Mappings>
@@ -113,7 +113,7 @@
 		<_33 name="F##">NORMAL</_33>
 	</NoteHeads>
 
-	<NoAccidentals>0</NoAccidentals>
+	<NoAccidentals>1</NoAccidentals>
 
 	<StaffLines>
 	     <line>solid</line>
