@@ -2133,13 +2133,14 @@ Shortcut Shortcut::sc[] = {
          QT_TRANSLATE_NOOP("action","Select all similar elements in the range selection")
          ),
       //cc
-//      Shortcut(
-//         STATE_NORMAL | STATE_NOTE_ENTRY | STATE_PLAY,
-//         0,
-//         "notation-editor",
-//         Qt::ApplicationShortcut,
-//         QT_TRANSLATE_NOOP("action","Notation Editor")
-//         ),
+     Shortcut(
+        MsWidget::MAIN_WINDOW,
+        STATE_NORMAL | STATE_NOTE_ENTRY,
+        0,
+        "notation-editor",
+        Qt::ApplicationShortcut,
+        QT_TRANSLATE_NOOP("action","Notation Editor")
+        ),
       Shortcut(
          MsWidget::MAIN_WINDOW,
          STATE_NORMAL | STATE_NOTE_ENTRY | STATE_PLAY,

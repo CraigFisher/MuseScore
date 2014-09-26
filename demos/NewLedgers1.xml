@@ -1,0 +1,159 @@
+<Notation version="2">
+	<NotePositions>
+		<OctaveDistance>12</OctaveDistance>
+		<ClefOffsets>
+			<G>45</G>
+			<G8va>52</G8va>
+			<G15ma>59</G15ma>
+			<G8vb>38</G8vb>
+			<F>33</F>
+			<F8vb>26</F8vb>
+			<F15mb>19</F15mb>
+			<F3>35</F3>
+			<F5>31</F5>
+			<C1>43</C1>
+			<C2>41</C2>
+			<C3>39</C3>
+			<C4>37</C4>
+			<TAB>0</TAB> <!-- should not be necessary:  -->
+			<PERC>45</PERC> <!-- should not be necessary:  -->
+			<C5>35</C5>
+			<G1>47</G1>
+			<F8va>40</F8va>
+			<F15ma>47</F15ma>
+			<PERC2>45</PERC2> <!-- should not be necessary:  -->
+			<TAB2>0</TAB2> <!-- should not be necessary:  -->
+		</ClefOffsets>
+		<Mappings>
+			<_0 name="Cbb">-4</_0>
+			<_7 name="Cb">-3</_7>
+			<_14 name="C">-2</_14>
+			<_21 name="C#">-1</_21>
+			<_28 name="C##">0</_28>
+			          
+			<_2 name="Dbb">-2</_2>
+			<_9 name="Db">-1</_9>
+			<_16 name="D">0</_16>
+			<_23 name="D#">1</_23>
+			<_30 name="D##">2</_30>
+
+			<_4 name="Ebb">0</_4>
+			<_11 name="Eb">1</_11>
+			<_18 name="E">2</_18>
+			<_25 name="E#">3</_25>
+			<_32 name="E##">4</_32>
+
+			<_-1 name="Fbb">1</_-1>
+			<_6 name="Fb">2</_6>
+			<_13 name="F">3</_13>
+			<_20 name="F#">4</_20>
+			<_27 name="F##">5</_27>
+
+			<_1 name="Gbb">3</_1>
+			<_8 name="Gb">4</_8>
+			<_15 name="G">5</_15>
+			<_22 name="G#">6</_22>
+			<_29 name="G##">7</_29>
+
+			<_3 name="Abb">5</_3>
+			<_10 name="Ab">6</_10>
+			<_17 name="A">7</_17>
+			<_24 name="A#">8</_24>
+			<_31 name="A##">9</_31>
+
+			<_5 name="Bbb">7</_5>
+			<_12 name="Bb">8</_12>
+			<_19 name="B">9</_19>
+			<_26 name="B#">10</_26>
+			<_33 name="B##">11</_33>
+		</Mappings>
+	</NotePositions>
+
+	<NoteHeads>
+		<_0 name="Cbb">NORMAL</_0>
+		<_7 name="Cb">NORMAL</_7>
+		<_14 name="C">NORMAL</_14>
+		<_21 name="C#">NORMAL</_21>
+		<_28 name="C##">NORMAL</_28>
+		          
+		<_2 name="Dbb">NORMAL</_2>
+		<_9 name="Db">NORMAL</_9>
+		<_16 name="D">NORMAL</_16>
+		<_23 name="D#">NORMAL</_23>
+		<_30 name="D##">NORMAL</_30>
+
+		<_4 name="Ebb">NORMAL</_4>
+		<_11 name="Eb">NORMAL</_11>
+		<_18 name="E">NORMAL</_18>
+		<_25 name="E#">NORMAL</_25>
+		<_32 name="E##">NORMAL</_32>
+
+		<_-1 name="Fbb">NORMAL</_-1>
+		<_6 name="Fb">NORMAL</_6>
+		<_13 name="F">NORMAL</_13>
+		<_20 name="F#">NORMAL</_20>
+		<_27 name="F##">NORMAL</_27>
+
+		<_1 name="Gbb">NORMAL</_1>
+		<_8 name="Gb">NORMAL</_8>
+		<_15 name="G">NORMAL</_15>
+		<_22 name="G#">NORMAL</_22>
+		<_29 name="G##">NORMAL</_29>
+
+		<_3 name="Abb">NORMAL</_3>
+		<_10 name="Ab">NORMAL</_10>
+		<_17 name="A">NORMAL</_17>
+		<_24 name="A#">NORMAL</_24>
+		<_31 name="A#">NORMAL</_31>
+
+		<_5 name="Bbb">NORMAL</_5>
+		<_12 name="Bb">NORMAL</_12>
+		<_19 name="B">NORMAL</_19>
+		<_26 name="B#">NORMAL</_26>
+		<_33 name="F##">NORMAL</_33>
+	</NoteHeads>
+
+	<NoAccidentals>1</NoAccidentals>
+
+	<StaffLines>
+	    <line>solid</line>
+	    <line>hidden</line>
+	    <line>hidden</line>
+	    <line>hidden</line>
+	    <line>hidden</line>
+	    <line>hidden</line>
+	    <line>hidden</line>
+	    <line>hidden</line>
+	    <line>hidden</line>
+	    <line>hidden</line>
+	    <line>hidden</line>
+	    <line>hidden</line>
+	    <line>solid</line>   
+	</StaffLines>
+
+	<InnerLedgers>
+		<note line="3">
+			<ledger>4</ledger>
+		</note>
+		<note line="4">
+			<ledger>4</ledger>
+		</note>
+		<note line="5">
+			<ledger>4</ledger>
+		</note>
+		<note line="6">
+			<ledger>4</ledger>
+			<ledger>8</ledger>
+		</note>
+		<note line="7">
+			<ledger>8</ledger>
+		</note>
+		<note line="8">
+			<ledger>8</ledger>
+		</note>
+		<note line="9">
+			<ledger>8</ledger>
+		</note>
+	</InnerLedgers>
+
+</Notation>

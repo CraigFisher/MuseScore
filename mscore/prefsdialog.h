@@ -39,6 +39,7 @@ class PreferenceDialog : public QDialog, private Ui::PrefsDialogBase {
       bool shortcutsChanged;
       QButtonGroup* recordButtons;
       Preferences prefs;
+      bool notationChanged; //cc until proper notation dialog is created
 
       void apply();
       bool sfChanged;

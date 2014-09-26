@@ -356,6 +356,10 @@ void MuseScore::preferencesChanged()
                   }
             }
           
+          
+            /* The following code is temporary and will be moved once Notation Dialog is set up.
+               Also, the eventual Notation Dialog will check for actual changes before performing 
+               these updates */
       //cc
       if (preferences.useAltNotationFile && !preferences.altNotationFile.isEmpty()) {
             NotationRules::FileError result;
@@ -386,6 +390,14 @@ void MuseScore::preferencesChanged()
             }
       else {
             NotationRules::reset();
+            }
+      //cc
+      foreach(Score* score, scoreList) {
+            foreach(Score* innerScore, score->scoreList()) {
+                  innerScore->updateNotes();
+                  innerScore->setUpdateAll();
+                  innerScore->doLayout();
+                  }
             }
 
       transportTools->setEnabled(!noSeq);
@@ -938,9 +950,9 @@ MuseScore::MuseScore()
       a->setCheckable(true);
       menuView->addAction(a);
       //cc
-//      a = getAction("notation-editor");
-//      a->setCheckable(true);
-//      menuView->addAction(a);
+     a = getAction("notation-editor");
+     a->setCheckable(true);
+     menuView->addAction(a);
 
       a = getAction("synth-control");
       a->setCheckable(true);
@@ -4187,7 +4199,7 @@ void MuseScore::cmd(QAction* a, const QString& cmd)
             showSynthControl(a->isChecked());
       //cc
 //      else if (cmd == "notation-editor")
-//          
+//         
 //            showNotationEditor(a->isChecked());
       else if (cmd == "toggle-selection-window")
             showSelectionWindow(a->isChecked());

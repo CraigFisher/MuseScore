@@ -194,7 +194,7 @@ void KeySigEvent::initFromSubtype(int st)
 
 AccidentalVal AccidentalState::accidentalVal(int line) const
       {
-      Q_ASSERT(line >= 0 && line < 75);
+//      Q_ASSERT(line >= 0 && line < 75); //cc
       return AccidentalVal((state[line] & 0x0f) - 2);
       }
 
@@ -204,7 +204,7 @@ AccidentalVal AccidentalState::accidentalVal(int line) const
 
 bool AccidentalState::tieContext(int line) const
       {
-      Q_ASSERT(line >= 0 && line < 75);
+//      Q_ASSERT(line >= 0 && line < 75); //cc
       return state[line] & TIE_CONTEXT;
       }
 
@@ -214,7 +214,7 @@ bool AccidentalState::tieContext(int line) const
 
 void AccidentalState::setAccidentalVal(int line, AccidentalVal val, bool tieContext)
       {
-      Q_ASSERT(line >= 0 && line < 75);
+//      Q_ASSERT(line >= 0 && line < 75); //cc
       // casts needed to work around a bug in Xcode 4.2 on Mac, see #25910
       Q_ASSERT(int(val) >= int(AccidentalVal::FLAT2) && int(val) <= int(AccidentalVal::SHARP2));
       state[line] = (int(val) + 2) | (tieContext ? TIE_CONTEXT : 0);
