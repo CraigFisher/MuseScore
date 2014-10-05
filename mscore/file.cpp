@@ -872,10 +872,11 @@ void MuseScore::saveScoreDialogFilterSelected(const QString& s)
             }
       }
 
-//-----------------------------------------------------//cc
+//cc
+//---------------------------------------------------------
 //   getNotationFilename
 //---------------------------------------------------------
-//cc
+
 QString MuseScore::getNotationFilename(bool open)
       {
       if (preferences.nativeDialogs) {

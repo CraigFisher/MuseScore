@@ -267,7 +267,7 @@ Note::Note(const Note& n, bool link)
       // if (n._accidental) {
       //      add(new Accidental(*(n._accidental)));
       if (n._accidental) {
-            if(NotationRules::noAccidentals) {
+            if(notationRules() && notationRules()->noAccidentals()) {
                   add(new Accidental(score()));
             } else {
                   add(new Accidental(*(n._accidental)));
@@ -479,9 +479,8 @@ SymId Note::noteHead() const
 
       //cc
       SymId t;
-      bool standardStaff = staff() && staff()->staffType()->group() == StaffGroup::STANDARD;
-      if(NotationRules::alternateNoteheads && standardStaff) {
-            t = noteHead(up, NotationRules::noteHeads()->at(_tpc[0]), ht);
+      if(notationRules()) {
+            t = noteHead(up, notationRules()->noteHeads()->at(_tpc[0]), ht);
       } else {      
             t = noteHead(up, _headGroup, ht);
       }
@@ -1702,7 +1701,7 @@ void Note::layout10(AccidentalState* as)
                   }
             }
       else {
-            int relLine = absStep(tpc(), epitch());
+            int relLine = absStep(tpc(), epitch(), notationRules()); //cc
 
             // calculate accidental
 
@@ -1717,7 +1716,7 @@ void Note::layout10(AccidentalState* as)
 //not true:                     qDebug("note at %d has wrong tpc: %d, expected %d, acci %d", chord()->tick(), tpc(), ntpc, acci);
 //                              setColor(QColor(255, 0, 0));
 //                             setTpc(ntpc);
-                              relLine = absStep(tpc(), epitch());
+                              relLine = absStep(tpc(), epitch(), notationRules()); //cc
                               }
                         }
                   else if (acci > Accidental::Type::NATURAL) {
@@ -1768,8 +1767,7 @@ NoteType Note::noteType() const
 
 //cc
 Q_INVOKABLE Ms::Accidental* Note::accidental() const {
-     bool standardStaff = staff() && staff()->staffType()->group() == StaffGroup::STANDARD;
-     if(NotationRules::noAccidentals && standardStaff) {
+     if(notationRules() && notationRules()->noAccidentals()) {
            return _altAccidental;
      } else {
             return _accidental;
@@ -2007,7 +2005,7 @@ void Note::endEdit()
 
 void Note::updateAccidental(AccidentalState* as)
       {
-      int relLine = absStep(tpc(), epitch());
+      int relLine = absStep(tpc(), epitch(), notationRules()); //cc
 
       // don't touch accidentals that don't concern tpc such as
       // quarter tones
@@ -2102,7 +2100,7 @@ void Note::updateRelLine(int relLine, bool undoable)
 
 void Note::updateLine()
       {
-      int relLine = absStep(tpc(), epitch());
+      int relLine = absStep(tpc(), epitch(), notationRules()); //cc
       updateRelLine(relLine, false);
       }
 

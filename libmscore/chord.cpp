@@ -684,11 +684,6 @@ void Chord::addLedgerLines(int move)
       qreal x;
       // the extra length of a ledger line with respect to note head (half of it on each side)
       qreal extraLen = score()->styleS(StyleIdx::ledgerLineLength).val() * _spatium * 0.5;
-
-      std::vector<int>* innerLedgers;
-
-      //cc
-     bool standardStaff = staff() && staff()->staffType()->group() == StaffGroup::STANDARD;
       
       // scan chord notes, collecting visibility and x and y extrema
       // NOTE: notes are sorted from bottom to top (line no. decreasing)
@@ -713,7 +708,7 @@ void Chord::addLedgerLines(int move)
                   const Note* note = _notes.at(i);
 
                   int l = note->line();
-                  if (!(NotationRules::useInnerLedgers) || !standardStaff) { //cc
+                  if (!notationRules()) { //cc
                         if ( (!j && l < lineBelow) || // if 1st pass and note not below staff
                              (j && l >= 0) )          // or 2nd pass and note not above staff
                              break;                  // stop this pass
@@ -757,9 +752,11 @@ void Chord::addLedgerLines(int move)
                         }
 
                   //cc
-                  if (NotationRules::useInnerLedgers && standardStaff) {
-                        if(NotationRules::innerLedgers()->find(l) != NotationRules::innerLedgers()->end()) {
-                              const vector<int>* ledgers = NotationRules::innerLedgers()->at(l);
+                  if (notationRules()) {
+                        const std::map<int, std::vector<int>*>* ledgerMap = staff()->alternateNotation()->innerLedgers();
+                        
+                        if(ledgerMap->find(l) != ledgerMap->end()) {
+                              const vector<int>* ledgers = ledgerMap->at(l);
                               for (vector<int>::const_iterator itr = ledgers->begin(); itr != ledgers->end(); itr++) {
                                     lld.line = *itr;
                                     lld.minX = minX;
@@ -796,7 +793,7 @@ void Chord::addLedgerLines(int move)
                         maxLine = l;
                         }
                   }
-            if (minLine < 0 || maxLine > lineBelow || (NotationRules::useInnerLedgers && standardStaff)) //cc
+            if (minLine < 0 || maxLine > lineBelow || notationRules()) //cc
                   createLedgerLines(track, vecLines, !staff()->invisible());
                   }
 

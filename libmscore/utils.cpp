@@ -757,15 +757,15 @@ Note* searchTieNote114(Note* note)
 ///   C D E F G A B ....
 //---------------------------------------------------------
 
-int absStep(int tpc, int pitch)
+int absStep(int tpc, int pitch, NotationRules* altNotation)
       {
       int line;
       //cc
-      if(NotationRules::alternateNotePositions) { //cc
+      if(altNotation) { //cc
             int octave = pitch / 12;
-            int octaveDistance = NotationRules::octaveDistance();
+            int octaveDistance = altNotation->octaveDistance();
             int correction = 5 * (octaveDistance - 7); //necessary when octaveDistance != 7
-            line = NotationRules::notePositions()->at(tpc) + (octave * octaveDistance) - correction;
+            line = altNotation->notePositions()->at(tpc) + (octave * octaveDistance) - correction;
             }
       else {
             line = tpc2step(tpc) + (pitch / 12) * 7;
@@ -779,16 +779,19 @@ int absStep(int tpc, int pitch)
       return line;
       }
 
-int absStep(int pitch)
+int absStep(int pitch, NotationRules* altNotation)
       {
       // TODO - does this need to be key-aware?
       int tpc = pitch2tpc(pitch, Key::C, Prefer::NEAREST);
-      return absStep(tpc, pitch);
+      return absStep(tpc, pitch, altNotation);
       }
 
-int absStep(int line, ClefType clef)
+int absStep(int line, ClefType clef, NotationRules* altNotation)
       {
-      return ClefInfo::pitchOffset(clef) - line;
+      if (altNotation) //cc
+            return altNotation->clefOffsets()->at(clef) - line;
+      else
+            return ClefInfo::pitchOffset(clef) - line;
       }
 
 //---------------------------------------------------------
@@ -798,19 +801,17 @@ int absStep(int line, ClefType clef)
 ///   first (top) staff line.
 //---------------------------------------------------------
 
-int relStep(int line, ClefType clef)
+int relStep(int line, ClefType clef, NotationRules* altNotation)
       {
-      //cc
-      
-      if (NotationRules::alternateNotePositions) //cc
-            return NotationRules::clefOffsets()->at(clef) - line;
+      if (altNotation) //cc
+            return altNotation->clefOffsets()->at(clef) - line;
       else
             return ClefInfo::pitchOffset(clef) - line;
       }
 
-int relStep(int pitch, int tpc, ClefType clef)
+int relStep(int pitch, int tpc, ClefType clef, NotationRules* altNotation)
       {
-      return relStep(absStep(tpc, pitch), clef);
+      return relStep(absStep(tpc, pitch, altNotation), clef, altNotation);
       }
 
 //---------------------------------------------------------

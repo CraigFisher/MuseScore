@@ -1,22 +1,35 @@
 #ifndef NOTATIONPANEL_H
 #define NOTATIONPANEL_H
 
-#include <QDialog>
+#include "ui_notationpanel.h"
 
 namespace Ui {
 class NotationPanel;
 }
 
-class NotationPanel : public QDialog
-{
-    Q_OBJECT
+namespace Ms {
 
-public:
-    explicit NotationPanel(QWidget *parent = 0);
-    ~NotationPanel();
+class NotationPanel : public QWidget, private Ui::NotationPanel {
+	Q_OBJECT
 
-private:
-    Ui::NotationPanel *ui;
+      virtual void closeEvent(QCloseEvent*);
+      
+    public:
+       NotationPanel(QWidget *parent = 0);
+       ~NotationPanel();
+
+    private:
+    	 Ui::NotationPanel *ui;
+
+    signals:
+       void closed(bool);
+
+    private slots:
+      void loadNotation();
+      void removeNotation();
+      void changeNotation(QListWidgetItem* item);
 };
+
+}
 
 #endif // NOTATIONPANEL_H

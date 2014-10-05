@@ -682,7 +682,7 @@ void Score::addPitch(int step, bool addFlag)
       pos.segment   = inputState().segment();
       pos.staffIdx  = inputState().track() / VOICES;
       ClefType clef = staff(pos.staffIdx)->clef(pos.segment->tick());
-      pos.line      = relStep(step, clef);
+      pos.line      = relStep(step, clef, selection().element()->notationRules()); //cc
 
       if (addFlag) {
             Element* el = selection().element();
@@ -692,7 +692,7 @@ void Score::addPitch(int step, bool addFlag)
 
                   Segment* s         = chord->segment();
                   AccidentalVal acci = s->measure()->findAccidental(s, chord->staffIdx(), pos.line);
-                  int step           = absStep(pos.line, clef);
+                  int step           = absStep(pos.line, clef, el->notationRules()); //cc
                   int octave         = step/7;
                   val.pitch          = step2pitch(step) + octave * 12 + int(acci);
 
@@ -932,7 +932,7 @@ qDebug("putNote at tick %d staff %d line %d clef %d",
 
             case StaffGroup::STANDARD: {
                   AccidentalVal acci = s->measure()->findAccidental(s, staffIdx, line);
-                  int step   = absStep(line, clef);
+                  int step   = absStep(line, clef, st->notationRules()); //cc
                   int octave = step/7;
                   nval.pitch = step2pitch(step) + octave * 12 + int(acci);
                   if (!styleB(StyleIdx::concertPitch))
@@ -1020,7 +1020,7 @@ void Score::repitchNote(const Position& p, bool replace)
 
       NoteVal nval;
       AccidentalVal acci = s->measure()->findAccidental(s, p.staffIdx, p.line);
-      int step   = absStep(p.line, clef);
+      int step   = absStep(p.line, clef, st->notationRules()); //cc
       int octave = step / 7;
       nval.pitch = step2pitch(step) + octave * 12 + int(acci);
       if (!styleB(StyleIdx::concertPitch))

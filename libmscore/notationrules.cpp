@@ -19,32 +19,35 @@ namespace Ms {
 //   NotationRules
 //---------------------------------------------------------
 
-std::map<int, int> NotationRules::_notePositions;
-std::map<int, NoteHead::Group> NotationRules::_noteHeads;
-std::map<ClefType, int> NotationRules::_clefOffsets;
-int NotationRules::_octaveDistance;
-std::map<int, std::vector<int>*> NotationRules::_innerLedgers;
-std::vector<bool> NotationRules::_staffLines;
-int NotationRules::_staffLinesHeight;
+//std::map<int, int> NotationRules::_notePositions;
+//std::map<int, NoteHead::Group> NotationRules::_noteHeads;
+//std::map<ClefType, int> NotationRules::_clefOffsets;
+//int NotationRules::_octaveDistance;
+//std::map<int, std::vector<int>*> NotationRules::_innerLedgers;
+//std::vector<bool> NotationRules::_staffLines;
+//int NotationRules::_staffLinesHeight;
+//
+//bool NotationRules::alternateNotePositions;
+//bool NotationRules::alternateNoteheads;
+//bool NotationRules::alternateStaffLines;
+//bool NotationRules::useInnerLedgers;
+//bool NotationRules::noAccidentals;
 
-bool NotationRules::alternateNotePositions;
-bool NotationRules::alternateNoteheads;
-bool NotationRules::alternateStaffLines;
-bool NotationRules::useInnerLedgers;
-bool NotationRules::noAccidentals;
+NotationRules::NotationRules(QFile* f) {
+      if (!(f->open(QIODevice::ReadOnly)))
+            throw (QString("failed to open."));
 
-NotationRules::FileError NotationRules::load(QFile* f) {
       XmlReader e(f);
-      reset();
-
       while (e.readNextStartElement()) {
             if (e.name().toString() == "Notation") {
                   int version = e.intAttribute("version", -1);
                   if (version < NOTATION_FILE_VERSION)
-                        return FileError::TOO_OLD;
+                        throw (QString("outdated.\nThis version of the AltNotation Project now "
+                                       "uses a newer file format."));
                   if (version > NOTATION_FILE_VERSION)
-                        return FileError::TOO_NEW;
-            
+                        throw (QString("\nThis file requires a newer version of the"
+                                       "Alternative Notation project."));
+                  
                   while (e.readNextStartElement()) {
                         QString tag = e.name().toString();
                         if (tag == "NotePositions") {
@@ -63,47 +66,53 @@ NotationRules::FileError NotationRules::load(QFile* f) {
                               readInnerLedgers(e);
                               }
                         else
-                              return FileError::BAD_FORMAT;
+                              throw (QString("improperly formated."));
                         }
                   }
             else {
-                  return FileError::BAD_FORMAT;
+                  throw (QString("improperly formated."));
                   }
             }
 
-      if (!_notePositions.empty() && !_clefOffsets.empty() && (_octaveDistance != -1))
-            alternateNotePositions = true;
-      if (!_noteHeads.empty())
-            alternateNoteheads = true;                              
-      if (!_staffLines.empty() && (_staffLinesHeight != -1))
-            alternateStaffLines = true;
-      if (!_innerLedgers.empty())
-            useInnerLedgers = true;
-    
-      return FileError::NO_ERROR;
+//      if (!_notePositions.empty() && !_clefOffsets.empty() && (_octaveDistance != -1))
+//            alternateNotePositions = true;
+//      if (!_noteHeads.empty())
+//            alternateNoteheads = true;                              
+//      if (!_staffLines.empty() && (_staffLinesHeight != -1))
+//            alternateStaffLines = true;
+//      if (!_innerLedgers.empty())
+//            useInnerLedgers = true;
       }
-
-void NotationRules::reset() {
-      _notePositions.clear();
-      _noteHeads.clear();
-      _clefOffsets.clear();
-      _staffLines.clear();
-      _staffLinesHeight = -1;
-      _octaveDistance = -1;
-
+      
+NotationRules::~NotationRules() {
       std::map<int, std::vector<int>*>::iterator itr = _innerLedgers.begin();
       while(itr != _innerLedgers.end()) {
             delete itr->second;
             itr++;
             }
-      _innerLedgers.clear();
-    
-      alternateNotePositions = false;
-      alternateNoteheads = false;
-      alternateStaffLines = false;
-      useInnerLedgers = false;
-      noAccidentals = false;
-      }
+}
+
+//void NotationRules::reset() {
+//      _notePositions.clear();
+//      _noteHeads.clear();
+//      _clefOffsets.clear();
+//      _staffLines.clear();
+//      _staffLinesHeight = -1;
+//      _octaveDistance = -1;
+//
+//      std::map<int, std::vector<int>*>::iterator itr = _innerLedgers.begin();
+//      while(itr != _innerLedgers.end()) {
+//            delete itr->second;
+//            itr++;
+//            }
+//      _innerLedgers.clear();
+//    
+//      alternateNotePositions = false;
+//      alternateNoteheads = false;
+//      alternateStaffLines = false;
+//      useInnerLedgers = false;
+//      noAccidentals = false;
+//      }
 
 void NotationRules::readNotePositions(XmlReader& e) {
       while (e.readNextStartElement()) {

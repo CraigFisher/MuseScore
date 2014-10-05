@@ -469,6 +469,17 @@ Staff* Element::staff() const
 
       return score()->staff(staffIdx());
       }
+      
+
+//cc
+//---------------------------------------------------------
+//   notationRules
+//---------------------------------------------------------
+
+NotationRules* Element::notationRules() const
+      {
+      return staff() ? staff()->notationRules() : 0;
+      }
 
 //---------------------------------------------------------
 //   curColor
@@ -936,8 +947,8 @@ void StaffLines::layout()
       if (st) {
             dist  = st->lineDistance().val() * _spatium;
             
-            //cc
-            if(NotationRules::alternateStaffLines && st->group() == StaffGroup::STANDARD) {
+            //cc TODO: check if this noticeably speeds up code
+            if(notationRules()) {
                   _altStaffLines = true;
                   }
             else {
@@ -972,13 +983,15 @@ void StaffLines::draw(QPainter* painter) const
       QVector<QLineF> ll;
       qreal y = _pos.y();
 
-      //cc
+      //cc TODO: check if using '_altStaffLines' noticeably speeds up code
       if(_altStaffLines) {
-          qreal halfDist = dist / 2;
-          int length = NotationRules::staffLines()->size();
+          qreal halfDist = dist / 2; //use a smaller increment for stafflines
+          const std::vector<bool>* staffLines = notationRules()->staffLines();
+          int length = staffLines->size();
           ll.resize(length);
+          
           for (int i = 0; i < length; ++i) {
-                if(NotationRules::staffLines()->at(i)) {
+                if(staffLines->at(i)) {
                    ll[i].setLine(x1, y, x2, y);
                    }
                 y += halfDist;

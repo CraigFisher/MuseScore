@@ -29,48 +29,42 @@ namespace Ms {
 
 class NotationRules {      
     private:
-        NotationRules() {};
+        void readNotePositions(XmlReader& e);
+        void readNoteHeads(XmlReader& e);
+        void readInnerLedgers(XmlReader& e);
+        void readStaffLines(XmlReader& e);
+//        void reset();
 
-        static void readNotePositions(XmlReader& e); 
-        static void readNoteHeads(XmlReader& e);
-        static void readInnerLedgers(XmlReader& e);        
-        static void readStaffLines(XmlReader& e);
-
-        static std::map<int, int> _notePositions;
-        static std::map<int, NoteHead::Group> _noteHeads;
-        static std::map<ClefType, int> _clefOffsets;
-        static int _octaveDistance;
-        static std::map<int, std::vector<int>*> _innerLedgers;
-        static std::vector<bool> _staffLines;
-        static int _staffLinesHeight;
+        std::map<int, int> _notePositions;
+        std::map<int, NoteHead::Group> _noteHeads;
+        std::map<ClefType, int> _clefOffsets;
+        std::map<int, std::vector<int>*> _innerLedgers;
+        std::vector<bool> _staffLines;
+        int _octaveDistance;
+        int _staffLinesHeight;
+        bool _noAccidentals;
       
         static const int NOTATION_FILE_VERSION = 2;
 
     public:
-        enum class FileError : char {
-            NO_ERROR,
-            FILE_ERROR,
-            BAD_FORMAT,
-            TOO_OLD,
-            TOO_NEW,
-            };
+        NotationRules(QFile* f);
+        ~NotationRules();
 
-        static NotationRules::FileError load(QFile* f);
-        static void reset();
-
-        static const std::map<int, int>* notePositions() { return &_notePositions; }
-        static const std::map<int, NoteHead::Group>* noteHeads() { return &_noteHeads; }
-        static const std::map<ClefType, int>* clefOffsets() { return &_clefOffsets; }
-        static const std::map<int, std::vector<int>*>* innerLedgers() { return &_innerLedgers; }
-        static const std::vector<bool>* staffLines() { return &_staffLines; }
-        static int octaveDistance() { return _octaveDistance; }
-        static int staffLinesHeight() { return _staffLinesHeight; }
-
-        static bool alternateNotePositions; //TODO: make these consts as well?
-        static bool alternateNoteheads;
-        static bool alternateStaffLines;
-        static bool useInnerLedgers;
-        static bool noAccidentals;
+        const std::map<int, int>* notePositions() { return &_notePositions; }
+        const std::map<int, NoteHead::Group>* noteHeads() { return &_noteHeads; }
+        const std::map<ClefType, int>* clefOffsets() { return &_clefOffsets; }
+        const std::map<int, std::vector<int>*>* innerLedgers() { return &_innerLedgers; }
+        const std::vector<bool>* staffLines() { return &_staffLines; }
+        int octaveDistance() { return _octaveDistance; }
+        int staffLinesHeight() { return _staffLinesHeight; }
+        bool noAccidentals() { return _noAccidentals; }
+      
+//        bool alternateNotePositions; //TODO: make these consts as well?
+//        bool alternateNoteheads;
+//        bool alternateStaffLines;
+//        bool useInnerLedgers;
+      
+      friend class MuseScore;
       };
 }
 #endif
