@@ -763,7 +763,7 @@ NoteVal Score::noteValForPosition(Position pos, bool &error)
 
             case StaffGroup::STANDARD: {
                   AccidentalVal acci = s->measure()->findAccidental(s, staffIdx, line);
-                  int step           = absStep(line, clef);
+                  int step           = absStep(line, clef, st->notationRules());
                   int octave         = step/7;
                   nval.pitch         = step2pitch(step) + octave * 12 + int(acci);
                   if (styleB(StyleIdx::concertPitch))

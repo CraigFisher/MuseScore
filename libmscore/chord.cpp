@@ -753,7 +753,7 @@ void Chord::addLedgerLines(int move)
 
                   //cc
                   if (notationRules()) {
-                        const std::map<int, std::vector<int>*>* ledgerMap = staff()->alternateNotation()->innerLedgers();
+                        const std::map<int, std::vector<int>*>* ledgerMap = staff()->notationRules()->innerLedgers();
                         
                         if(ledgerMap->find(l) != ledgerMap->end()) {
                               const vector<int>* ledgers = ledgerMap->at(l);
