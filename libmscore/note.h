@@ -22,6 +22,8 @@
 #include "symbol.h"
 #include "noteevent.h"
 #include "pitchspelling.h"
+#include "clef.h" //cc
+#include <map>
 #include "accidental.h"
 
 class QPainter;
@@ -216,6 +218,7 @@ class Note : public Element {
 
 
       Accidental* _accidental;
+      Accidental* _altAccidental; //cc
 
       ElementList _el;        ///< fingering, other text, symbols or images
       Tie* _tieFor;
@@ -301,8 +304,11 @@ class Note : public Element {
       void undoSetTpc2(int tpc)      { undoChangeProperty(P_ID::TPC2, tpc); }
       int transposeTpc(int tpc);
 
-      Accidental* accidental() const    { return _accidental; }
-      void setAccidental(Accidental* a)   { _accidental = a;    }
+      //cc
+      // Q_INVOKABLE Ms::Accidental* accidental() const    {return _accidental; } 
+      Q_INVOKABLE Ms::Accidental* accidental() const; 
+      void setAccidental(Accidental* a)   { _accidental = a;    } 
+      // void setAccidental(Accidental* a); 
 
       Accidental::Type accidentalType() const { return _accidental ? _accidental->accidentalType() : Accidental::Type::NONE; }
       void setAccidentalType(Accidental::Type type);
@@ -435,9 +441,6 @@ class Note : public Element {
       virtual QString screenReaderInfo() override;
       virtual QString accessibleExtraInfo() override;
       };
-
-// extern const SymId noteHeads[2][int(NoteHead::Group::HEAD_GROUPS)][int(NoteHead::Type::HEAD_TYPES)];
-
 
 }     // namespace Ms
 

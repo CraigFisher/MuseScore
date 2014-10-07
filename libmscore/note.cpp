@@ -55,6 +55,7 @@
 #include "spanner.h"
 #include "glissando.h"
 #include "bagpembell.h"
+#include "notationrules.h" //cc
 
 namespace Ms {
 
@@ -143,7 +144,7 @@ static const char* noteHeadNames[] = {
 
 SymId Note::noteHead(int direction, NoteHead::Group g, NoteHead::Type t)
       {
-      return noteHeads[direction][int(g)][int(t)];
+      return noteHeads[direction][int(g)][int(t)]; 
       };
 
 //---------------------------------------------------------
@@ -218,11 +219,14 @@ Note::Note(Score* s)
       _dots[2]           = 0;
       _playEvents.append(NoteEvent());    // add default play event
       _mark             = 0;
+
+      _altAccidental     = new Accidental(score()); //cc
       }
 
 Note::~Note()
       {
       delete _accidental;
+      delete _altAccidental; //cc
       qDeleteAll(_el);
       delete _tieFor;
       delete _dots[0];
@@ -259,8 +263,16 @@ Note::Note(const Note& n, bool link)
       _userDotPosition   = n._userDotPosition;
       _accidental        = 0;
 
-      if (n._accidental)
-            add(new Accidental(*(n._accidental)));
+      //cc
+      // if (n._accidental) {
+      //      add(new Accidental(*(n._accidental)));
+      if (n._accidental) {
+            if(notationRules() && notationRules()->noAccidentals()) {
+                  add(new Accidental(score()));
+            } else {
+                  add(new Accidental(*(n._accidental)));
+            }
+      }
 
       // types in _el: SYMBOL, IMAGE, FINGERING, TEXT, BEND
       for (Element* e : n._el) {
@@ -287,6 +299,8 @@ Note::Note(const Note& n, bool link)
             }
       _lineOffset = n._lineOffset;
       _mark      = n._mark;
+          
+      _altAccidental     = new Accidental(score()); //cc
       }
 
 //---------------------------------------------------------
@@ -463,7 +477,14 @@ SymId Note::noteHead() const
       if (_headType != NoteHead::Type::HEAD_AUTO)
             ht = _headType;
 
-      SymId t = noteHead(up, _headGroup, ht);
+      //cc
+      SymId t;
+      if(notationRules()) {
+            t = noteHead(up, notationRules()->noteHeads()->at(_tpc[0]), ht);
+      } else {      
+            t = noteHead(up, _headGroup, ht);
+      }
+
       if (t == SymId::noSym) {
             qDebug("invalid note head %hhd/%hhd", _headGroup, ht);
             t = noteHead(up, NoteHead::Group::HEAD_NORMAL, ht);
@@ -899,7 +920,7 @@ void Note::read(XmlReader& e)
             else if (tag == "veloType")
                   setProperty(P_ID::VELO_TYPE, Ms::getProperty(P_ID::VELO_TYPE, e));
             else if (tag == "line")
-                  _line = e.readInt();
+                 _line = e.readInt();
             else if (tag == "Tie") {
                   _tieFor = new Tie(score());
                   _tieFor->setTrack(track());
@@ -1680,7 +1701,7 @@ void Note::layout10(AccidentalState* as)
                   }
             }
       else {
-            int relLine = absStep(tpc(), epitch());
+            int relLine = absStep(tpc(), epitch(), notationRules()); //cc
 
             // calculate accidental
 
@@ -1695,7 +1716,7 @@ void Note::layout10(AccidentalState* as)
 //not true:                     qDebug("note at %d has wrong tpc: %d, expected %d, acci %d", chord()->tick(), tpc(), ntpc, acci);
 //                              setColor(QColor(255, 0, 0));
 //                             setTpc(ntpc);
-                              relLine = absStep(tpc(), epitch());
+                              relLine = absStep(tpc(), epitch(), notationRules()); //cc
                               }
                         }
                   else if (acci > Accidental::Type::NATURAL) {
@@ -1743,6 +1764,16 @@ NoteType Note::noteType() const
       {
       return chord()->noteType();
       }
+
+//cc
+Q_INVOKABLE Ms::Accidental* Note::accidental() const {
+     if(notationRules() && notationRules()->noAccidentals()) {
+           return _altAccidental;
+     } else {
+            return _accidental;
+     }
+}
+
 
 //---------------------------------------------------------
 //   noteTypeUserName
@@ -1794,7 +1825,7 @@ QPointF Note::canvasPos() const
       }
 
 //---------------------------------------------------------
-//   scanElements
+//   scanElement
 //---------------------------------------------------------
 
 void Note::scanElements(void* data, void (*func)(void*, Element*), bool all)
@@ -1809,9 +1840,8 @@ void Note::scanElements(void* data, void (*func)(void*, Element*), bool all)
             }
       for (Spanner* sp : _spannerFor)
             sp->scanElements(data, func, all);
-
-      if (!dragMode && _accidental)
-            func(data, _accidental);
+      if (!dragMode && accidental()/*//cc_temp VERY BAD PRACTICE*/)
+            func(data, accidental()/*//cc_temp VERY BAD PRACTICE*/);
       if (chord()) {
             for (int i = 0; i < chord()->dots(); ++i) {
                   if (_dots[i])
@@ -1876,10 +1906,6 @@ void Note::setSmall(bool val)
       _small = val;
       }
 
-//---------------------------------------------------------
-//   setLine
-//---------------------------------------------------------
-
 void Note::setAccidentalType(Accidental::Type type)
       {
       if (_score)
@@ -1893,6 +1919,7 @@ void Note::setAccidentalType(Accidental::Type type)
 void Note::setLine(int n)
       {
       _line = n;
+
       int off = 0;
       if (staff())
             off = staff()->staffType()->stepOffset();
@@ -1978,7 +2005,7 @@ void Note::endEdit()
 
 void Note::updateAccidental(AccidentalState* as)
       {
-      int relLine = absStep(tpc(), epitch());
+      int relLine = absStep(tpc(), epitch(), notationRules()); //cc
 
       // don't touch accidentals that don't concern tpc such as
       // quarter tones
@@ -2073,7 +2100,7 @@ void Note::updateRelLine(int relLine, bool undoable)
 
 void Note::updateLine()
       {
-      int relLine = absStep(tpc(), epitch());
+      int relLine = absStep(tpc(), epitch(), notationRules()); //cc
       updateRelLine(relLine, false);
       }
 
@@ -2146,12 +2173,14 @@ QVariant Note::getProperty(P_ID propertyId) const
             case P_ID::PLAY:
                   return play();
             case P_ID::LINE:
-                  return _line;
+                 return line();
             default:
                   break;
             }
       return Element::getProperty(propertyId);
       }
+
+
 
 //---------------------------------------------------------
 //   setProperty

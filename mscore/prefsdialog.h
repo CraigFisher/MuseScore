@@ -81,6 +81,8 @@ class PreferenceDialog : public QDialog, private Ui::PrefsDialogBase {
       
       void updateTranslationClicked();
 
+      void altNotationFileButtonClicked(); //cc
+
    signals:
       void preferencesChanged();
 

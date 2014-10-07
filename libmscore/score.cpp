@@ -1199,11 +1199,12 @@ bool Score::getPosition(Position* pos, const QPointF& p, int voice) const
                   pos->line = s->lines() - 1;
             }
       else {
-            int minLine   = absStep(0);
+            NotationRules* notation = s->notationRules(); //cc
+            int minLine   = absStep(0, notation);             //cc
             ClefType clef = s->clef(pos->segment->tick());
-            minLine       = relStep(minLine, clef);
-            int maxLine   = absStep(127);
-            maxLine       = relStep(maxLine, clef);
+            minLine       = relStep(minLine, clef, notation); //cc
+            int maxLine   = absStep(127, notation);           //cc
+            maxLine       = relStep(maxLine, clef, notation); //cc
 
             if (pos->line > minLine || pos->line < maxLine)
                   return false;

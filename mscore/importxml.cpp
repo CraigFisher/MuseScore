@@ -2354,7 +2354,7 @@ Measure* MusicXml::xmlMeasure(Part* part, QDomElement e, int number, Fraction me
                          int i = courtAccNotes.indexOf(nt);
                          if(i > -1){
                                int alter = alterList.value(i);
-                               int ln  = absStep(nt->tpc(), nt->pitch());
+                               int ln  = absStep(nt->tpc(), nt->pitch(), nt->notationRules()); //cc
                                AccidentalVal currAccVal = currAcc.accidentalVal(ln);
                                if ((alter == -1 && currAccVal == AccidentalVal::FLAT && nt->accidental()->accidentalType() == Accidental::Type::FLAT    && !accTmp.value(ln))
                                      || (alter ==  0 && currAccVal == AccidentalVal::NATURAL && nt->accidental()->accidentalType() == Accidental::Type::NATURAL && !accTmp.value(ln))
@@ -5293,7 +5293,7 @@ Note* MusicXml::xmlNote(Measure* measure, int staff, const QString& partId, Beam
                   ClefType clef = cr->staff()->clef(loc_tick);
                   int po = ClefInfo::pitchOffset(clef);
                   int pitch = MusicXMLStepAltOct2Pitch(step[0].toLatin1(), 0, octave);
-                  int line = po - absStep(pitch);
+                  int line = po - absStep(pitch, cr->notationRules()); //cc
 
                   // correct for number of staff lines
                   // see ExportMusicXml::unpitch2xml for explanation

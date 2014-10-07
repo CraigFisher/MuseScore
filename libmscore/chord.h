@@ -20,6 +20,8 @@
 
 #include <functional>
 #include "chordrest.h"
+#include "mscore/preferences.h" //cc
+#include <vector>        //cc
 
 class QPainter;
 

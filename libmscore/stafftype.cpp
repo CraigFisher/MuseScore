@@ -15,6 +15,7 @@
 #include "xml.h"
 #include "mscore.h"
 #include "chord.h"
+#include "notationrules.h" //cc
 
 #define TAB_DEFAULT_LINE_SP   (1.5)
 #define TAB_RESTSYMBDISPL     2.0
@@ -50,12 +51,12 @@ StaffType::StaffType()
       }
 
 StaffType::StaffType(StaffGroup sg, const QString& xml, const QString& name, int lines, qreal lineDist, bool genClef,
-   bool showBarLines, bool stemless, bool genTimeSig, bool genKeySig, bool showLedgerLines) :
+   bool showBarLines, bool stemless, bool genTimeSig, bool genKeySig, bool showLedgerLines, NotationRules* notation) : //cc
    _group(sg), _xmlName(xml), _name(name), _lineDistance(Spatium(lineDist)), _genClef(genClef),
    _showBarlines(showBarLines), _slashStyle(stemless), _genTimesig(genTimeSig),
    _genKeysig(genKeySig), _showLedgerLines(showLedgerLines)
       {
-      setLines(lines);
+      setLines(lines, notation); //cc
       }
 
 StaffType::StaffType(StaffGroup sg, const QString& xml, const QString& name, int lines, qreal lineDist, bool genClef,
@@ -63,12 +64,12 @@ StaffType::StaffType(StaffGroup sg, const QString& xml, const QString& name, int
    const QString& durFontName, qreal durFontSize, qreal durFontUserY, qreal genDur,
    const QString& fretFontName, qreal fretFontSize, qreal fretFontUserY,
    bool linesThrough, TablatureMinimStyle minimStyle, bool onLines, bool showRests,
-   bool stemsDown, bool stemThrough, bool upsideDown, bool useNumbers)
+   bool stemsDown, bool stemThrough, bool upsideDown, bool useNumbers, NotationRules* notation) //cc
       {
       _group   = sg;
       _xmlName = xml;
       _name    = name;
-      setLines(lines);
+      setLines(lines, notation); //cc
       setLineDistance(Spatium(lineDist));
       setGenClef(genClef);
       setShowBarlines(showBarLines);
@@ -138,14 +139,14 @@ bool StaffType::operator==(const StaffType& st) const
 
 bool StaffType::isSameStructure(const StaffType& st) const
       {
-      if (st.group()         != group()                     // common to all type groups
-         || st._lines        != _lines
-         || st._stepOffset   != _stepOffset
-         || st._lineDistance != _lineDistance
-         || st._genClef      != _genClef
-         || st._showBarlines != _showBarlines
-         || st._slashStyle   != _slashStyle
-         || st._genTimesig   != _genTimesig)
+      if (st.group()          != group()                     // common to all type groups
+         || st._lines.count() != _lines.count() //cc
+         || st._stepOffset    != _stepOffset
+         || st._lineDistance  != _lineDistance
+         || st._genClef       != _genClef
+         || st._showBarlines  != _showBarlines
+         || st._slashStyle    != _slashStyle
+         || st._genTimesig    != _genTimesig)
             return false;
 
       if (_group != StaffGroup::TAB) {                      // common to pitched and percussion
@@ -166,16 +167,28 @@ bool StaffType::isSameStructure(const StaffType& st) const
                ;
             }
       }
+      
+int LineCount::count() const {
+      return _useTraditional ? _traditionalLines : _alternativeLines;
+      }
 
 //---------------------------------------------------------
 //   setLines
 //---------------------------------------------------------
 
-void StaffType::setLines(int val)
+void StaffType::setLines(int val, NotationRules* alternateNotation)
       {
-      _lines = val;
+      if (alternateNotation) {
+            _lines.useTraditional(false);
+            _lines.setAlternative(val);
+            }
+      else {
+            _lines.useTraditional(true);
+            _lines.setTraditional(val);
+            }
+            
       if (_group != StaffGroup::TAB) {
-            switch(_lines) {
+            switch(_lines.count()) {
                   case 1:
                         _stepOffset = 0;
                         break;
@@ -201,8 +214,9 @@ void StaffType::write(Xml& xml) const
       xml.stag(QString("StaffType group=\"%1\"").arg(fileGroupNames[(int)_group]));
       if (!_xmlName.isEmpty())
             xml.tag("name", _xmlName);
-      if (_lines != 5)
-            xml.tag("lines", _lines);
+      if (_lines._traditionalLines != 5) {
+            xml.tag("lines", _lines._traditionalLines);
+      }
       if (_lineDistance.val() != 1.0)
             xml.tag("lineDistance", _lineDistance.val());
       if (!_genClef)

@@ -15,6 +15,7 @@
 
 #include "mscore.h"
 #include "interval.h"
+#include "notationrules.h"
 
 namespace Ms {
 
@@ -72,12 +73,12 @@ extern Segment* prevSeg1(Segment* seg, int& track);
 extern Note* searchTieNote(Note* note);
 extern Note* searchTieNote114(Note* note);
 
-extern int absStep(int pitch);
-extern int absStep(int tpc, int pitch);
+extern int absStep(int pitch, NotationRules* notation);
+extern int absStep(int tpc, int pitch, NotationRules* notation);
 
-extern int absStep(int line, ClefType clef);
-extern int relStep(int line, ClefType clef);
-extern int relStep(int pitch, int tpc, ClefType clef);
+extern int absStep(int line, ClefType clef, NotationRules* notation);
+extern int relStep(int line, ClefType clef, NotationRules* notation);
+extern int relStep(int pitch, int tpc, ClefType clef, NotationRules* notation);
 extern int pitch2step(int pitch);
 extern int step2pitch(int step);
 

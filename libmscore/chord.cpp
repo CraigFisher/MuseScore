@@ -51,6 +51,7 @@
 #include "sym.h"
 #include "stringdata.h"
 #include "beam.h"
+#include "notationrules.h" //cc
 
 namespace Ms {
 
@@ -662,13 +663,13 @@ void Chord::createLedgerLines(int track, vector<LedgerLineData>& vecLines, bool 
             _ledgerLines = h;
             }
       }
-
+    
 //---------------------------------------------------------
 //   addLedgerLines
 //---------------------------------------------------------
 
 void Chord::addLedgerLines(int move)
-      {
+      {          
       LedgerLineData    lld;
       qreal _spatium = spatium();
       int   idx   = staffIdx() + move;
@@ -683,7 +684,7 @@ void Chord::addLedgerLines(int move)
       qreal x;
       // the extra length of a ledger line with respect to note head (half of it on each side)
       qreal extraLen = score()->styleS(StyleIdx::ledgerLineLength).val() * _spatium * 0.5;
-
+      
       // scan chord notes, collecting visibility and x and y extrema
       // NOTE: notes are sorted from bottom to top (line no. decreasing)
       // notes are scanned twice from outside (bottom or top) toward the staff
@@ -707,12 +708,16 @@ void Chord::addLedgerLines(int move)
                   const Note* note = _notes.at(i);
 
                   int l = note->line();
-                  if ( (!j && l < lineBelow) || // if 1st pass and note not below staff
-                       (j && l >= 0) )          // or 2nd pass and note not above staff
-                        break;                  // stop this pass
-                  // round line number to even number toward 0
-                  if (l < 0)        l = (l+1) & ~ 1;
-                  else              l = l & ~ 1;
+                  if (!notationRules()) { //cc
+                        if ( (!j && l < lineBelow) || // if 1st pass and note not below staff
+                             (j && l >= 0) )          // or 2nd pass and note not above staff
+                             break;                  // stop this pass
+                        // round line number to even number toward 0
+                        if (l < 0)
+                              l = (l+1) & ~ 1;
+                        else  
+                              l = l & ~ 1;
+                       }
 
                   if (note->visible())          // if one note is visible,
                         visible = true;         // all lines between it and the staff are visible
@@ -746,6 +751,23 @@ void Chord::addLedgerLines(int move)
                                     d.maxX = maxX;
                         }
 
+                  //cc
+                  if (notationRules()) {
+                        const std::map<int, std::vector<int>*>* ledgerMap = staff()->alternateNotation()->innerLedgers();
+                        
+                        if(ledgerMap->find(l) != ledgerMap->end()) {
+                              const vector<int>* ledgers = ledgerMap->at(l);
+                              for (vector<int>::const_iterator itr = ledgers->begin(); itr != ledgers->end(); itr++) {
+                                    lld.line = *itr;
+                                    lld.minX = minX;
+                                    lld.maxX = maxX;
+                                    lld.visible = visible;
+                                    lld.accidental = false;
+                                    vecLines.push_back(lld);                                    
+                                    }
+                              }
+                        }
+                
                   // check if note vert. pos. is outside current range
                   // and, in case, add data for new line(s)
                   if (l < minLine) {
@@ -771,9 +793,9 @@ void Chord::addLedgerLines(int move)
                         maxLine = l;
                         }
                   }
-            if (minLine < 0 || maxLine > lineBelow)
+            if (minLine < 0 || maxLine > lineBelow || notationRules()) //cc
                   createLedgerLines(track, vecLines, !staff()->invisible());
-            }
+                  }
 
             return;                       // no ledger lines for this chord
 
@@ -1573,6 +1595,7 @@ void Chord::layout2()
                         if (found)
                               break;
                         }
+//                break; cc_temp_temp
                   }
             }
       }

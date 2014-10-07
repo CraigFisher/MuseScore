@@ -25,6 +25,7 @@
 #include "keylist.h"
 #include "stafftype.h"
 #include "groups.h"
+#include "notationrules.h"
 
 namespace Ms {
 
@@ -124,6 +125,8 @@ class Staff : public QObject {
 
       VeloList _velocities;         ///< cached value
       PitchList _pitchOffsets;      ///< cached value
+      
+      NotationRules* _notation; //cc
 
    public:
       Staff(Score* = 0);
@@ -238,6 +241,10 @@ class Staff : public QObject {
       void setColor(const QColor& val)    { _color = val;    }
       void undoSetColor(const QColor& val);
       void insertTime(int tick, int len);
+      
+      //cc
+      void setNotation(NotationRules*); //TODO: guard access, possibly make friend
+      NotationRules* notationRules() const { return _notation; }
       };
 
 }     // namespace Ms

@@ -100,6 +100,9 @@
 #include "qmlplugin.h"
 #include "accessibletoolbutton.h"
 
+#include "libmscore/notationrules.h" //cc
+#include "notationpanel.h"           //cc
+
 #ifdef AEOLUS
 extern Ms::Synthesizer* createAeolus();
 #endif
@@ -353,6 +356,68 @@ void MuseScore::preferencesChanged()
                         }
                   }
             }
+          
+          
+            /* The following code is temporary and will be moved once Notation Dialog is set up.
+               Also, the eventual Notation Dialog will check for actual changes before performing 
+               these updates */
+      //cc
+      if (preferences.useAltNotationFile && !preferences.altNotationFile.isEmpty()) {
+            QFile f(preferences.altNotationFile);
+            try {
+                  activeNotation = new NotationRules(&f);
+                  }
+            catch (QString error) {
+                  QString msg = "Cannot read file: " + error;
+                  QMessageBox::warning(0, QObject::tr("MuseScore: Load Error"), msg);
+                  delete activeNotation;
+                  activeNotation = NULL;
+                  }
+            }
+            
+      //cc TODO: THIS NEEDS TO BE OPTIMIZED
+      foreach (Score* score, scoreList) {
+            foreach (Score* innerScore, score->scoreList()) {
+                  foreach (Staff* staff, innerScore->staves()) {
+                        if (staff && staff->staffType()->group() == StaffGroup::STANDARD)
+                              staff->setNotation(activeNotation);
+                        else
+                              staff->setNotation(NULL);
+                        }
+                  innerScore->updateNotes();
+                  innerScore->setUpdateAll();
+                  innerScore->doLayout();
+                  }
+            }
+//cc
+//            if (f.open(QIODevice::ReadOnly))
+//                  activeNotation = new NotationRules(&f);
+//                  result = NotationRules::load(&f);
+//            else
+//                  result = NotationRules::FileError::FILE_ERROR;
+//            if (result != NotationRules::FileError::NO_ERROR) {
+//                  QString msg = "Cannot read file: ";
+//                  switch (result) {
+//                        case NotationRules::FileError::FILE_ERROR :
+//                              msg += "failed to open."; break;
+//                        case NotationRules::FileError::BAD_FORMAT :
+//                              msg += "improperly formated."; break;
+//                        case NotationRules::FileError::TOO_OLD :
+//                              msg += "outdated.\nThis version of the AltNotation Project now "
+//                                    "uses a newer file format."; break;
+//                        case NotationRules::FileError::TOO_NEW :
+//                              msg += "\nThis file requires a newer version of the AltNotation project."; break;
+//                        default :
+//                              break;
+//                        }
+//                 NotationRules::reset();
+//                 QMessageBox::warning(0, QObject::tr("MuseScore: Load Error"), msg);
+//                 }
+//            }
+//      else {
+//            NotationRules::reset();
+//            }
+      //cc
 
       transportTools->setEnabled(!noSeq);
       playId->setEnabled(!noSeq);
@@ -418,6 +483,9 @@ MuseScore::MuseScore()
 
       loadScoreDialog       = 0;
       saveScoreDialog       = 0;
+      loadNotationDialog    = 0; //cc
+      saveNotationDialog    = 0; //cc
+      notationPanel         = 0; //cc
       loadStyleDialog       = 0;
       saveStyleDialog       = 0;
       saveImageDialog       = 0;
@@ -901,6 +969,12 @@ MuseScore::MuseScore()
       a = getAction("toggle-mixer");
       a->setCheckable(true);
       menuView->addAction(a);
+      
+      //cc
+      notationId = getAction("notation-panel");
+      notationId->setCheckable(true);
+      notationId->setEnabled(true);
+      menuView->addAction(notationId);
 
       a = getAction("synth-control");
       a->setCheckable(true);
@@ -4152,6 +4226,9 @@ void MuseScore::cmd(QAction* a, const QString& cmd)
             showMixer(a->isChecked());
       else if (cmd == "synth-control")
             showSynthControl(a->isChecked());
+      //cc
+      else if (cmd == "notation-panel")
+            showNotationPanel(a->isChecked());
       else if (cmd == "toggle-selection-window")
             showSelectionWindow(a->isChecked());
       else if (cmd == "show-keys")
@@ -4826,7 +4903,7 @@ int main(int argc, char* av[])
 
       if (!useFactorySettings)
             preferences.read();
-
+          
       preferences.readDefaultStyle();
 
       if (converterDpi == 0)

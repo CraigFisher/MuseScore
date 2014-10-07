@@ -83,6 +83,7 @@
 #include "noteline.h"
 #include "bagpembell.h"
 #include "ambitus.h"
+#include "notationrules.h" //cc
 
 namespace Ms {
 
@@ -467,6 +468,17 @@ Staff* Element::staff() const
             return 0;
 
       return score()->staff(staffIdx());
+      }
+      
+
+//cc
+//---------------------------------------------------------
+//   notationRules
+//---------------------------------------------------------
+
+NotationRules* Element::notationRules() const
+      {
+      return staff() ? staff()->notationRules() : 0;
       }
 
 //---------------------------------------------------------
@@ -931,8 +943,17 @@ void StaffLines::layout()
       {
       StaffType* st = staff() ? staff()->staffType() : 0;
       qreal _spatium = spatium();
+
       if (st) {
             dist  = st->lineDistance().val() * _spatium;
+            
+            //cc TODO: check if this noticeably speeds up code
+            if(notationRules()) {
+                  _altStaffLines = true;
+                  }
+            else {
+                  _altStaffLines = false;
+                  }
             lines = st->lines();
             }
       else {
@@ -951,7 +972,7 @@ void StaffLines::layout()
 //---------------------------------------------------------
 //   draw
 //---------------------------------------------------------
-
+    
 void StaffLines::draw(QPainter* painter) const
       {
       QPointF _pos(0.0, 0.0);
@@ -959,12 +980,31 @@ void StaffLines::draw(QPainter* painter) const
       qreal x1 = _pos.x();
       qreal x2 = x1 + width();
 
-      QVector<QLineF> ll(lines);
+      QVector<QLineF> ll;
       qreal y = _pos.y();
-      for (int i = 0; i < lines; ++i) {
-            ll[i].setLine(x1, y, x2, y);
-            y += dist;
+
+      //cc TODO: check if using '_altStaffLines' noticeably speeds up code
+      if(_altStaffLines) {
+          qreal halfDist = dist / 2; //use a smaller increment for stafflines
+          const std::vector<bool>* staffLines = notationRules()->staffLines();
+          int length = staffLines->size();
+          ll.resize(length);
+          
+          for (int i = 0; i < length; ++i) {
+                if(staffLines->at(i)) {
+                   ll[i].setLine(x1, y, x2, y);
+                   }
+                y += halfDist;
+                }
             }
+      else {
+          ll.resize(lines);
+          for (int i = 0; i < lines; ++i) {
+               ll[i].setLine(x1, y, x2, y);
+               y += dist;
+               }
+          }
+          
       if (MScore::debugMode) {
             painter->setPen(QPen(Qt::lightGray, lw, Qt::SolidLine, Qt::FlatCap));
             y = _pos.y() - 3 * dist;
@@ -1049,7 +1089,13 @@ void Line::layout()
       qreal sp = spatium();
       qreal w  = _width.val() * sp;
       qreal l  = _len.val() * sp;
-      qreal w2 = w * .5;
+      qreal w2 = w * .5; //cc check to make sure this is correct
+       
+//      qreal w2 = w * .5;
+         //cc
+       w2 = w * .5 * 10;
+
+          
       if (vertical)
             bbox().setRect(-w2, -w2, w, l + w);
       else

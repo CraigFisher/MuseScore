@@ -87,6 +87,8 @@ class MasterSynthesizer;
 class Driver;
 class Seq;
 class ImportMidiPanel;
+class NotationPanel; //cc
+class NotationRules;
 
 struct PluginDescription;
 enum class SelState : char;
@@ -235,6 +237,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       MagBox* mag;
       QComboBox* viewModeCombo;
       QAction* playId;
+      QAction* notationId; //cc
 
       QProgressBar* _progressBar;
       PreferenceDialog* preferenceDialog;
@@ -272,6 +275,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       Debugger* debugger;
       MeasureListEditor* measureListEdit;
       PageSettings* pageSettings;
+      NotationPanel* notationPanel; //cc
 
       QWidget* symbolDialog;
 
@@ -310,12 +314,15 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       QString rev;
 
       int _midiRecordId;
+      NotationRules* activeNotation; //cc
 
       bool _fullscreen;
       QList<LanguageItem> _languages;
 
       QFileDialog* loadScoreDialog;
       QFileDialog* saveScoreDialog;
+      QFileDialog* loadNotationDialog; //cc
+      QFileDialog* saveNotationDialog; //cc
       QFileDialog* loadStyleDialog;
       QFileDialog* saveStyleDialog;
       QFileDialog* saveImageDialog;
@@ -387,6 +394,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       void showNavigator(bool);
       void showMixer(bool);
       void showSynthControl(bool);
+      void showNotationPanel(bool); //cc
       void showSelectionWindow(bool);
       void showSearchDialog();
       void helpBrowser(const QUrl&) const;
@@ -556,6 +564,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
 
       QStringList getOpenScoreNames(QString& dir, const QString& filter, const QString& title);
       QString getSaveScoreName(const QString& title, QString& name, const QString& filter, bool folder = false);
+      QString getNotationFilename(bool open);
       QString getStyleFilename(bool open, const QString& title = QString());
       QString getFotoFilename(QString& filter, QString *selectedFilter);
       QString getChordStyleFilename(bool open);

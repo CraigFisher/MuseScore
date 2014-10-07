@@ -24,6 +24,7 @@ class Chord;
 class ChordRest;
 class Staff;
 class Xml;
+class LineCount; //cc
 
 // all in spatium units
 #define STAFFTYPE_TAB_DEFAULTSTEMLEN_UP   3.0
@@ -137,7 +138,7 @@ class StaffType {
       QString _xmlName;                   // the name used to reference this preset in intruments.xml
       QString _name;                      // user visible name
 
-      int _lines            = 5;
+      LineCount _lines      = LineCount(5);
       int _stepOffset       = 0;
       Spatium _lineDistance = Spatium(1);
 
@@ -200,17 +201,17 @@ class StaffType {
       static const QString fileGroupNames[STAFF_GROUP_MAX];                               // used in .msc? files
 
    public:
-      StaffType();
+      StaffType(); //cc TODO: possibly force constructor to accept notation
       StaffType(StaffGroup sg, const QString& xml, const QString& name, int lines, qreal lineDist, bool genClef,
-            bool showBarLines, bool stemless, bool genTimeSig, bool genKeySig, bool showLedgerLines);
+            bool showBarLines, bool stemless, bool genTimeSig, bool genKeySig, bool showLedgerLines, NotationRules* notation);
 
       StaffType(StaffGroup sg, const QString& xml, const QString& name, int lines, qreal lineDist, bool genClef,
                   bool showBarLines, bool stemless, bool genTimesig,
                   const QString& durFontName, qreal durFontSize, qreal durFontUserY, qreal genDur,
                   const QString& fretFontName, qreal fretFontSize, qreal fretFontUserY,
                   bool linesThrough, TablatureMinimStyle minimStyle, bool onLines, bool showRests,
-                  bool stemsDown, bool stemThrough, bool upsideDown, bool useNumbers);
-
+                  bool stemsDown, bool stemThrough, bool upsideDown, bool useNumbers, NotationRules* notation);
+ 
       virtual ~StaffType() {}
       bool operator==(const StaffType&) const;
       bool isSameStructure(const StaffType&) const;
@@ -223,8 +224,9 @@ class StaffType {
       const char* groupName() const;
       static const char* groupName(StaffGroup);
 
-      void setLines(int val);
-      int lines() const                        { return _lines;           }
+      void setLines(int val, NotationRules* notation); //cc
+      int lines() const                        { return _lines.count();           }
+
       void setStepOffset(int v)                { _stepOffset = v;         }
       int stepOffset() const                   { return _stepOffset;      }
       void setLineDistance(const Spatium& val) { _lineDistance = val;     }
@@ -323,6 +325,41 @@ class StaffType {
       static void initStaffTypes();
       static const std::vector<StaffType>& presets() { return _presets; }
       };
+      
+//cc
+//---------------------------------------------------------
+//   LineCount
+//    Encapsulates "number of staff lines" in a StaffType object.
+//
+//    Allows both a traditional count and an alternative count
+//    of the lines.  The method "count()" will return either
+//    traditionalLines or alternativeLines based on how
+//    _useTraditional is set.
+//
+//    StaffType::write(Xml& e) is friend-ed so that it may use only
+//    traditional lines when writing to XML.
+//---------------------------------------------------------
+      
+      TODO: DELETE THIS?
+      
+class LineCount {
+      int  _traditionalLines;
+      int  _alternativeLines;
+      bool _useTraditional;
+      
+   public:
+      LineCount(int val) : _traditionalLines(val), _alternativeLines(val),
+                           _useTraditional(true) {};
+      int  count() const;
+//      int getTraditional() const;
+//      int getAlternative() const;
+
+      void useTraditional(bool);
+      void setTraditional(int);
+      void setAlternative(int);
+      
+      friend void StaffType::write(Xml& e) const;
+};
 
 //---------------------------------------------------------
 //   TabDurationSymbol

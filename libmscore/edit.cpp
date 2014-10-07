@@ -680,7 +680,7 @@ void Score::addPitch(int step, bool addFlag)
       pos.segment   = inputState().segment();
       pos.staffIdx  = inputState().track() / VOICES;
       ClefType clef = staff(pos.staffIdx)->clef(pos.segment->tick());
-      pos.line      = relStep(step, clef);
+      pos.line      = relStep(step, clef, selection().element()->notationRules()); //cc
 
       if (addFlag) {
             Element* el = selection().element();
@@ -1052,7 +1052,7 @@ void Score::repitchNote(const Position& p, bool replace)
 
       NoteVal nval;
       AccidentalVal acci = s->measure()->findAccidental(s, p.staffIdx, p.line);
-      int step   = absStep(p.line, clef);
+      int step   = absStep(p.line, clef, st->notationRules()); //cc
       int octave = step / 7;
       nval.pitch = step2pitch(step) + octave * 12 + int(acci);
 

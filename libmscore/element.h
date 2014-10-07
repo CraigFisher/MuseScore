@@ -37,6 +37,7 @@ class MuseScoreView;
 class Segment;
 class TextStyle;
 class Element;
+class NotationRules;
 enum class SymId;
 
 
@@ -434,6 +435,7 @@ class Element : public QObject {
       int voice() const                       { return _track & 3;         }
       void setVoice(int v)                    { _track = (_track / VOICES) + v; }
       Staff* staff() const;
+      NotationRules* notationRules() const; //cc
 
       virtual void add(Element*);
       virtual void remove(Element*);
@@ -608,6 +610,7 @@ class StaffLines : public Element {
       qreal dist;
       qreal lw;
       int lines;
+      bool _altStaffLines = false; //cc used for faster checks in the StaffLines::draw function
 
    public:
       StaffLines(Score*);
