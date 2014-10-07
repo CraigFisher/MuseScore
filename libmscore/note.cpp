@@ -2085,7 +2085,7 @@ void Note::updateRelLine(int relLine, bool undoable)
 
       Staff* s = score()->staff(staffIdx() + chord()->staffMove());
       ClefType clef = s->clef(chord()->tick());
-      int line = relStep(relLine, clef);
+      int line = relStep(relLine, clef, staff()->notationRules());
       if (line != _line) {
             if (undoable)
                   undoChangeProperty(P_ID::LINE, line);

@@ -60,7 +60,7 @@ NotationRules::NotationRules(QFile* f) {
                               readStaffLines(e);
                               }
                         else if (tag == "NoAccidentals") {
-                              noAccidentals = e.readBool();
+                              _noAccidentals = e.readBool();
                               }
                         else if (tag == "InnerLedgers") {
                               readInnerLedgers(e);
