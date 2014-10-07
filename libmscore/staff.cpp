@@ -161,6 +161,10 @@ Staff::Staff(Score* s)
       {
       _score     = s;
       _barLineTo = (lines()-1)*2;
+      
+//cc_temp VERY TEMPORARY
+_notation = 0;
+      
       }
 
 //---------------------------------------------------------

@@ -365,30 +365,32 @@ void MuseScore::preferencesChanged()
       if (preferences.useAltNotationFile && !preferences.altNotationFile.isEmpty()) {
             QFile f(preferences.altNotationFile);
             try {
-                  activeNotation = new NotationRules(&f);
+//                  activeNotation = new NotationRules(&f);
                   }
             catch (QString error) {
                   QString msg = "Cannot read file: " + error;
                   QMessageBox::warning(0, QObject::tr("MuseScore: Load Error"), msg);
-                  delete activeNotation;
-                  activeNotation = NULL;
+//                  delete activeNotation;
+//                  activeNotation = NULL;
                   }
             }
             
-      //cc TODO: THIS NEEDS TO BE OPTIMIZED
-      foreach (Score* score, scoreList) {
-            foreach (Score* innerScore, score->scoreList()) {
-                  foreach (Staff* staff, innerScore->staves()) {
-                        if (staff && staff->staffType()->group() == StaffGroup::STANDARD)
-                              staff->setNotation(activeNotation);
-                        else
-                              staff->setNotation(NULL);
-                        }
-                  innerScore->updateNotes();
-                  innerScore->setUpdateAll();
-                  innerScore->doLayout();
-                  }
-            }
+//      //cc TODO: THIS NEEDS TO BE OPTIMIZED
+//      foreach (Score* score, scoreList) {
+//            foreach (Score* innerScore, score->scoreList()) {
+//                  foreach (Staff* staff, innerScore->staves()) {
+//                        if (staff && staff->staffType()->group() == StaffGroup::STANDARD) {
+////                              staff->setNotation(0);
+//                              }
+////                        else {
+////                              staff->setNotation(NULL);
+////                              }
+//                        }
+//                  innerScore->updateNotes();
+//                  innerScore->setUpdateAll();
+//                  innerScore->doLayout();
+//                  }
+//            }
 //cc
 //            if (f.open(QIODevice::ReadOnly))
 //                  activeNotation = new NotationRules(&f);

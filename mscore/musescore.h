@@ -314,7 +314,6 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       QString rev;
 
       int _midiRecordId;
-      NotationRules* activeNotation; //cc
 
       bool _fullscreen;
       QList<LanguageItem> _languages;
