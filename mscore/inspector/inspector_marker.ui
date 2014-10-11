@@ -151,7 +151,7 @@
        </item>
        <item>
         <property name="text">
-         <string>Custom</string>
+         <string>User Defined</string>
         </property>
        </item>
       </widget>
