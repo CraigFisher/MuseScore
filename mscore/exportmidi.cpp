@@ -36,7 +36,6 @@ void ExportMidi::writeHeader()
       MidiTrack &track  = mf.tracks().front();
 #if 0 // TODO
       MeasureBase* measure  = cs->first();
-
       foreach (const Element* e, *measure->el()) {
             if (e->type() == Element::TEXT) {
                   const Text* text = (const Text*)(e);
@@ -48,7 +47,6 @@ void ExportMidi::writeHeader()
                   ev.setOntime(0);
                   ev.setData(data);
                   ev.setLen(len);
-
                   switch (text->subtype()) {
                         case TEXT_TITLE:
                               ev.setMetaType(META_TITLE);
