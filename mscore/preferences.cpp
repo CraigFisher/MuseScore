@@ -42,7 +42,7 @@
 #include "fluid/fluid.h"
 #include "pathlistdialog.h"
 #include "mstyle/mconfig.h"
-#include "libmscore/notationrules.h"
+#include "libmscore/notemappings.h"
 #include "resourceManager.h"
 
 namespace Ms {

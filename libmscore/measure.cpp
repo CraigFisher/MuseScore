@@ -389,7 +389,7 @@ AccidentalVal Measure::findAccidental(Note* note) const
                               // compute accidental
                               //
                               int tpc  = note1->tpc();
-                              int line = absStep(tpc, note1->pitch(), staff->notationRules()); //cc
+                              int line = absStep(tpc, note1->pitch(), staff->noteMappings()); //cc
 
                               if (note == note1)
                                     return tversatz.accidentalVal(line);
@@ -403,7 +403,7 @@ AccidentalVal Measure::findAccidental(Note* note) const
                         // compute accidental
                         //
                         int tpc  = note1->tpc();
-                        int line = absStep(tpc, note1->pitch(), staff->notationRules()); //cc
+                        int line = absStep(tpc, note1->pitch(), staff->noteMappings()); //cc
 
                         if (note == note1)
                               return tversatz.accidentalVal(line);
@@ -433,7 +433,7 @@ AccidentalVal Measure::findAccidental(Segment* s, int staffIdx, int line) const
       for (Segment* segment = first(st); segment; segment = segment->next(st)) {
             if (segment == s) {
                   ClefType clef = staff->clef(s->tick());
-                  int l = relStep(line, clef, staff->notationRules()); //cc
+                  int l = relStep(line, clef, staff->noteMappings()); //cc
                   return tversatz.accidentalVal(l);
                   }
             for (int track = startTrack; track < endTrack; ++track) {
@@ -446,7 +446,7 @@ AccidentalVal Measure::findAccidental(Segment* s, int staffIdx, int line) const
                               if (note->tieBack())
                                     continue;
                               int tpc  = note->tpc();
-                              int l    = absStep(tpc, note->pitch(), staff->notationRules()); //cc
+                              int l    = absStep(tpc, note->pitch(), staff->noteMappings()); //cc
                               tversatz.setAccidentalVal(l, tpc2alter(tpc));
                               }
                         }
@@ -455,7 +455,7 @@ AccidentalVal Measure::findAccidental(Segment* s, int staffIdx, int line) const
                         if (note->tieBack())
                               continue;
                         int tpc    = note->tpc();
-                        int l      = absStep(tpc, note->pitch(), staff->notationRules()); //cc
+                        int l      = absStep(tpc, note->pitch(), staff->noteMappings()); //cc
                         tversatz.setAccidentalVal(l, tpc2alter(tpc));
                         }
                   }

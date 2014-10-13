@@ -538,7 +538,7 @@ void EditStaffType::loadPresets()
 /*
 void EditStaffType::loadFromTemplateClicked()
       {
-      StaffTypeTemplates stt(staffType);
+      StaffTypeTemplatesOld stt(staffType);
       if (stt.exec()) {
             StaffType* st = stt.staffType();
             staffType = *st;
@@ -566,10 +566,10 @@ void EditStaffType::addToTemplatesClicked()
       }
 
 //---------------------------------------------------------
-//   StaffTypeTemplates
+//   StaffTypeTemplatesOld
 //---------------------------------------------------------
 /*
-StaffTypeTemplates::StaffTypeTemplates(const StaffType& st, QWidget* parent)
+StaffTypeTemplatesOld::StaffTypeTemplatesOld(const StaffType& st, QWidget* parent)
    : QDialog(parent)
       {
       setupUi(this);
@@ -593,7 +593,7 @@ StaffTypeTemplates::StaffTypeTemplates(const StaffType& st, QWidget* parent)
 //   staffType
 //---------------------------------------------------------
 /*
-StaffType* StaffTypeTemplates::staffType() const
+StaffType* StaffTypeTemplatesOld::staffType() const
       {
       return (StaffType*)staffTypeList->currentItem()->data(Qt::UserRole).value<void*>();
       }

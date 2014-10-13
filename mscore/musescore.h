@@ -87,8 +87,8 @@ class MasterSynthesizer;
 class Driver;
 class Seq;
 class ImportMidiPanel;
-class NotationPanel; //cc
-class NotationRules;
+class StaffTypeTemplates; //cc
+class NoteMappings;
 
 struct PluginDescription;
 enum class SelState : char;
@@ -275,7 +275,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       Debugger* debugger;
       MeasureListEditor* measureListEdit;
       PageSettings* pageSettings;
-      NotationPanel* notationPanel; //cc
+      StaffTypeTemplates* staffTypeTemplates; //cc
 
       QWidget* symbolDialog;
 
@@ -393,7 +393,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       void showNavigator(bool);
       void showMixer(bool);
       void showSynthControl(bool);
-      void showNotationPanel(bool); //cc
+      void showStaffTypeTemplates(bool); //cc
       void showSelectionWindow(bool);
       void showSearchDialog();
       void helpBrowser(const QUrl&) const;

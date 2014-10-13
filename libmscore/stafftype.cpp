@@ -21,6 +21,8 @@
 
 namespace Ms {
 
+extern bool useFactorySettings;
+
 //---------------------------------------------------------
 //   StaffTypeTablature
 //---------------------------------------------------------
@@ -91,6 +93,13 @@ StaffType::StaffType(StaffGroup sg, const QString& xml, const QString& name, int
       setUseNumbers(useNumbers);
       }
 
+StaffType::~StaffType() {
+      std::map<qreal, std::vector<qreal>*>::iterator itr = _innerLedgers.begin();
+      while(itr != _innerLedgers.end()) {
+            delete itr->second;
+            itr++;
+            }
+      }
 
 //---------------------------------------------------------
 //   groupName
@@ -136,6 +145,8 @@ bool StaffType::operator==(const StaffType& st) const
 //    same as operator==, but ignores names and fonts
 //---------------------------------------------------------
 
+//cc TODO: possibly append new members here
+
 bool StaffType::isSameStructure(const StaffType& st) const
       {
       if (st.group()         != group()                     // common to all type groups
@@ -167,6 +178,15 @@ bool StaffType::isSameStructure(const StaffType& st) const
             }
       }
 
+//-----------------------------------------------------//cc
+//   setLines
+//---------------------------------------------------------
+      
+void StaffType::setAlternativeStaffLines(std::vector<qreal>& positions, int staffHeight) {
+      _alternativeStaffLines = positions;
+      _lines = staffHeight;
+      }
+
 //---------------------------------------------------------
 //   setLines
 //---------------------------------------------------------
@@ -174,6 +194,7 @@ bool StaffType::isSameStructure(const StaffType& st) const
 void StaffType::setLines(int val)
       {
       _lines = val;
+      
       if (_group != StaffGroup::TAB) {
             switch(_lines) {
                   case 1:
@@ -219,6 +240,15 @@ void StaffType::write(Xml& xml) const
             if (!_showLedgerLines)
                   xml.tag("ledgerlines", _showLedgerLines);
             }
+            if (_useInnerLedgers) {
+                  writeInnerLedgers(xml);
+                  }
+            if (_useAlternateNoteMappings) {
+                  _alternateNoteMappings.write(xml);
+                  }
+            if (_useAlternateStaffLines) {
+                  writeStaffLines(xml);
+                  }
       else {
             xml.tag("durations",        _genDurations);
             xml.tag("durationFontName", _durationFonts[_durationFontIdx].displayName);
@@ -307,9 +337,101 @@ void StaffType::read(XmlReader& e)
                   setUpsideDown(e.readBool());
             else if (tag == "useNumbers")
                   setUseNumbers(e.readBool());
+            else if (tag == "innerLedgers")
+                  readInnerLedgers(e);            //cc
+            else if (tag == "staffLines")
+                  readStaffLines(e);              //cc
+            else if (tag == "noteMappings")
+                  _alternateNoteMappings.read(e); //cc
             else
                   e.unknown();
             }
+      }
+
+//-----------------------------------------------------//cc
+//   writeInnerLedgers
+//---------------------------------------------------------
+
+void StaffType::writeInnerLedgers(Xml& xml) const
+      {
+      xml.stag(QString("innerLedgers"));
+      
+      std::map<qreal, std::vector<qreal>*>::const_iterator lineItr = _innerLedgers.begin();
+      
+      while (lineItr != _innerLedgers.end()) {
+            QString lineVal = QString::number(lineItr->first,'f', 1);
+            xml.stag(QString("note line=\"%1\"").arg(lineVal));
+            
+            const std::vector<qreal>* ledgers = lineItr->second;
+            std::vector<qreal>::const_iterator ledgerItr = ledgers->begin();
+            while (ledgerItr != ledgers->end()) {
+                  xml.tag("ledger", *ledgerItr);
+                  ledgerItr++;
+                  }
+            
+            lineItr++;
+            xml.etag();
+            }
+            
+      xml.etag();
+      
+      }
+
+//-----------------------------------------------------//cc
+//   readInnerLedgers
+//---------------------------------------------------------
+
+void StaffType::readInnerLedgers(XmlReader& e)
+      {
+      while (e.readNextStartElement()) {
+            if (e.name().toString() == "note") {
+                  qreal noteLine = e.intAttribute("line");
+                  std::vector<qreal> *ledgers = new std::vector<qreal>(); //ledger lines associated with note
+                  while (e.readNextStartElement()) {
+                        ledgers->push_back(e.readInt());
+                        }
+                  if (!(ledgers->empty())) { //only add noteLine to map if ledgers exist for it
+                        _innerLedgers[noteLine] = ledgers;
+                        }
+                  else {
+                        delete ledgers;
+                        }
+                  }
+            }
+      }
+
+//-----------------------------------------------------//cc
+//   writeStaffLines
+//---------------------------------------------------------
+
+void StaffType::writeStaffLines(Xml& xml) const
+      {
+      xml.stag(QString("staffLines"));
+      std::vector<qreal>::const_iterator itr = _alternativeStaffLines.begin();
+      while (itr != _alternativeStaffLines.end()) {
+            xml.tag("line", *itr);
+            }
+      xml.etag();
+      }
+
+//-----------------------------------------------------//cc
+//   readStaffLines
+//---------------------------------------------------------
+
+void StaffType::readStaffLines(XmlReader& e)
+      {
+      qreal cur = 0.0;
+      qreal max = 0.0;
+      while (e.readNextStartElement()) {
+            if (e.name().toString() == "line") {
+                  cur = e.readInt();
+                  if (cur >= max)
+                        max = cur;
+                  _alternativeStaffLines.push_back(cur);
+                  }
+            }
+      int staffHeight = (int) (max + 0.5); //round max up to the nearest int
+      setLines(staffHeight);
       }
 
 //---------------------------------------------------------
@@ -995,6 +1117,43 @@ const StaffType* StaffType::getDefaultPreset(StaffGroup grp)
       {
       int _idx = _defaultPreset[int(grp)];
       return &_presets[_idx];
+      }
+
+//cc
+std::list<StaffType> StaffType::_userTemplates;
+const int StaffType::STAFFTYPE_TEMPLATE_LIST_SIZE;
+
+//-----------------------------------------------------//cc
+//   initUserTemplates
+//---------------------------------------------------------
+
+void StaffType::initUserTemplates()
+      {
+      QSettings settings;
+      for (int i = StaffType::STAFFTYPE_TEMPLATE_LIST_SIZE-1; i >= 0; --i) {
+            QString path = settings.value(QString("user-stafftypes-%1").arg(i),"").toString();
+            if (!path.isEmpty() && QFileInfo(path).exists()) {
+                  StaffType* st = new StaffType();
+                  try {
+                        QFile f(path);
+                        if (!f.open(QIODevice::ReadOnly))
+                              throw QObject::tr("file failed to open");
+                        XmlReader xml(&f);
+                        st->read(xml);
+                        }
+                  catch (QString error) {
+                        delete st;
+                        settings.remove(QString("user-stafftypes-%1").arg(i));
+                        QMessageBox::warning(0, QObject::tr("MuseScore: Load Error"),
+                                                QObject::tr("Error loading StaffType Template \"%1\": %2.\n"
+                                                            "This template will no longer be included.").arg(path).arg(error));
+                        continue;
+                        }
+                  st->setFileName(path);
+                  _userTemplates.push_back(*st); //TODO: Possibly convert _userTemplates into a list of
+                                                 //      pointers instead (and then just push st).
+                  }
+            }
       }
 
 //---------------------------------------------------------

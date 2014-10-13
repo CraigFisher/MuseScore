@@ -17,6 +17,8 @@
 #include "spatium.h"
 #include "mscore.h"
 #include "durationtype.h"
+#include <list>
+#include "notemappings.h" //cc
 
 namespace Ms {
 
@@ -137,7 +139,7 @@ class StaffType {
       QString _xmlName;                   // the name used to reference this preset in intruments.xml
       QString _name;                      // user visible name
 
-      int _lines            = 5;
+      int _lines            = 5;   //cc TODO: MAKE THIS REPRESENT "LINES HEIGHT" INSTEAD
       int _stepOffset       = 0;
       Spatium _lineDistance = Spatium(1);
 
@@ -147,6 +149,16 @@ class StaffType {
       bool _genTimesig      = true;       // whether time signature is shown or not
       bool _genKeysig       = true;       // create key signature at beginning of system
       bool _showLedgerLines = true;
+      
+      //cc
+      bool _useInnerLedgers = false;           // whether to allow ledger lines between the top and bottom line of a staff
+      bool _useAlternateNoteMappings = false;  // whether notes should have non-traditional positions or shapes
+      bool _useAlternateStaffLines = false; // whether to allow non-traditional positionings of stafflines
+      
+      //cc
+      NoteMappings _alternateNoteMappings;
+      std::map<qreal, std::vector<qreal>*> _innerLedgers;
+      std::vector<qreal> _alternativeStaffLines;
 
       // configurable properties
       qreal _durationFontSize = 15.0;     // the size (in points) for the duration symbol font
@@ -187,10 +199,14 @@ class StaffType {
       bool  _fretMetricsValid = false;    // whether fret font metrics are valid or not
       qreal _refDPI = 0.0;                // reference value used to last compute metrics and to see if they are still valid
 
+      QFileInfo _fileInfo;                     //cc file info, if this is a template
+
       // the array of configured fonts
       static QList<TablatureFretFont> _fretFonts;
       static QList<TablatureDurationFont> _durationFonts;
       static std::vector<StaffType> _presets;
+      
+      static std::list<StaffType> _userTemplates; //cc
 
       void  setDurationMetrics();
       void  setFretMetrics();
@@ -211,7 +227,7 @@ class StaffType {
                   bool linesThrough, TablatureMinimStyle minimStyle, bool onLines, bool showRests,
                   bool stemsDown, bool stemThrough, bool upsideDown, bool useNumbers);
 
-      virtual ~StaffType() {}
+      virtual ~StaffType();
       bool operator==(const StaffType&) const;
       bool isSameStructure(const StaffType&) const;
 
@@ -236,6 +252,12 @@ class StaffType {
 
       void write(Xml& xml) const;
       void read(XmlReader&);
+      
+      //cc
+      void writeInnerLedgers(Xml& xml) const;
+      void readInnerLedgers(XmlReader&);
+      void writeStaffLines(Xml&) const;
+      void readStaffLines(XmlReader&);
 
       void setSlashStyle(bool val)             { _slashStyle = val;       }
       bool slashStyle() const                  { return _slashStyle;      }
@@ -243,6 +265,16 @@ class StaffType {
       void setGenTimesig(bool val)             { _genTimesig = val;       }
       qreal doty1() const;
       qreal doty2() const;
+      
+      //cc
+      bool useInnerLedgers() { return _useInnerLedgers; }
+      bool useAlternateNoteMappings() { return _useAlternateNoteMappings; }
+      bool useAlternateStaffLines() { return _useAlternateStaffLines; }
+
+      void setNoteMappings(NoteMappings mappings) { _alternateNoteMappings = mappings; }
+      const NoteMappings* noteMappings() { return &_alternateNoteMappings; }
+      void setAlternativeStaffLines(std::vector<qreal>&, int);
+      const std::vector<qreal>* alternativeStaffLines() { return &_alternativeStaffLines; }
 
       // static function to deal with presets
       static const StaffType* getDefaultPreset(StaffGroup grp);
@@ -321,7 +353,16 @@ class StaffType {
       static bool fontData(bool bDuration, int nIdx, QString *pFamily, QString *pDisplayName, qreal * pSize, qreal *pYOff);
 
       static void initStaffTypes();
+      static void initUserTemplates(); //cc
       static const std::vector<StaffType>& presets() { return _presets; }
+
+      //cc
+      //functions for staffType templates
+      const QFileInfo* fileInfo() const { return &_fileInfo; }
+      void setFileName(QString s) { _fileInfo.setFile(s); }
+      static const int STAFFTYPE_TEMPLATE_LIST_SIZE = 30;  //TODO: find out reasonable limit (if limit should exist at all)
+      static const std::list<StaffType>& userTemplates() { return _userTemplates; }
+      static void addTemplate(StaffType& t) { _userTemplates.push_back(t); }
       };
 
 //---------------------------------------------------------

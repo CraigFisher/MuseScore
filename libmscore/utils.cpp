@@ -25,7 +25,7 @@
 #include "note.h"
 #include "chord.h"
 #include "key.h"
-#include "notationrules.h" //cc
+#include "notemappings.h" //cc
 
 namespace Ms {
 
@@ -757,7 +757,7 @@ Note* searchTieNote114(Note* note)
 ///   C D E F G A B ....
 //---------------------------------------------------------
 
-int absStep(int tpc, int pitch, NotationRules* altNotation)
+int absStep(int tpc, int pitch, NoteMappings* altNotation)
       {
       int line;
       //cc
@@ -779,14 +779,14 @@ int absStep(int tpc, int pitch, NotationRules* altNotation)
       return line;
       }
 
-int absStep(int pitch, NotationRules* altNotation)
+int absStep(int pitch, NoteMappings* altNotation)
       {
       // TODO - does this need to be key-aware?
       int tpc = pitch2tpc(pitch, Key::C, Prefer::NEAREST);
       return absStep(tpc, pitch, altNotation);
       }
 
-int absStep(int line, ClefType clef, NotationRules* altNotation)
+int absStep(int line, ClefType clef, NoteMappings* altNotation)
       {
       if (altNotation) //cc
             return altNotation->clefOffsets()->at(clef) - line;
@@ -801,7 +801,7 @@ int absStep(int line, ClefType clef, NotationRules* altNotation)
 ///   first (top) staff line.
 //---------------------------------------------------------
 
-int relStep(int line, ClefType clef, NotationRules* altNotation)
+int relStep(int line, ClefType clef, NoteMappings* altNotation)
       {
       if (altNotation) //cc
             return altNotation->clefOffsets()->at(clef) - line;
@@ -809,7 +809,7 @@ int relStep(int line, ClefType clef, NotationRules* altNotation)
             return ClefInfo::pitchOffset(clef) - line;
       }
 
-int relStep(int pitch, int tpc, ClefType clef, NotationRules* altNotation)
+int relStep(int pitch, int tpc, ClefType clef, NoteMappings* altNotation)
       {
       return relStep(absStep(tpc, pitch, altNotation), clef, altNotation);
       }

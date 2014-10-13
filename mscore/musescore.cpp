@@ -100,8 +100,8 @@
 #include "qmlplugin.h"
 #include "accessibletoolbutton.h"
 
-#include "libmscore/notationrules.h" //cc
-#include "notationpanel.h"           //cc
+#include "libmscore/notemappings.h" //cc
+#include "stafftypetemplates.h"           //cc
 
 #ifdef AEOLUS
 extern Ms::Synthesizer* createAeolus();
@@ -262,9 +262,10 @@ void MuseScore::closeEvent(QCloseEvent* ev)
 
       // save score list
       QSettings settings;
-      for (int i = 0; i < RECENT_LIST_SIZE; ++i)
+      for (int i = 0; i < RECENT_LIST_SIZE; ++i) {
             settings.setValue(QString("recent-%1").arg(i), recentScores.value(i));
-
+      }
+      
       settings.setValue("scores", scoreList.size());
       int curScore = scoreList.indexOf(cs);
       if (curScore == -1)  // cs removed if new created and not modified
@@ -365,7 +366,7 @@ void MuseScore::preferencesChanged()
       if (preferences.useAltNotationFile && !preferences.altNotationFile.isEmpty()) {
             QFile f(preferences.altNotationFile);
             try {
-//                  activeNotation = new NotationRules(&f);
+//                  activeNotation = new NoteMappings(&f);
                   }
             catch (QString error) {
                   QString msg = "Cannot read file: " + error;
@@ -393,31 +394,31 @@ void MuseScore::preferencesChanged()
 //            }
 //cc
 //            if (f.open(QIODevice::ReadOnly))
-//                  activeNotation = new NotationRules(&f);
-//                  result = NotationRules::load(&f);
+//                  activeNotation = new NoteMappings(&f);
+//                  result = NoteMappings::load(&f);
 //            else
-//                  result = NotationRules::FileError::FILE_ERROR;
-//            if (result != NotationRules::FileError::NO_ERROR) {
+//                  result = NoteMappings::FileError::FILE_ERROR;
+//            if (result != NoteMappings::FileError::NO_ERROR) {
 //                  QString msg = "Cannot read file: ";
 //                  switch (result) {
-//                        case NotationRules::FileError::FILE_ERROR :
+//                        case NoteMappings::FileError::FILE_ERROR :
 //                              msg += "failed to open."; break;
-//                        case NotationRules::FileError::BAD_FORMAT :
+//                        case NoteMappings::FileError::BAD_FORMAT :
 //                              msg += "improperly formated."; break;
-//                        case NotationRules::FileError::TOO_OLD :
+//                        case NoteMappings::FileError::TOO_OLD :
 //                              msg += "outdated.\nThis version of the AltNotation Project now "
 //                                    "uses a newer file format."; break;
-//                        case NotationRules::FileError::TOO_NEW :
+//                        case NoteMappings::FileError::TOO_NEW :
 //                              msg += "\nThis file requires a newer version of the AltNotation project."; break;
 //                        default :
 //                              break;
 //                        }
-//                 NotationRules::reset();
+//                 NoteMappings::reset();
 //                 QMessageBox::warning(0, QObject::tr("MuseScore: Load Error"), msg);
 //                 }
 //            }
 //      else {
-//            NotationRules::reset();
+//            NoteMappings::reset();
 //            }
       //cc
 
@@ -487,7 +488,7 @@ MuseScore::MuseScore()
       saveScoreDialog       = 0;
       loadNotationDialog    = 0; //cc
       saveNotationDialog    = 0; //cc
-      notationPanel         = 0; //cc
+      staffTypeTemplates         = 0; //cc
       loadStyleDialog       = 0;
       saveStyleDialog       = 0;
       saveImageDialog       = 0;
@@ -4230,7 +4231,7 @@ void MuseScore::cmd(QAction* a, const QString& cmd)
             showSynthControl(a->isChecked());
       //cc
       else if (cmd == "notation-panel")
-            showNotationPanel(a->isChecked());
+            showStaffTypeTemplates(a->isChecked());
       else if (cmd == "toggle-selection-window")
             showSelectionWindow(a->isChecked());
       else if (cmd == "show-keys")

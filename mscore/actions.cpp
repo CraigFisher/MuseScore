@@ -2139,7 +2139,7 @@ Shortcut Shortcut::sc[] = {
         0,
         "notation-panel",
         Qt::ApplicationShortcut,
-        QT_TRANSLATE_NOOP("action","Notation Panel")
+        QT_TRANSLATE_NOOP("action","Staff Templates")
         ),
       Shortcut(
          MsWidget::MAIN_WINDOW,

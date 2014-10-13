@@ -1,7 +1,7 @@
-<Notation version="2">
-	<NotePositions>
-		<OctaveDistance>7</OctaveDistance>
-		<ClefOffsets>
+<NoteMappings version="3">
+	<notePositions>
+		<octaveDistance>7</octaveDistance>
+		<clefOffsets>
 			<G>45</G>
 			<G8va>52</G8va>
 			<G15ma>59</G15ma>
@@ -23,8 +23,8 @@
 			<F15ma>47</F15ma>
 			<PERC2>45</PERC2> <!-- should not be necessary:  -->
 			<TAB2>0</TAB2> <!-- should not be necessary:  -->
-		</ClefOffsets>
-		<Mappings>
+		</clefOffsets>
+		<mappings>
 			<_0 name="Cbb">-1</_0>
 			<_7 name="Cb">0</_7>
 			<_14 name="C">0</_14>
@@ -66,10 +66,10 @@
 			<_19 name="B">6</_19>
 			<_26 name="B#">7</_26>
 			<_33 name="B##">7</_33>
-		</Mappings>
-	</NotePositions>
+		</mappings>
+	</notePositions>
 
-	<NoteHeads>
+	<noteHeads>
 		<_0 name="Cbb">CROSS</_0>
 		<_7 name="Cb">NORMAL</_7>
 		<_14 name="C">NORMAL</_14>
@@ -111,42 +111,35 @@
 		<_19 name="B">NORMAL</_19>
 		<_26 name="B#">NORMAL</_26>
 		<_33 name="F##">TRIANGLE</_33>
-	</NoteHeads>
+	</noteHeads>
+      
+</NoteMappings>
 
-	<NoAccidentals>1</NoAccidentals>
+	<noAccidentals>1</noAccidentals>
 
-	<StaffLines>
-	    <line>solid</line>
-	    <line>hidden</line>
-	    <line>hidden</line>
-	    <line>hidden</line>
-	    <line>hidden</line>
-	    <line>hidden</line>
-	    <line>hidden</line>
-	    <line>hidden</line>
-	    <line>solid</line>   
-	</StaffLines>
+	<staffLines>
+	    <line>0</line>
+	    <line>4</line>
+	</staffLines>
 
-	<InnerLedgers>
-		<note line="2">
+	<innerLedgers>
+		<note line="1">
+			<ledger>1</ledger>
+		</note>
+		<note line="1.5">
+			<ledger>1</ledger>
 			<ledger>2</ledger>
+		</note>
+		<note line="2">
+			<ledger>1</ledger>
+			<ledger>2</ledger>
+			<ledger>3</ledger>
+		</note>
+		<note line="2.5">
+			<ledger>2</ledger>
+			<ledger>3</ledger>
 		</note>
 		<note line="3">
-			<ledger>2</ledger>
-			<ledger>4</ledger>
+			<ledger>3</ledger>
 		</note>
-		<note line="4">
-			<ledger>2</ledger>
-			<ledger>4</ledger>
-			<ledger>6</ledger>
-		</note>
-		<note line="5">
-			<ledger>4</ledger>
-			<ledger>6</ledger>
-		</note>
-		<note line="6">
-			<ledger>6</ledger>
-		</note>
-	</InnerLedgers>
-
-</Notation>
+	</innerLedgers>

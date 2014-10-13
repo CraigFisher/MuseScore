@@ -55,7 +55,7 @@
 #include "spanner.h"
 #include "glissando.h"
 #include "bagpembell.h"
-#include "notationrules.h" //cc
+#include "notemappings.h" //cc
 
 namespace Ms {
 
@@ -267,11 +267,12 @@ Note::Note(const Note& n, bool link)
       // if (n._accidental) {
       //      add(new Accidental(*(n._accidental)));
       if (n._accidental) {
-            if(notationRules() && notationRules()->noAccidentals()) {
-                  add(new Accidental(score()));
-            } else {
+      //cc_temp
+//            if(noteMappings() && noteMappings()->noAccidentals()) {
+//                  add(new Accidental(score()));
+//            } else {
                   add(new Accidental(*(n._accidental)));
-            }
+//            }
       }
 
       // types in _el: SYMBOL, IMAGE, FINGERING, TEXT, BEND
@@ -479,8 +480,8 @@ SymId Note::noteHead() const
 
       //cc
       SymId t;
-      if(notationRules()) {
-            t = noteHead(up, notationRules()->noteHeads()->at(_tpc[0]), ht);
+      if(noteMappings()) {
+            t = noteHead(up, noteMappings()->noteHeads()->at(_tpc[0]), ht);
       } else {      
             t = noteHead(up, _headGroup, ht);
       }
@@ -1701,7 +1702,7 @@ void Note::layout10(AccidentalState* as)
                   }
             }
       else {
-            int relLine = absStep(tpc(), epitch(), notationRules()); //cc
+            int relLine = absStep(tpc(), epitch(), noteMappings()); //cc
 
             // calculate accidental
 
@@ -1716,7 +1717,7 @@ void Note::layout10(AccidentalState* as)
 //not true:                     qDebug("note at %d has wrong tpc: %d, expected %d, acci %d", chord()->tick(), tpc(), ntpc, acci);
 //                              setColor(QColor(255, 0, 0));
 //                             setTpc(ntpc);
-                              relLine = absStep(tpc(), epitch(), notationRules()); //cc
+                              relLine = absStep(tpc(), epitch(), noteMappings()); //cc
                               }
                         }
                   else if (acci > Accidental::Type::NATURAL) {
@@ -1767,11 +1768,13 @@ NoteType Note::noteType() const
 
 //cc
 Q_INVOKABLE Ms::Accidental* Note::accidental() const {
-     if(notationRules() && notationRules()->noAccidentals()) {
-           return _altAccidental;
-     } else {
+
+      //cc_temp
+//     if(noteMappings() && noteMappings()->noAccidentals()) {
+//           return _altAccidental;
+//     } else {
             return _accidental;
-     }
+//     }
 }
 
 
@@ -2005,7 +2008,7 @@ void Note::endEdit()
 
 void Note::updateAccidental(AccidentalState* as)
       {
-      int relLine = absStep(tpc(), epitch(), notationRules()); //cc
+      int relLine = absStep(tpc(), epitch(), noteMappings()); //cc
 
       // don't touch accidentals that don't concern tpc such as
       // quarter tones
@@ -2085,7 +2088,7 @@ void Note::updateRelLine(int relLine, bool undoable)
 
       Staff* s = score()->staff(staffIdx() + chord()->staffMove());
       ClefType clef = s->clef(chord()->tick());
-      int line = relStep(relLine, clef, staff()->notationRules());
+      int line = relStep(relLine, clef, staff()->noteMappings());
       if (line != _line) {
             if (undoable)
                   undoChangeProperty(P_ID::LINE, line);
@@ -2100,7 +2103,7 @@ void Note::updateRelLine(int relLine, bool undoable)
 
 void Note::updateLine()
       {
-      int relLine = absStep(tpc(), epitch(), notationRules()); //cc
+      int relLine = absStep(tpc(), epitch(), noteMappings()); //cc
       updateRelLine(relLine, false);
       }
 

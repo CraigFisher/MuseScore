@@ -51,7 +51,7 @@
 #include "sym.h"
 #include "stringdata.h"
 #include "beam.h"
-#include "notationrules.h" //cc
+#include "notemappings.h" //cc
 
 namespace Ms {
 
@@ -708,7 +708,7 @@ void Chord::addLedgerLines(int move)
                   const Note* note = _notes.at(i);
 
                   int l = note->line();
-                  if (!notationRules()) { //cc
+                  if (!noteMappings()) { //cc
                         if ( (!j && l < lineBelow) || // if 1st pass and note not below staff
                              (j && l >= 0) )          // or 2nd pass and note not above staff
                              break;                  // stop this pass
@@ -752,21 +752,21 @@ void Chord::addLedgerLines(int move)
                         }
 
                   //cc
-                  if (notationRules()) {
-                        const std::map<int, std::vector<int>*>* ledgerMap = staff()->notationRules()->innerLedgers();
-                        
-                        if(ledgerMap->find(l) != ledgerMap->end()) {
-                              const vector<int>* ledgers = ledgerMap->at(l);
-                              for (vector<int>::const_iterator itr = ledgers->begin(); itr != ledgers->end(); itr++) {
-                                    lld.line = *itr;
-                                    lld.minX = minX;
-                                    lld.maxX = maxX;
-                                    lld.visible = visible;
-                                    lld.accidental = false;
-                                    vecLines.push_back(lld);                                    
-                                    }
-                              }
-                        }
+//                  if (noteMappings()) {
+//                        const std::map<int, std::vector<int>*>* ledgerMap = staff()->noteMappings()->innerLedgers();
+//                        
+//                        if(ledgerMap->find(l) != ledgerMap->end()) {
+//                              const vector<int>* ledgers = ledgerMap->at(l);
+//                              for (vector<int>::const_iterator itr = ledgers->begin(); itr != ledgers->end(); itr++) {
+//                                    lld.line = *itr;
+//                                    lld.minX = minX;
+//                                    lld.maxX = maxX;
+//                                    lld.visible = visible;
+//                                    lld.accidental = false;
+//                                    vecLines.push_back(lld);                                    
+//                                    }
+//                              }
+//                        }
                 
                   // check if note vert. pos. is outside current range
                   // and, in case, add data for new line(s)
@@ -793,7 +793,7 @@ void Chord::addLedgerLines(int move)
                         maxLine = l;
                         }
                   }
-            if (minLine < 0 || maxLine > lineBelow || notationRules()) //cc
+            if (minLine < 0 || maxLine > lineBelow || noteMappings()) //cc
                   createLedgerLines(track, vecLines, !staff()->invisible());
                   }
 

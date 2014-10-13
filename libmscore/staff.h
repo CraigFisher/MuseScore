@@ -25,7 +25,7 @@
 #include "keylist.h"
 #include "stafftype.h"
 #include "groups.h"
-#include "notationrules.h"
+#include "notemappings.h"
 
 namespace Ms {
 
@@ -126,7 +126,7 @@ class Staff : public QObject {
       VeloList _velocities;         ///< cached value
       PitchList _pitchOffsets;      ///< cached value
       
-      NotationRules* _notation; //cc
+      NoteMappings* _notation; //cc
 
    public:
       Staff(Score* = 0);
@@ -243,8 +243,8 @@ class Staff : public QObject {
       void insertTime(int tick, int len);
       
       //cc
-      void setNotation(NotationRules*); //TODO: guard access, possibly make friend
-      NotationRules* notationRules() const { return _notation; }
+      void setNotation(NoteMappings*); //TODO: guard access, possibly make friend
+      NoteMappings* noteMappings() const { return _notation; }
       };
 
 }     // namespace Ms

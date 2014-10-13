@@ -42,11 +42,11 @@ QT4_WRAP_UI (ui_headers
       instrwizard.ui timesigwizard.ui newwizard.ui aboutbox.ui aboutmusicxmlbox.ui
       transposedialog.ui lineproperties.ui excerptsdialog.ui  stafftext.ui tupletdialog.ui
       glissandoprop.ui articulation.ui metaedit.ui palette.ui select.ui
-      synthcontrol.ui splitstaff.ui cellproperties.ui keyedit.ui selectinstr.ui notationpanel.ui
+      synthcontrol.ui splitstaff.ui cellproperties.ui keyedit.ui selectinstr.ui stafftypetemplates.ui
       fretdprops.ui editstafftype.ui sectionbreak.ui  bend.ui tremolobar.ui textproperties.ui
       editpitch.ui editstringdata.ui editraster.ui mediadialog.ui textstyle.ui album.ui layer.ui
       omrpanel.ui startdialog.ui masterpalette.ui pluginManager.ui harmonyedit.ui pathlistdialog.ui
-      note_groups.ui importmidi_panel.ui resourceManager.ui stafftypetemplates.ui
+      note_groups.ui importmidi_panel.ui resourceManager.ui stafftypetemplatesold.ui
 
       debugger/barline.ui
       debugger/harmony.ui
@@ -133,7 +133,7 @@ QT4_WRAP_CPP (mocs
       excerptsdialog.h stafftextproperties.h glissandoproperties.h
       articulationprop.h metaedit.h magbox.h
       textprop.h textproperties.h tupletdialog.h
-      selectdialog.h synthcontrol.h drumroll.h pianoroll.h notationpanel.h
+      selectdialog.h synthcontrol.h drumroll.h pianoroll.h stafftypetemplates.h
       piano.h ruler.h file.h
       pianoview.h drumview.h splitstaff.h scoretab.h keyedit.h keycanvas.h harmonyedit.h
       harmonycanvas.h updatechecker.h fretproperties.h fretcanvas.h editstafftype.h
@@ -241,7 +241,7 @@ add_executable ( ${ExecutableName}
       timesigproperties.cpp newwizard.cpp transposedialog.cpp
       excerptsdialog.cpp metaedit.cpp magbox.cpp
       capella.cpp capxml.cpp exportaudio.cpp palettebox.cpp
-      textproperties.cpp synthcontrol.cpp drumroll.cpp pianoroll.cpp piano.cpp notationpanel.cpp
+      textproperties.cpp synthcontrol.cpp drumroll.cpp pianoroll.cpp piano.cpp stafftypetemplates.cpp
       pianoview.cpp drumview.cpp scoretab.cpp keyedit.cpp harmonyedit.cpp
       updatechecker.cpp importove.cpp ove.cpp ruler.cpp
       importgtp.cpp importgtp-gp4.cpp importgtp-gp5.cpp importgtp-gp6.cpp fotomode.cpp drumtools.cpp

@@ -83,7 +83,7 @@
 #include "noteline.h"
 #include "bagpembell.h"
 #include "ambitus.h"
-#include "notationrules.h" //cc
+#include "notemappings.h" //cc
 
 namespace Ms {
 
@@ -473,12 +473,12 @@ Staff* Element::staff() const
 
 //cc
 //---------------------------------------------------------
-//   notationRules
+//   noteMappings
 //---------------------------------------------------------
 
-NotationRules* Element::notationRules() const
+NoteMappings* Element::noteMappings() const
       {
-      return staff() ? staff()->notationRules() : 0;
+      return staff() ? staff()->noteMappings() : 0;
       }
 
 //---------------------------------------------------------
@@ -944,22 +944,31 @@ void StaffLines::layout()
       StaffType* st = staff() ? staff()->staffType() : 0;
       qreal _spatium = spatium();
 
-      if (st) {
-            dist  = st->lineDistance().val() * _spatium;
-            
-            //cc TODO: check if this noticeably speeds up code
-            if(notationRules()) {
-                  _altStaffLines = true;
+      bool alternative = false; //cc
+      if (st) {      
+            dist = st->lineDistance().val() * _spatium;
+            if (st->useAlternateStaffLines()) { //cc
+                  lines = st->alternativeStaffLines()->size();
+                  alternative = false;
                   }
             else {
-                  _altStaffLines = false;
+                  lines = st->lines();
                   }
-            lines = st->lines();
             }
       else {
             dist  = _spatium;
             lines = 5;
             }
+      //cc
+      if (alternative) {
+            for (int i = 0; i < lines; i++)
+                  _linePositions.push_back(dist * st->alternativeStaffLines()->at(i));
+            }
+      else {
+            for (int i = 0; i < lines; i++)
+                  _linePositions.push_back(dist * i);
+            }
+      
 
 //      qDebug("StaffLines::layout:: dist %f st %p", dist, st);
 
@@ -970,9 +979,9 @@ void StaffLines::layout()
       }
 
 //---------------------------------------------------------
-//   draw
+//   drawTraditional
 //---------------------------------------------------------
-    
+      
 void StaffLines::draw(QPainter* painter) const
       {
       QPointF _pos(0.0, 0.0);
@@ -980,31 +989,16 @@ void StaffLines::draw(QPainter* painter) const
       qreal x1 = _pos.x();
       qreal x2 = x1 + width();
 
-      QVector<QLineF> ll;
-      qreal y = _pos.y();
-
-      //cc TODO: check if using '_altStaffLines' noticeably speeds up code
-      if(_altStaffLines) {
-          qreal halfDist = dist / 2; //use a smaller increment for stafflines
-          const std::vector<bool>* staffLines = notationRules()->staffLines();
-          int length = staffLines->size();
-          ll.resize(length);
-          
-          for (int i = 0; i < length; ++i) {
-                if(staffLines->at(i)) {
-                   ll[i].setLine(x1, y, x2, y);
-                   }
-                y += halfDist;
-                }
+      QVector<QLineF> ll(lines);
+      qreal startPos = _pos.y(); //cc
+      qreal y = 0.0;
+      
+      //cc
+      for (int i = 0; i < lines; ++i) {
+            y = startPos + _linePositions[i];
+            ll[i].setLine(x1, y, x2, y);
             }
-      else {
-          ll.resize(lines);
-          for (int i = 0; i < lines; ++i) {
-               ll[i].setLine(x1, y, x2, y);
-               y += dist;
-               }
-          }
-          
+            
       if (MScore::debugMode) {
             painter->setPen(QPen(Qt::lightGray, lw, Qt::SolidLine, Qt::FlatCap));
             y = _pos.y() - 3 * dist;
@@ -1028,6 +1022,34 @@ void StaffLines::draw(QPainter* painter) const
       painter->setPen(QPen(curColor(), lw, Qt::SolidLine, Qt::FlatCap));
       painter->drawLines(ll);
       }
+      
+////cc_temp
+////---------------------------------------------------------
+////   drawCustomPositions
+////---------------------------------------------------------
+//
+//void StaffLines::drawAlternative(QPainter* painter) const
+//      {
+//      QPointF _pos(0.0, 0.0);
+//      qreal x1 = _pos.x();
+//      qreal x2 = x1 + width();
+//      qreal y = _pos.y();
+//
+//      qreal halfDist = dist / 2; //uses a smaller base increment
+//      const std::vector<bool>* staffLines = noteMappings()->staffLines();
+//      int length = staffLines->size();
+//      QVector<QLineF> ll(length);
+//      
+//      for (int i = 0; i < length; ++i) {
+//            if(staffLines->at(i)) {
+//                  ll[i].setLine(x1, y, x2, y);
+//                  }
+//            y += halfDist;
+//            }
+//      
+//      painter->setPen(QPen(curColor(), lw, Qt::SolidLine, Qt::FlatCap));
+//      painter->drawLines(ll);
+//      }
 
 //---------------------------------------------------------
 //   y1
