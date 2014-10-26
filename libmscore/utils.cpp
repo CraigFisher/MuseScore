@@ -818,7 +818,7 @@ int relStep(int pitch, int tpc, ClefType clef, NoteMappings* altNotation)
 //   pitch2step
 //---------------------------------------------------------
 
-int pitch2step(int pitch)
+int pitch2step(int pitch) //cc TODO: THIS PROBABLY NEEDS A NOTEMAPPINGS OPTIONS, CONSIDER JUST RESTRICTING ABSSTEP(), ETC. TO ASK IF USING THE FUNCTION FOR PITCH PURPOSES
       {
       static const char tab[12] = { 0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6 };
       return tab[pitch%12];
@@ -828,7 +828,7 @@ int pitch2step(int pitch)
 //   step2pitch
 //---------------------------------------------------------
 
-int step2pitch(int step)
+int step2pitch(int step) //cc TODO: THIS PROBABLY NEEDS A NOTEMAPPINGS OPTION
       {
       static const char tab[7] = { 0, 2, 4, 5, 7, 9, 11 };
       return tab[step % 7];

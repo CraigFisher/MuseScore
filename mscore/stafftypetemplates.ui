@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <widget class="QListWidget" name="staffTypeTemplates">
+  <widget class="QListWidget" name="staffTypeSelector">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -23,7 +23,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>0</x>
@@ -34,7 +34,7 @@
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_2"/>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>20</x>
@@ -74,7 +74,7 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>500</x>
@@ -92,14 +92,13 @@
      </widget>
     </item>
     <item>
-     <widget class="QPushButton" name="cancelButton">
+     <widget class="QPushButton" name="exitButton">
       <property name="text">
-       <string>Cancel</string>
+       <string>Exit</string>
       </property>
      </widget>
     </item>
    </layout>
-   <zorder>cancelButton</zorder>
   </widget>
  </widget>
  <resources/>

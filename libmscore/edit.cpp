@@ -680,7 +680,7 @@ void Score::addPitch(int step, bool addFlag)
       pos.segment   = inputState().segment();
       pos.staffIdx  = inputState().track() / VOICES;
       ClefType clef = staff(pos.staffIdx)->clef(pos.segment->tick());
-      pos.line      = relStep(step, clef, selection().element()->noteMappings()); //cc
+      pos.line      = relStep(step, clef, selection().element()->noteMappings()); //cc TODO: FIX PROBABLY GOING TO ADD WRONG PITCH
 
       if (addFlag) {
             Element* el = selection().element();
@@ -765,7 +765,7 @@ NoteVal Score::noteValForPosition(Position pos, bool &error)
                   AccidentalVal acci = s->measure()->findAccidental(s, staffIdx, line);
                   int step           = absStep(line, clef, st->noteMappings());
                   int octave         = step/7;
-                  nval.pitch         = step2pitch(step) + octave * 12 + int(acci);
+                  nval.pitch         = step2pitch(step) + octave * 12 + int(acci);  //cc TODO: FIX: IMPROVED STEP2PITCH WILL MAKE THIS ACCIDENTAL EXTRANEOUS
                   if (styleB(StyleIdx::concertPitch))
                         nval.tpc1 = step2tpc(step % 7, acci);
                   else {
@@ -1054,7 +1054,7 @@ void Score::repitchNote(const Position& p, bool replace)
       AccidentalVal acci = s->measure()->findAccidental(s, p.staffIdx, p.line);
       int step   = absStep(p.line, clef, st->noteMappings()); //cc
       int octave = step / 7;
-      nval.pitch = step2pitch(step) + octave * 12 + int(acci);
+      nval.pitch = step2pitch(step) + octave * 12 + int(acci); //cc TODO: FIX: IMPROVED STEP2PITCH WILL MAKE THIS ACCIDENTAL EXTRANEOUS
 
       if (styleB(StyleIdx::concertPitch))
             nval.tpc1 = step2tpc(step % 7, acci);

@@ -486,9 +486,9 @@ MuseScore::MuseScore()
 
       loadScoreDialog       = 0;
       saveScoreDialog       = 0;
-      loadNotationDialog    = 0; //cc
-      saveNotationDialog    = 0; //cc
-      staffTypeTemplates         = 0; //cc
+      loadStaffTypeDialog    = 0; //cc
+      saveStaffTypeDialog    = 0; //cc
+      staffTypeTemplates     = 0; //cc
       loadStyleDialog       = 0;
       saveStyleDialog       = 0;
       saveImageDialog       = 0;
@@ -974,9 +974,7 @@ MuseScore::MuseScore()
       menuView->addAction(a);
       
       //cc
-      notationId = getAction("notation-panel");
-      notationId->setCheckable(true);
-      notationId->setEnabled(true);
+      notationId = getAction("stafftype-panel");
       menuView->addAction(notationId);
 
       a = getAction("synth-control");
@@ -4230,8 +4228,11 @@ void MuseScore::cmd(QAction* a, const QString& cmd)
       else if (cmd == "synth-control")
             showSynthControl(a->isChecked());
       //cc
-      else if (cmd == "notation-panel")
-            showStaffTypeTemplates(a->isChecked());
+      else if (cmd == "stafftype-panel") {
+            StaffTypeTemplates stt(this);
+            stt.exec();
+//            showStaffTypeTemplates(a->isChecked());
+            }
       else if (cmd == "toggle-selection-window")
             showSelectionWindow(a->isChecked());
       else if (cmd == "show-keys")

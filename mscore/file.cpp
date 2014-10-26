@@ -874,25 +874,25 @@ void MuseScore::saveScoreDialogFilterSelected(const QString& s)
 
 //cc
 //---------------------------------------------------------
-//   getNotationFilename
+//   getStaffTypeFilename
 //---------------------------------------------------------
 
-QString MuseScore::getNotationFilename(bool open)
+QString MuseScore::getStaffTypeFilename(bool open)
       {
       if (preferences.nativeDialogs) {
             QString fn;
             if (open) {
                   fn = QFileDialog::getOpenFileName(
-                     this, tr("MuseScore: Load Alternative Notation"),
+                     this, tr("MuseScore: Load StaffType Template"),
                      QString(),
-                     tr("Notation File (*.xml);;" "All Files (*)")
+                     tr("StaffType Template File (*.stt);;" "All Files (*)")
                      );
                   }
             else {
                   fn = QFileDialog::getSaveFileName(
-                     this, tr("MuseScore: Save Alternative Notation"),
+                     this, tr("MuseScore: Save StaffType Template"),
                      QString(),
-                     tr("Notation File (*.xml)")
+                     tr("StaffType Template File (*.stt)")
                      );
                   }
             return fn;
@@ -907,36 +907,36 @@ QString MuseScore::getNotationFilename(bool open)
 
       if (open) {
             if (loadStyleDialog == 0) {
-                  loadNotationDialog = new QFileDialog(this);
-                  loadNotationDialog->setFileMode(QFileDialog::ExistingFile);
-                  loadNotationDialog->setOption(QFileDialog::DontUseNativeDialog, true);
-                  loadNotationDialog->setWindowTitle(tr("MuseScore: Load Notation"));
-                  loadNotationDialog->setNameFilter(tr("Notation File (*.xml)"));
-                  loadNotationDialog->setDirectory(QString());
+                  loadStaffTypeDialog = new QFileDialog(this);
+                  loadStaffTypeDialog->setFileMode(QFileDialog::ExistingFile);
+                  loadStaffTypeDialog->setOption(QFileDialog::DontUseNativeDialog, true);
+                  loadStaffTypeDialog->setWindowTitle(tr("MuseScore: Load StaffType Template"));
+                  loadStaffTypeDialog->setNameFilter(tr("StaffType File (*.stt)"));
+                  loadStaffTypeDialog->setDirectory(QString());
 
                   QSettings settings;
-                  loadNotationDialog->restoreState(settings.value("loadNotationDialog").toByteArray());
-                  loadNotationDialog->setAcceptMode(QFileDialog::AcceptOpen);
+                  loadStaffTypeDialog->restoreState(settings.value("loadStaffTypeDialog").toByteArray());
+                  loadStaffTypeDialog->setAcceptMode(QFileDialog::AcceptOpen);
                   }
             urls.append(QUrl::fromLocalFile(mscoreGlobalShare+"/styles"));
             dialog = loadStyleDialog;
             }
       else {
             if (saveStyleDialog == 0) {
-                  saveNotationDialog = new QFileDialog(this);
-                  saveNotationDialog->setAcceptMode(QFileDialog::AcceptSave);
-                  saveNotationDialog->setFileMode(QFileDialog::AnyFile);
-                  saveNotationDialog->setOption(QFileDialog::DontConfirmOverwrite, false);
-                  saveNotationDialog->setOption(QFileDialog::DontUseNativeDialog, true);
-                  saveNotationDialog->setWindowTitle(tr("MuseScore: Save Notation"));
-                  saveNotationDialog->setNameFilter(tr("Notation File (*.xml)"));
-                  saveNotationDialog->setDirectory(QString());
+                  saveStaffTypeDialog = new QFileDialog(this);
+                  saveStaffTypeDialog->setAcceptMode(QFileDialog::AcceptSave);
+                  saveStaffTypeDialog->setFileMode(QFileDialog::AnyFile);
+                  saveStaffTypeDialog->setOption(QFileDialog::DontConfirmOverwrite, false);
+                  saveStaffTypeDialog->setOption(QFileDialog::DontUseNativeDialog, true);
+                  saveStaffTypeDialog->setWindowTitle(tr("MuseScore: Save Staff Type Template"));
+                  saveStaffTypeDialog->setNameFilter(tr("StaffType Template File (*.stt)"));
+                  saveStaffTypeDialog->setDirectory(QString());
 
                   QSettings settings;
-                  saveNotationDialog->restoreState(settings.value("saveNotationDialog").toByteArray());
-                  saveNotationDialog->setAcceptMode(QFileDialog::AcceptSave);
+                  saveStaffTypeDialog->restoreState(settings.value("saveStaffTypeDialog").toByteArray());
+                  saveStaffTypeDialog->setAcceptMode(QFileDialog::AcceptSave);
                   }
-            dialog = saveNotationDialog;
+            dialog = saveStaffTypeDialog;
             }
       // setup side bar urls
       dialog->setSidebarUrls(urls);

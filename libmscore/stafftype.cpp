@@ -343,6 +343,8 @@ void StaffType::read(XmlReader& e)
                   readStaffLines(e);              //cc
             else if (tag == "noteMappings")
                   _alternateNoteMappings.read(e); //cc
+            else if (tag == "StaffType") //cc
+                  continue;
             else
                   e.unknown();
             }
@@ -1120,26 +1122,29 @@ const StaffType* StaffType::getDefaultPreset(StaffGroup grp)
       }
 
 //cc
-std::list<StaffType> StaffType::_userTemplates;
-const int StaffType::STAFFTYPE_TEMPLATE_LIST_SIZE;
+std::list<StaffTypeTemplate> StaffTypeTemplate::_userTemplates;
+const int StaffTypeTemplate::STAFFTYPE_TEMPLATE_LIST_SIZE;
 
 //-----------------------------------------------------//cc
 //   initUserTemplates
 //---------------------------------------------------------
 
-void StaffType::initUserTemplates()
+void StaffTypeTemplate::initUserTemplates()
       {
       QSettings settings;
-      for (int i = StaffType::STAFFTYPE_TEMPLATE_LIST_SIZE-1; i >= 0; --i) {
+      for (int i = STAFFTYPE_TEMPLATE_LIST_SIZE-1; i >= 0; --i) {
             QString path = settings.value(QString("user-stafftypes-%1").arg(i),"").toString();
             if (!path.isEmpty() && QFileInfo(path).exists()) {
-                  StaffType* st = new StaffType();
+                  StaffTypeTemplate* st = new StaffTypeTemplate();
                   try {
                         QFile f(path);
                         if (!f.open(QIODevice::ReadOnly))
                               throw QObject::tr("file failed to open");
                         XmlReader xml(&f);
                         st->read(xml);
+                        st->setName(st->xmlName()); //name and xml name identical for user templates
+                        st->setHasFile(true);
+                        st->setDirty(false);
                         }
                   catch (QString error) {
                         delete st;
@@ -1154,6 +1159,34 @@ void StaffType::initUserTemplates()
                                                  //      pointers instead (and then just push st).
                   }
             }
+      }
+      
+//---------------------------------------------------------
+//   updateSettings
+//---------------------------------------------------------
+      
+void StaffTypeTemplate::updateSettings() {
+      QSettings settings;
+      int i = 0;
+      for (StaffTypeTemplate& st : _userTemplates) {
+            settings.setValue(QString("user-stafftypes-%1").arg(i),
+                              st.fileInfo()->absoluteFilePath());
+            i++;
+            }
+      }
+      
+//-----------------------------------------------------//cc
+//   updateTemplate
+//---------------------------------------------------------
+
+void StaffTypeTemplate::updateTemplate(StaffTypeTemplate& stNew) {
+      std::list<StaffTypeTemplate>::iterator itr = _userTemplates.begin();
+      while (itr != _userTemplates.end()) {
+            if (itr->_fileInfo.absolutePath() == stNew._fileInfo.absolutePath()) {
+                  _userTemplates.insert(_userTemplates.erase(itr), stNew); //swap the old StaffType with the new one
+                  }
+            }
+      
       }
 
 //---------------------------------------------------------

@@ -2135,9 +2135,9 @@ Shortcut Shortcut::sc[] = {
       //cc
      Shortcut(
         MsWidget::MAIN_WINDOW,
-        STATE_NORMAL | STATE_NOTE_ENTRY | STATE_EDIT | STATE_LYRICS_EDIT,
+        STATE_NORMAL | STATE_NOTE_ENTRY | STATE_LYRICS_EDIT, //TODO: properly choose set of states
         0,
-        "notation-panel",
+        "stafftype-panel",
         Qt::ApplicationShortcut,
         QT_TRANSLATE_NOOP("action","Staff Templates")
         ),

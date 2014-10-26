@@ -23,28 +23,38 @@ class StaffTypeTemplates;
 
 namespace Ms {
 
-class StaffTypeTemplates : public QWidget, private Ui::StaffTypeTemplates {
+class StaffTypeTemplates : public QDialog, private Ui::StaffTypeTemplates {
 	Q_OBJECT
-
-      virtual void closeEvent(QCloseEvent*);
       
     public:
        StaffTypeTemplates(QWidget *parent = 0);
        ~StaffTypeTemplates();
 
     private:
-    	 Ui::StaffTypeTemplates *ui;
-       const StaffType* curStaffType;
+       Ui::StaffTypeTemplates *ui;
+      
+       std::list<StaffTypeTemplate> localTemplates; //local copy of userTemplates
+       StaffTypeTemplate* curTemplate;
+       int newTemplateNameIndex = 0;
+      
+       void getValues();
+       void markSelectorItemDirty(QString, bool);
+       StaffTypeTemplate* templateByItem(QListWidgetItem*);
+       QListWidgetItem* itemByTemplate(StaffTypeTemplate*);
 
     signals:
        void closed(bool);
 
     private slots:
-      void loadStaffType();
-      void newStaffType();
-      void removeStaffType();
-      void duplicateStaffType();
-      void saveAll();
+      void load();
+//STUB
+      void create();
+      void remove();    //STUB
+      void duplicate(); //STUB
+      bool save();
+      bool save(StaffTypeTemplate* stt);
+      void handleExitButton();
+      void handleTemplateSwitch(QListWidgetItem*);
 };
 
 }

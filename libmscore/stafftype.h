@@ -139,7 +139,7 @@ class StaffType {
       QString _xmlName;                   // the name used to reference this preset in intruments.xml
       QString _name;                      // user visible name
 
-      int _lines            = 5;   //cc TODO: MAKE THIS REPRESENT "LINES HEIGHT" INSTEAD
+      int _lines            = 5;
       int _stepOffset       = 0;
       Spatium _lineDistance = Spatium(1);
 
@@ -199,14 +199,10 @@ class StaffType {
       bool  _fretMetricsValid = false;    // whether fret font metrics are valid or not
       qreal _refDPI = 0.0;                // reference value used to last compute metrics and to see if they are still valid
 
-      QFileInfo _fileInfo;                     //cc file info, if this is a template
-
       // the array of configured fonts
       static QList<TablatureFretFont> _fretFonts;
       static QList<TablatureDurationFont> _durationFonts;
       static std::vector<StaffType> _presets;
-      
-      static std::list<StaffType> _userTemplates; //cc
 
       void  setDurationMetrics();
       void  setFretMetrics();
@@ -271,10 +267,13 @@ class StaffType {
       bool useAlternateNoteMappings() { return _useAlternateNoteMappings; }
       bool useAlternateStaffLines() { return _useAlternateStaffLines; }
 
-      void setNoteMappings(NoteMappings mappings) { _alternateNoteMappings = mappings; }
-      const NoteMappings* noteMappings() { return &_alternateNoteMappings; }
+      //cc
       void setAlternativeStaffLines(std::vector<qreal>&, int);
       const std::vector<qreal>* alternativeStaffLines() { return &_alternativeStaffLines; }
+      void setInnerLedgers(std::map<qreal, std::vector<qreal>*> inners) { _innerLedgers = inners; }
+      const std::map<qreal, std::vector<qreal>*>* innerLedgers() { return &_innerLedgers; }
+      void setNoteMappings(NoteMappings mappings) { _alternateNoteMappings = mappings; }
+      const NoteMappings* noteMappings() { return &_alternateNoteMappings; }
 
       // static function to deal with presets
       static const StaffType* getDefaultPreset(StaffGroup grp);
@@ -353,16 +352,40 @@ class StaffType {
       static bool fontData(bool bDuration, int nIdx, QString *pFamily, QString *pDisplayName, qreal * pSize, qreal *pYOff);
 
       static void initStaffTypes();
-      static void initUserTemplates(); //cc
       static const std::vector<StaffType>& presets() { return _presets; }
 
-      //cc
-      //functions for staffType templates
-      const QFileInfo* fileInfo() const { return &_fileInfo; }
+      };
+      
+//-----------------------------------------------------//cc
+//   StaffTypeTemplate
+//     StaffTypes that the user can create, edit, and save
+//---------------------------------------------------------
+
+class StaffTypeTemplate : public StaffType {
+
+      QFileInfo _fileInfo;
+      bool _hasFile;
+      bool _dirty;
+      
+      StaffTypeTemplate() {}
       void setFileName(QString s) { _fileInfo.setFile(s); }
+      const QFileInfo* fileInfo() const { return &_fileInfo; }
+      void setDirty(bool v) { _dirty = v; }
+      void setHasFile(bool v) { _hasFile = v; }
+      
+      static std::list<StaffTypeTemplate> _userTemplates;
       static const int STAFFTYPE_TEMPLATE_LIST_SIZE = 30;  //TODO: find out reasonable limit (if limit should exist at all)
-      static const std::list<StaffType>& userTemplates() { return _userTemplates; }
-      static void addTemplate(StaffType& t) { _userTemplates.push_back(t); }
+      static void updateTemplate(StaffTypeTemplate& t);
+      static void addTemplate(StaffTypeTemplate& t) { _userTemplates.push_back(t); }
+      
+      friend class StaffTypeTemplates;
+      
+    public:
+      bool hasFile() { return _hasFile; } //TODO: MAKE PRIVATE?
+      bool dirty() { return _dirty; }
+      static const std::list<StaffTypeTemplate>& userTemplates() { return _userTemplates; }
+      static void initUserTemplates();
+      static void updateSettings();
       };
 
 //---------------------------------------------------------

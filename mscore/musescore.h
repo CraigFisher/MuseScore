@@ -320,8 +320,8 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
 
       QFileDialog* loadScoreDialog;
       QFileDialog* saveScoreDialog;
-      QFileDialog* loadNotationDialog; //cc
-      QFileDialog* saveNotationDialog; //cc
+      QFileDialog* loadStaffTypeDialog; //cc
+      QFileDialog* saveStaffTypeDialog; //cc
       QFileDialog* loadStyleDialog;
       QFileDialog* saveStyleDialog;
       QFileDialog* saveImageDialog;
@@ -563,7 +563,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
 
       QStringList getOpenScoreNames(QString& dir, const QString& filter, const QString& title);
       QString getSaveScoreName(const QString& title, QString& name, const QString& filter, bool folder = false);
-      QString getNotationFilename(bool open);
+      QString getStaffTypeFilename(bool open); //cc
       QString getStyleFilename(bool open, const QString& title = QString());
       QString getFotoFilename(QString& filter, QString *selectedFilter);
       QString getChordStyleFilename(bool open);

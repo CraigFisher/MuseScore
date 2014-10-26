@@ -960,15 +960,14 @@ void StaffLines::layout()
             lines = 5;
             }
       //cc
-      if (alternative) {
-            for (int i = 0; i < lines; i++)
-                  _linePositions.push_back(dist * st->alternativeStaffLines()->at(i));
+      for (int i = 0; i < lines; i++) {
+            int nextDistance;
+            if (alternative)
+                  nextDistance = st->alternativeStaffLines()->at(i);
+            else
+                  nextDistance = i;
+            _linePositions.push_back(dist * nextDistance);
             }
-      else {
-            for (int i = 0; i < lines; i++)
-                  _linePositions.push_back(dist * i);
-            }
-      
 
 //      qDebug("StaffLines::layout:: dist %f st %p", dist, st);
 
@@ -988,13 +987,13 @@ void StaffLines::draw(QPainter* painter) const
 
       qreal x1 = _pos.x();
       qreal x2 = x1 + width();
-
-      QVector<QLineF> ll(lines);
       qreal startPos = _pos.y(); //cc
       qreal y = 0.0;
       
       //cc
-      for (int i = 0; i < lines; ++i) {
+      int size = _linePositions.size();
+      QVector<QLineF> ll(size);      
+      for (int i = 0; i < size; ++i) {
             y = startPos + _linePositions[i];
             ll[i].setLine(x1, y, x2, y);
             }

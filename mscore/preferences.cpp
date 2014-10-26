@@ -685,7 +685,9 @@ PreferenceDialog::PreferenceDialog(QWidget* parent)
       connect(useJackAudio, SIGNAL(toggled(bool)), SLOT(nonExclusiveJackDriver(bool)));
       connect(useJackMidi,  SIGNAL(toggled(bool)), SLOT(nonExclusiveJackDriver(bool)));
 
-      connect(altNotationFileButton, SIGNAL(clicked()), SLOT(altNotationFileButtonClicked())); //cc
+//cc_temp
+//      connect(altNotationFileButton, SIGNAL(clicked()), SLOT(altNotationFileButtonClicked())); //cc
+
       updateRemote();
       }
 
@@ -1521,18 +1523,18 @@ void PreferenceDialog::resetAllValues()
       updateSCListView();
       }
 
-//cc
-//---------------------------------------------------------
-//   altNotationFileButtonClicked
-//---------------------------------------------------------
-
-void PreferenceDialog::altNotationFileButtonClicked()
-{
-    QString fn = mscore->getNotationFilename(true);
-    if (fn.isEmpty())
-       return;
-    altNotationFile->setText(fn);
-}
+////cc
+////---------------------------------------------------------
+////   altNotationFileButtonClicked
+////---------------------------------------------------------
+//
+//void PreferenceDialog::altNotationFileButtonClicked()
+//{
+//    QString fn = mscore->getNotationFilename(true);
+//    if (fn.isEmpty())
+//       return;
+//    altNotationFile->setText(fn);
+//}
     
 //---------------------------------------------------------
 //   styleFileButtonClicked
