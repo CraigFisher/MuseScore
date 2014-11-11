@@ -20,11 +20,28 @@ namespace Ms {
 //   NoteMappings
 //---------------------------------------------------------
 
+NoteMappings::NoteMappings() : _notePositions { 3, 0, 4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3,
+                                                0, 4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3, 0,
+                                                4, 1, 6, 2, 6 }, //traditional positions
+                               _noteHeads { defaultHg, defaultHg, defaultHg, defaultHg, defaultHg,
+                                            defaultHg, defaultHg, defaultHg, defaultHg, defaultHg,
+                                            defaultHg, defaultHg, defaultHg, defaultHg, defaultHg,
+                                            defaultHg, defaultHg, defaultHg, defaultHg, defaultHg,
+                                            defaultHg, defaultHg, defaultHg, defaultHg, defaultHg,
+                                            defaultHg, defaultHg, defaultHg, defaultHg, defaultHg,
+                                            defaultHg, defaultHg, defaultHg, defaultHg, defaultHg }
+      {
+      setTraditionalClefOffsets();
+      }
+
+//---------------------------------------------------------
+//   NoteMappings
+//---------------------------------------------------------
+
 NoteMappings::NoteMappings(QFile* f)
       {
       if (!(f->open(QIODevice::ReadOnly)))
             throw (QObject::tr("failed to open."));
-      
       XmlReader e(f);
       while (e.readNextStartElement()) {
             if (e.name().toString() == "noteMappings")
@@ -34,17 +51,15 @@ NoteMappings::NoteMappings(QFile* f)
             }
       }
       
+//TODO: method headers
+      
 void NoteMappings::write(Xml& xml) const
       {
       xml.stag(QString("noteMappings"));
-
-      if (!(_notePositions.empty() && _noteHeads.empty()))
-            writeMappings(xml);
-      if (!_clefOffsets.empty())
-            writeClefOffsets(xml);
+      writeMappings(xml);
+      writeClefOffsets(xml);
       xml.tag("octaveDistance", _octaveDistance);
-      xml.tag("noAccidentals", (int)_noAccidentals);
-      
+      xml.tag("showAccidentals", (int)_showAccidentals);
       xml.etag();
       }
       
@@ -58,8 +73,8 @@ void NoteMappings::read(XmlReader& e)
                   readClefOffsets(e);
             else if (tag == "octaveDistance")
                   _octaveDistance = e.readInt();
-            else if (tag == "noAccidentals")
-                  _noAccidentals = e.readBool();
+            else if (tag == "showAccidentals")
+                  _showAccidentals = e.readBool();
             else
                   throw (QObject::tr("improperly formated."));
             }
@@ -69,17 +84,17 @@ void NoteMappings::writeMappings(Xml& xml) const
       {
       xml.stag("mappings");
             
-      std::map<int, int>::const_iterator itr = _notePositions.begin();
-      while (itr != _notePositions.end()) {
-            int tpc = itr->first;
+      for (int tpc = -1; tpc < 34; tpc++) {
             QString name = tpc2name(tpc, NoteSpellingType::STANDARD, false, false);
             
             xml.stag(QString("note name=\"%1\" tpc=\"%2\"").arg(name).arg(tpc));
-            xml.tag("line-offset", itr->second);
+            xml.tag("line-offset", _notePositions[tpc + 1]);
             
             QString groupName;
-            NoteHead::Group group = _noteHeads.at(tpc);
-            if (group == NoteHead::Group::HEAD_SLASH)
+            NoteHead::Group group = _noteHeads[tpc + 1];
+            if (group == NoteHead::Group::HEAD_NORMAL)
+                  groupName = "normal";
+            else if (group == NoteHead::Group::HEAD_SLASH)
                   groupName = "slash";
             else if (group == NoteHead::Group::HEAD_TRIANGLE)
                   groupName = "triangle";
@@ -120,7 +135,7 @@ void NoteMappings::readMappings(XmlReader& e)
                   QString tag = e.name().toString();
                   if (tag == "line-offset") {
                         int offset = e.readInt();
-                        _notePositions[tpc] = offset;
+                        _notePositions[tpc + 1] = offset;
                         }
                   else if (tag == "notehead-group") {
                         QString text = e.readElementText();
@@ -157,9 +172,9 @@ void NoteMappings::readMappings(XmlReader& e)
                         else if (text == "groups")
                               group =  NoteHead::Group::HEAD_GROUPS;
                         else
-                              throw (QObject::tr("file includes an unrecognized notehead group."));
+                              throw (QObject::tr("file includes an unrecognized notehead group: %1").arg(text));
 
-                        _noteHeads[tpc] = group;
+                        _noteHeads[tpc + 1] = group;
                         }
                   }
             }
@@ -167,7 +182,7 @@ void NoteMappings::readMappings(XmlReader& e)
       
 void NoteMappings::writeClefOffsets(Xml& xml) const
       {
-      xml.stag("clefOffset");
+      xml.stag("clefOffsets");
       
       std::map<ClefType, int>::const_iterator itr = _clefOffsets.begin();
       while (itr != _clefOffsets.end()) {
@@ -212,6 +227,7 @@ void NoteMappings::writeClefOffsets(Xml& xml) const
                   name = "INVALID";
             
             xml.tag(QString("clef name=\"%1\"").arg(name), itr->second);
+            itr++;
             }
       
       xml.etag();
@@ -264,6 +280,26 @@ void NoteMappings::readClefOffsets(XmlReader& e)
 
             _clefOffsets[ct] = e.readInt();
             }
+      }
+
+void NoteMappings::setTraditionalClefOffsets() {
+      _clefOffsets[ClefType::G] = 45;
+      _clefOffsets[ClefType::G1] = 52;
+      _clefOffsets[ClefType::G2] = 59;
+      _clefOffsets[ClefType::G3] = 38;
+      _clefOffsets[ClefType::F] = 33;
+      _clefOffsets[ClefType::F8] = 26;
+      _clefOffsets[ClefType::F15] = 19;
+      _clefOffsets[ClefType::F_B] = 35;
+      _clefOffsets[ClefType::F_C] = 31;
+      _clefOffsets[ClefType::C1] = 43;
+      _clefOffsets[ClefType::C2] = 41;
+      _clefOffsets[ClefType::C3] = 39;
+      _clefOffsets[ClefType::C4] = 37;
+      _clefOffsets[ClefType::C5] = 35;
+      _clefOffsets[ClefType::G4] = 47;
+      _clefOffsets[ClefType::F_8VA] = 40;
+      _clefOffsets[ClefType::F_15MA] = 47;
       }
 
 }

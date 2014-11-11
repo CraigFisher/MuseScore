@@ -93,12 +93,150 @@ StaffType::StaffType(StaffGroup sg, const QString& xml, const QString& name, int
       setUseNumbers(useNumbers);
       }
 
+//-----------------------------------------------------//cc
+//   StaffType (copy constructor)
+//---------------------------------------------------------
+
+StaffType::StaffType(const StaffType& source) : 
+      _group(source._group),
+      _xmlName(source._xmlName),
+      _name(source._name),
+      _lines(source._lines),
+      _stepOffset(source._stepOffset),
+      _lineDistance(source._lineDistance),
+      _genClef(source._genClef),
+      _showBarlines(source._showBarlines),
+      _slashStyle(source._slashStyle),
+      _genTimesig(source._genTimesig),
+      _genKeysig(source._genKeysig),
+      _showLedgerLines(source._showLedgerLines),
+      _durationFontSize(source._durationFontSize),
+      _durationFontUserY(source._durationFontUserY),
+      _fretFontSize(source._fretFontSize),
+      _fretFontUserY(source._fretFontUserY),
+      _genDurations(source._genDurations),
+      _linesThrough(source._linesThrough),
+      _minimStyle(source._minimStyle),
+      _onLines(source._onLines),
+      _showRests(source._showRests),
+      _stemsDown(source._stemsDown),
+      _stemsThrough(source._stemsThrough),
+      _upsideDown(source._upsideDown),
+      _useNumbers(source._useNumbers),
+      _durationBoxH(source._durationBoxH),
+      _durationBoxY(source._durationBoxY),
+      _durationFont(source._durationFont),
+      _durationFontIdx(source._durationFontIdx),
+      _durationYOffset(source._durationYOffset),
+      _durationMetricsValid(source._durationMetricsValid),
+      _fretBoxH(source._fretBoxH),
+      _fretBoxY(source._fretBoxY),
+      _fretFont(source._fretFont),
+      _fretFontIdx(source._fretFontIdx),
+      _fretYOffset(source._fretYOffset),
+      _fretMetricsValid(source._fretMetricsValid),
+      _refDPI(source._refDPI),
+      _useInnerLedgers(source._useInnerLedgers),
+      _useAlternateNoteMappings(source._useAlternateNoteMappings),
+      _useAlternateStaffLines(source._useAlternateStaffLines),
+      _alternativeStaffLines(source._alternativeStaffLines)
+      {
+      if (source._altNoteMappings) //if not NULL
+            _altNoteMappings = new NoteMappings(*(source._altNoteMappings));
+      else
+            _altNoteMappings = source._altNoteMappings;
+      
+      std::map<qreal, std::vector<qreal>*>::const_iterator itr = source._innerLedgers.begin();
+      while(itr != source._innerLedgers.end()) {
+            std::vector<qreal>* innerVector = new std::vector<qreal>(*(itr->second));
+            _innerLedgers[itr->first] = innerVector;
+            itr++;
+            }
+      }
+
+//-----------------------------------------------------//cc
+//   swap
+//---------------------------------------------------------
+      
+void swap(StaffType& first, StaffType& second)
+      {
+      using std::swap;
+      swap(first._group, second._group);
+      swap(first._xmlName, second._xmlName);
+      swap(first._name, second._name);
+      swap(first._lines, second._lines);
+      swap(first._stepOffset, second._stepOffset);
+      swap(first._lineDistance, second._lineDistance);
+      swap(first._genClef, second._genClef);
+      swap(first._showBarlines, second._showBarlines);
+      swap(first._slashStyle, second._slashStyle);
+      swap(first._genTimesig, second._genTimesig);
+      swap(first._genKeysig, second._genKeysig);
+      swap(first._showLedgerLines, second._showLedgerLines);
+      swap(first._durationFontSize, second._durationFontSize);
+      swap(first._durationFontUserY, second._durationFontUserY);
+      swap(first._fretFontSize, second._fretFontSize);
+      swap(first._fretFontUserY, second._fretFontUserY);
+      swap(first._genDurations, second._genDurations);
+      swap(first._linesThrough, second._linesThrough);
+      swap(first._minimStyle, second._minimStyle);
+      swap(first._onLines, second._onLines);
+      swap(first._showRests, second._showRests);
+      swap(first._stemsDown, second._stemsDown);
+      swap(first._stemsThrough, second._stemsThrough);
+      swap(first._upsideDown, second._upsideDown);
+      swap(first._useNumbers, second._useNumbers);
+      swap(first._durationBoxH, second._durationBoxH);
+      swap(first._durationBoxY, second._durationBoxY);
+      swap(first._durationFont, second._durationFont);
+      swap(first._durationFontIdx, second._durationFontIdx);
+      swap(first._durationYOffset, second._durationYOffset);
+      swap(first._durationMetricsValid, second._durationMetricsValid);
+      swap(first._fretBoxH, second._fretBoxH);
+      swap(first._fretBoxY, second._fretBoxY);
+      swap(first._fretFont, second._fretFont);
+      swap(first._fretFontIdx, second._fretFontIdx);
+      swap(first._fretYOffset, second._fretYOffset);
+      swap(first._fretMetricsValid, second._fretMetricsValid);
+      swap(first._refDPI, second._refDPI);
+      swap(first._useInnerLedgers, second._useInnerLedgers);
+      swap(first._useAlternateNoteMappings, second._useAlternateNoteMappings);
+      swap(first._useAlternateStaffLines, second._useAlternateStaffLines);
+      swap(first._altNoteMappings, second._altNoteMappings);
+      swap(first._innerLedgers, second._innerLedgers);
+      swap(first._alternativeStaffLines, second._alternativeStaffLines);
+      }
+      
+//-----------------------------------------------------//cc
+//   operator=
+//---------------------------------------------------------
+      
+StaffType& StaffType::operator=(StaffType other)
+      {
+      swap(*this, other);
+      return *this;
+      }
+      
+//-----------------------------------------------------//cc
+//   StaffType (move constructor)
+//---------------------------------------------------------
+
+StaffType::StaffType(StaffType&& other) : StaffType()
+      {
+      swap(*this, other);
+      }
+
+//-----------------------------------------------------//cc
+//   ~StaffType
+//---------------------------------------------------------
+
 StaffType::~StaffType() {
       std::map<qreal, std::vector<qreal>*>::iterator itr = _innerLedgers.begin();
       while(itr != _innerLedgers.end()) {
             delete itr->second;
             itr++;
             }
+      delete _altNoteMappings;
       }
 
 //---------------------------------------------------------
@@ -179,7 +317,7 @@ bool StaffType::isSameStructure(const StaffType& st) const
       }
 
 //-----------------------------------------------------//cc
-//   setLines
+//   setAlternativeStaffLines
 //---------------------------------------------------------
       
 void StaffType::setAlternativeStaffLines(std::vector<qreal>& positions, int staffHeight) {
@@ -243,8 +381,8 @@ void StaffType::write(Xml& xml) const
             if (_useInnerLedgers) {
                   writeInnerLedgers(xml);
                   }
-            if (_useAlternateNoteMappings) {
-                  _alternateNoteMappings.write(xml);
+            if (_altNoteMappings) {
+                  _altNoteMappings->write(xml);
                   }
             if (_useAlternateStaffLines) {
                   writeStaffLines(xml);
@@ -341,8 +479,10 @@ void StaffType::read(XmlReader& e)
                   readInnerLedgers(e);            //cc
             else if (tag == "staffLines")
                   readStaffLines(e);              //cc
-            else if (tag == "noteMappings")
-                  _alternateNoteMappings.read(e); //cc
+            else if (tag == "noteMappings") {
+                  _altNoteMappings = new NoteMappings();
+                  _altNoteMappings->read(e); //cc
+                  }
             else if (tag == "StaffType") //cc
                   continue;
             else
@@ -371,8 +511,8 @@ void StaffType::writeInnerLedgers(Xml& xml) const
                   ledgerItr++;
                   }
             
-            lineItr++;
             xml.etag();
+            lineItr++;
             }
             
       xml.etag();
@@ -412,6 +552,7 @@ void StaffType::writeStaffLines(Xml& xml) const
       std::vector<qreal>::const_iterator itr = _alternativeStaffLines.begin();
       while (itr != _alternativeStaffLines.end()) {
             xml.tag("line", *itr);
+            itr++;
             }
       xml.etag();
       }
@@ -1121,74 +1262,6 @@ const StaffType* StaffType::getDefaultPreset(StaffGroup grp)
       return &_presets[_idx];
       }
 
-//cc
-std::list<StaffTypeTemplate> StaffTypeTemplate::_userTemplates;
-const int StaffTypeTemplate::STAFFTYPE_TEMPLATE_LIST_SIZE;
-
-//-----------------------------------------------------//cc
-//   initUserTemplates
-//---------------------------------------------------------
-
-void StaffTypeTemplate::initUserTemplates()
-      {
-      QSettings settings;
-      for (int i = STAFFTYPE_TEMPLATE_LIST_SIZE-1; i >= 0; --i) {
-            QString path = settings.value(QString("user-stafftypes-%1").arg(i),"").toString();
-            if (!path.isEmpty() && QFileInfo(path).exists()) {
-                  StaffTypeTemplate* st = new StaffTypeTemplate();
-                  try {
-                        QFile f(path);
-                        if (!f.open(QIODevice::ReadOnly))
-                              throw QObject::tr("file failed to open");
-                        XmlReader xml(&f);
-                        st->read(xml);
-                        st->setName(st->xmlName()); //name and xml name identical for user templates
-                        st->setHasFile(true);
-                        st->setDirty(false);
-                        }
-                  catch (QString error) {
-                        delete st;
-                        settings.remove(QString("user-stafftypes-%1").arg(i));
-                        QMessageBox::warning(0, QObject::tr("MuseScore: Load Error"),
-                                                QObject::tr("Error loading StaffType Template \"%1\": %2.\n"
-                                                            "This template will no longer be included.").arg(path).arg(error));
-                        continue;
-                        }
-                  st->setFileName(path);
-                  _userTemplates.push_back(*st); //TODO: Possibly convert _userTemplates into a list of
-                                                 //      pointers instead (and then just push st).
-                  }
-            }
-      }
-      
-//---------------------------------------------------------
-//   updateSettings
-//---------------------------------------------------------
-      
-void StaffTypeTemplate::updateSettings() {
-      QSettings settings;
-      int i = 0;
-      for (StaffTypeTemplate& st : _userTemplates) {
-            settings.setValue(QString("user-stafftypes-%1").arg(i),
-                              st.fileInfo()->absoluteFilePath());
-            i++;
-            }
-      }
-      
-//-----------------------------------------------------//cc
-//   updateTemplate
-//---------------------------------------------------------
-
-void StaffTypeTemplate::updateTemplate(StaffTypeTemplate& stNew) {
-      std::list<StaffTypeTemplate>::iterator itr = _userTemplates.begin();
-      while (itr != _userTemplates.end()) {
-            if (itr->_fileInfo.absolutePath() == stNew._fileInfo.absolutePath()) {
-                  _userTemplates.insert(_userTemplates.erase(itr), stNew); //swap the old StaffType with the new one
-                  }
-            }
-      
-      }
-
 //---------------------------------------------------------
 //   initStaffTypes
 //---------------------------------------------------------
@@ -1221,5 +1294,114 @@ void StaffType::initStaffTypes()
          StaffType(StaffGroup::TAB, "tab6StrFrench", QObject::tr("Tab. 6-str French"), 6, 1.5, false, true, true,  true,  "MuseScore Tab French", 15, 0, true,  "MuseScore Tab Renaiss",10, 0, true,  TablatureMinimStyle::NONE,   false, false, false, false, false, false)
          };
       }
+
+//-----------------------------------------------------//cc
+//   StaffTypeTemplate
+//---------------------------------------------------------
+
+StaffTypeTemplate::StaffTypeTemplate()
+      {
+      _useInnerLedgers = true;
+      _useAlternateNoteMappings = true;
+      _useAlternateStaffLines = true;
+      
+      _altNoteMappings = new NoteMappings(); //TODO: when copying stafftypetemplate
+      _alternativeStaffLines.push_back(0);   //      over to a stafftype, make sure
+      _alternativeStaffLines.push_back(1);   //      to make a "deep" copy of
+      _alternativeStaffLines.push_back(2);   //      _altNoteMappings
+      _alternativeStaffLines.push_back(3);
+      _alternativeStaffLines.push_back(4);
+      }
+
+//-----------------------------------------------------//cc
+//   operator=
+//---------------------------------------------------------
+      
+//      TODO: THIS SEEMS INCORRECT (overloading base class assignment operator)
+      
+StaffTypeTemplate& StaffTypeTemplate::operator=(StaffTypeTemplate& other)
+      {
+      StaffType::operator=(other); //TODO: check what this actually means
+      _dirty = other._dirty;
+      _hasFile = other._hasFile;
+      _fileInfo = other._fileInfo;
+      
+      return *this;
+      }
+//      
+//void sttDebug(StaffTypeTemplate& stt)
+//      {
+//      qDebug() << "abs file path: " << stt._fileInfo.absoluteFilePath() << ", dirty: " << stt._dirty
+//               << ", hasFile: " << stt._hasFile;
+//      }
+
+//cc
+std::list<StaffTypeTemplate> StaffTypeTemplate::_userTemplates;
+const int StaffTypeTemplate::STAFFTYPE_TEMPLATE_LIST_SIZE;
+
+//-----------------------------------------------------//cc
+//   initUserTemplates
+//---------------------------------------------------------
+
+void StaffTypeTemplate::initUserTemplates()
+      {
+      QSettings settings;
+      for (int i = STAFFTYPE_TEMPLATE_LIST_SIZE-1; i >= 0; --i) {
+            QString path = settings.value(QString("user-stafftypes-%1").arg(i),"").toString();
+            if (!path.isEmpty()) {
+                  StaffTypeTemplate st;
+                  try {
+                        QFile f(path);
+                        if (!f.open(QIODevice::ReadOnly))
+                              throw QObject::tr("file failed to open");
+                        XmlReader xml(&f);
+                        st.read(xml);
+                        st.setName(st.xmlName()); //name and xml name identical for user templates
+                        st.setHasFile(true);
+                        st.setDirty(false);
+                        }
+                  catch (QString error) {
+                        settings.remove(QString("user-stafftypes-%1").arg(i));
+                        QMessageBox::warning(0, QObject::tr("MuseScore: Load Error"),
+                                                QObject::tr("Error loading StaffType Template \"%1\": %2\n"
+                                                            "This template will no longer be included.").arg(path).arg(error));
+                        continue;
+                        }
+                  st.setFileName(path);
+                  _userTemplates.emplace_front(st); //TODO: Possibly convert _userTemplates into a list of
+                                                 //      pointers instead (and then just push st).
+                                                 //OR: create a copy constructor
+                  }
+            }
+      }
+      
+//-----------------------------------------------------//cc
+//   updateSettings
+//---------------------------------------------------------
+      
+void StaffTypeTemplate::updateSettings() {
+      QSettings settings;
+      int i = 0;
+      for (StaffTypeTemplate& st : _userTemplates) {
+            settings.setValue(QString("user-stafftypes-%1").arg(i), st.fileInfo()->absoluteFilePath());
+            i++;
+            }
+      }
+      
+//-----------------------------------------------------//cc
+//   updateTemplate
+//---------------------------------------------------------
+
+void StaffTypeTemplate::updateTemplate(StaffTypeTemplate& sttNew) {
+      std::list<StaffTypeTemplate>::iterator itr = _userTemplates.begin();
+      while (itr != _userTemplates.end()) {
+            if (itr->_fileInfo.absoluteFilePath() == sttNew._fileInfo.absoluteFilePath()) {
+                  (*itr) = sttNew; //swap the old StaffType with the new one
+                  break;
+                  }
+            itr++;
+            }
+      }
+      
 }                 // namespace Ms
 

@@ -244,7 +244,7 @@ class Staff : public QObject {
       
       //cc
       void setNotation(NoteMappings*); //TODO: guard access, possibly make friend
-      NoteMappings* noteMappings() const { return _notation; }
+      NoteMappings* const noteMappings() { return _notation; }
       };
 
 }     // namespace Ms

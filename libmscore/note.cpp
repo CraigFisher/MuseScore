@@ -481,7 +481,7 @@ SymId Note::noteHead() const
       //cc
       SymId t;
       if(noteMappings()) {
-            t = noteHead(up, noteMappings()->noteHeads()->at(_tpc[0]), ht);
+            t = noteHead(up, noteMappings()->tpc2HeadGroup(_tpc[0]), ht);
       } else {      
             t = noteHead(up, _headGroup, ht);
       }

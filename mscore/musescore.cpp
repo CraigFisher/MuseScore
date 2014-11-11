@@ -358,6 +358,7 @@ void MuseScore::preferencesChanged()
                   }
             }
           
+      //cc_temp TODO: DESTROY FOLLOWING CODE
           
             /* The following code is temporary and will be moved once Notation Dialog is set up.
                Also, the eventual Notation Dialog will check for actual changes before performing 
@@ -4047,6 +4048,9 @@ void MuseScore::cmd(QAction* a)
             if (!cv->editMode())
                   cs->startCmd();
             }
+//cc_temp
+qDebug()<<cmdn<<"..................................";
+            
       cmd(a, cmdn);
       if (lastShortcut->flags() & ShortcutFlags::A_CMD)
             cs->endCmd();

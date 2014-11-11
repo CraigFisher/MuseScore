@@ -149,16 +149,6 @@ class StaffType {
       bool _genTimesig      = true;       // whether time signature is shown or not
       bool _genKeysig       = true;       // create key signature at beginning of system
       bool _showLedgerLines = true;
-      
-      //cc
-      bool _useInnerLedgers = false;           // whether to allow ledger lines between the top and bottom line of a staff
-      bool _useAlternateNoteMappings = false;  // whether notes should have non-traditional positions or shapes
-      bool _useAlternateStaffLines = false; // whether to allow non-traditional positionings of stafflines
-      
-      //cc
-      NoteMappings _alternateNoteMappings;
-      std::map<qreal, std::vector<qreal>*> _innerLedgers;
-      std::vector<qreal> _alternativeStaffLines;
 
       // configurable properties
       qreal _durationFontSize = 15.0;     // the size (in points) for the duration symbol font
@@ -211,6 +201,17 @@ class StaffType {
       static const char    groupNames[STAFF_GROUP_MAX][STAFF_GROUP_NAME_MAX_LENGTH];      // used in UI
       static const QString fileGroupNames[STAFF_GROUP_MAX];                               // used in .msc? files
 
+   protected:
+      //cc
+      bool _useInnerLedgers = false;           // whether to allow ledger lines between the top and bottom line of a staff
+      bool _useAlternateNoteMappings = false;  // whether notes should have non-traditional positions or shapes
+      bool _useAlternateStaffLines = false; // whether to use non-traditional positionings of stafflines
+      
+      //cc
+      NoteMappings* _altNoteMappings = 0;
+      std::map<qreal, std::vector<qreal>*> _innerLedgers;
+      std::vector<qreal> _alternativeStaffLines;
+
    public:
       StaffType();
       StaffType(StaffGroup sg, const QString& xml, const QString& name, int lines, qreal lineDist, bool genClef,
@@ -223,9 +224,16 @@ class StaffType {
                   bool linesThrough, TablatureMinimStyle minimStyle, bool onLines, bool showRests,
                   bool stemsDown, bool stemThrough, bool upsideDown, bool useNumbers);
 
+      //cc
+      StaffType(const StaffType&);
+      friend void swap(StaffType& first, StaffType& second);
+      StaffType& operator=(StaffType other);
+      StaffType(StaffType&& other);
       virtual ~StaffType();
+      
       bool operator==(const StaffType&) const;
       bool isSameStructure(const StaffType&) const;
+      
 
       StaffGroup group() const                 { return _group;           }
       const QString& name() const              { return _name;            }
@@ -263,17 +271,21 @@ class StaffType {
       qreal doty2() const;
       
       //cc
-      bool useInnerLedgers() { return _useInnerLedgers; }
-      bool useAlternateNoteMappings() { return _useAlternateNoteMappings; }
-      bool useAlternateStaffLines() { return _useAlternateStaffLines; }
+      bool useInnerLedgers() const { return _useInnerLedgers; }
+      void setUseInnerLedgers(bool v) { _useInnerLedgers = v; }
+      bool useAlternateNoteMappings() const { return _useAlternateNoteMappings; }
+      void setUseAlternateNoteMappings(bool v) { _useAlternateNoteMappings = v; }
+      bool useAlternateStaffLines() const { return _useAlternateStaffLines; }
+      void setUseAlternateStaffLines(bool v) { _useAlternateStaffLines = v; }
 
       //cc
       void setAlternativeStaffLines(std::vector<qreal>&, int);
       const std::vector<qreal>* alternativeStaffLines() { return &_alternativeStaffLines; }
       void setInnerLedgers(std::map<qreal, std::vector<qreal>*> inners) { _innerLedgers = inners; }
       const std::map<qreal, std::vector<qreal>*>* innerLedgers() { return &_innerLedgers; }
-      void setNoteMappings(NoteMappings mappings) { _alternateNoteMappings = mappings; }
-      const NoteMappings* noteMappings() { return &_alternateNoteMappings; }
+      
+      //cc
+      NoteMappings* noteMappings() { return _altNoteMappings; }
 
       // static function to deal with presets
       static const StaffType* getDefaultPreset(StaffGroup grp);
@@ -367,7 +379,6 @@ class StaffTypeTemplate : public StaffType {
       bool _hasFile;
       bool _dirty;
       
-      StaffTypeTemplate() {}
       void setFileName(QString s) { _fileInfo.setFile(s); }
       const QFileInfo* fileInfo() const { return &_fileInfo; }
       void setDirty(bool v) { _dirty = v; }
@@ -376,16 +387,25 @@ class StaffTypeTemplate : public StaffType {
       static std::list<StaffTypeTemplate> _userTemplates;
       static const int STAFFTYPE_TEMPLATE_LIST_SIZE = 30;  //TODO: find out reasonable limit (if limit should exist at all)
       static void updateTemplate(StaffTypeTemplate& t);
-      static void addTemplate(StaffTypeTemplate& t) { _userTemplates.push_back(t); }
+      static void addTemplate(StaffTypeTemplate& t) { _userTemplates.emplace_back(t); }
       
-      friend class StaffTypeTemplates;
+      friend class StaffTypeTemplates; //TODO: check if still necessary
       
     public:
-      bool hasFile() { return _hasFile; } //TODO: MAKE PRIVATE?
-      bool dirty() { return _dirty; }
+      StaffTypeTemplate();
+      StaffTypeTemplate(const StaffTypeTemplate& source) : StaffType(source),
+          _fileInfo(source._fileInfo), _hasFile(source._hasFile), _dirty(source._dirty) {};
+      StaffTypeTemplate& operator=(StaffTypeTemplate& other);
+      
+      bool hasFile() const { return _hasFile; } //TODO: MAKE PRIVATE?
+      bool dirty() const { return _dirty; }
       static const std::list<StaffTypeTemplate>& userTemplates() { return _userTemplates; }
       static void initUserTemplates();
       static void updateSettings();
+      
+      void debug() const { qDebug() << "afp: " << _fileInfo.absoluteFilePath() << ", name: " << name()
+               << ", xml: " << xmlName() << ", dirty: " << _dirty
+               << ", hasFile: " << _hasFile; }; //cc_temp TODO: remove later
       };
 
 //---------------------------------------------------------

@@ -765,7 +765,7 @@ int absStep(int tpc, int pitch, NoteMappings* altNotation)
             int octave = pitch / 12;
             int octaveDistance = altNotation->octaveDistance();
             int correction = 5 * (octaveDistance - 7); //necessary when octaveDistance != 7
-            line = altNotation->notePositions()->at(tpc) + (octave * octaveDistance) - correction;
+            line = altNotation->tpc2Position(tpc) + (octave * octaveDistance) - correction;
             }
       else {
             line = tpc2step(tpc) + (pitch / 12) * 7;
@@ -789,7 +789,7 @@ int absStep(int pitch, NoteMappings* altNotation)
 int absStep(int line, ClefType clef, NoteMappings* altNotation)
       {
       if (altNotation) //cc
-            return altNotation->clefOffsets()->at(clef) - line;
+            return altNotation->clefOffset(clef) - line;
       else
             return ClefInfo::pitchOffset(clef) - line;
       }
@@ -804,7 +804,7 @@ int absStep(int line, ClefType clef, NoteMappings* altNotation)
 int relStep(int line, ClefType clef, NoteMappings* altNotation)
       {
       if (altNotation) //cc
-            return altNotation->clefOffsets()->at(clef) - line;
+            return altNotation->clefOffset(clef) - line;
       else
             return ClefInfo::pitchOffset(clef) - line;
       }

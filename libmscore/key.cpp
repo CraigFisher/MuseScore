@@ -194,7 +194,7 @@ void KeySigEvent::initFromSubtype(int st)
 
 AccidentalVal AccidentalState::accidentalVal(int line) const
       {
-//      Q_ASSERT(line >= 0 && line < 75); //cc
+//      Q_ASSERT(line >= 0 && line < 75); //cc TODO: provide revised assert statements?
       return AccidentalVal((state[line] & 0x0f) - 2);
       }
 

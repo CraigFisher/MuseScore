@@ -951,9 +951,8 @@ void StaffLines::layout()
                   lines = st->alternativeStaffLines()->size();
                   alternative = false;
                   }
-            else {
+            else
                   lines = st->lines();
-                  }
             }
       else {
             dist  = _spatium;

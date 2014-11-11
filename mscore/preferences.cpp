@@ -215,7 +215,7 @@ void Preferences::init()
       nativeDialogs           = false;    // don't use system native file dialogs
 #endif
 
-      //cc
+      //cc_temp TODO: kill
       useAltNotationFile = false;
       altNotationFile = "";
          

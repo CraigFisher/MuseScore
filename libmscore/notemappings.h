@@ -30,29 +30,39 @@ class XmlReader;
 
 class NoteMappings {      
     private:
-        std::map<int, int> _notePositions;
-        std::map<int, NoteHead::Group> _noteHeads;
+        int _notePositions[35];
+        NoteHead::Group _noteHeads[35];
         std::map<ClefType, int> _clefOffsets;
         int _octaveDistance = 7;
-        bool _noAccidentals = false;
+        bool _showAccidentals = true;
     
+        static const NoteHead::Group defaultHg = NoteHead::Group::HEAD_NORMAL;
+        void setTraditionalClefOffsets();
+
         void writeMappings(Xml&) const;
         void readMappings(XmlReader& e);
         void writeClefOffsets(Xml&) const;
         void readClefOffsets(XmlReader& e);
 
     public:
-        NoteMappings() {}
-        NoteMappings(QFile* f);
+        NoteMappings();
+        explicit NoteMappings(QFile*);
         void write(Xml&) const;
         void read(XmlReader&);
-
-        const std::map<int, int>* notePositions() { return &_notePositions; }
-        const std::map<int, NoteHead::Group>* noteHeads() { return &_noteHeads; }
-        const std::map<ClefType, int>* clefOffsets() { return &_clefOffsets; }
-        int octaveDistance() { return _octaveDistance; }
       
-      friend class MuseScore;
+        void setNotePosition(int tpc, int pos)                { _notePositions[tpc + 1] = pos;   }
+        void setNoteHeadGroup(int tpc, NoteHead::Group group) { _noteHeads    [tpc + 1] = group; }
+        void setClefOffset(ClefType ct, int offset)           { _clefOffsets[ct] = offset;       }
+        void setShowAccidentals(bool val)                     { _showAccidentals = val;          }
+        void setOctaveDistance(int val)                       { _octaveDistance = val;           }
+      
+        int tpc2Position(int tpc) const              { return _notePositions[tpc + 1]; }
+        NoteHead::Group tpc2HeadGroup(int tpc) const { return     _noteHeads[tpc + 1]; }
+        int clefOffset(ClefType ct) const            { return   _clefOffsets.at(ct);   }
+        int octaveDistance() const { return _octaveDistance; }
+        bool showAccidentals() const { return _showAccidentals; }
+
+//        friend class MuseScore; //TODO: still necessary?
       };
 }
 #endif
