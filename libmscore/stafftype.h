@@ -203,13 +203,13 @@ class StaffType {
 
    protected:
       //cc
-      bool _useInnerLedgers = false;           // whether to allow ledger lines between the top and bottom line of a staff
       bool _useAlternateNoteMappings = false;  // whether notes should have non-traditional positions or shapes
+      bool _useInnerLedgers = false;           // whether to allow ledger lines between the top and bottom line of a staff
       bool _useAlternateStaffLines = false; // whether to use non-traditional positionings of stafflines
       
       //cc
       NoteMappings* _altNoteMappings = 0;
-      std::map<qreal, std::vector<qreal>*> _innerLedgers;
+      std::map<qreal, std::vector<qreal>> _innerLedgers;
       std::vector<qreal> _alternativeStaffLines;
 
    public:
@@ -281,15 +281,15 @@ class StaffType {
       //cc
       void setAlternativeStaffLines(std::vector<qreal>&, int);
       const std::vector<qreal>* alternativeStaffLines() { return &_alternativeStaffLines; }
-      void setInnerLedgers(std::map<qreal, std::vector<qreal>*> inners) { _innerLedgers = inners; }
-      const std::map<qreal, std::vector<qreal>*>* innerLedgers() { return &_innerLedgers; }
+      void setInnerLedgers(std::map<qreal, std::vector<qreal>> inners) { _innerLedgers = inners; }
+      const std::map<qreal, std::vector<qreal>>* innerLedgers() { return &_innerLedgers; }
       
       //cc
       NoteMappings* noteMappings() { return _altNoteMappings; }
 
       // static function to deal with presets
       static const StaffType* getDefaultPreset(StaffGroup grp);
-      static const StaffType* preset(StaffTypes idx);
+      static const StaffType* preset(int idx); //cc
       static const StaffType* presetFromXmlName(QString& xmlName);
 
       void setGenKeysig(bool val)              { _genKeysig = val;        }

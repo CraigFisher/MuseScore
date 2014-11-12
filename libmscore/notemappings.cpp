@@ -51,6 +51,16 @@ NoteMappings::NoteMappings(QFile* f)
             }
       }
       
+bool NoteMappings::operator==(const NoteMappings& n) const
+      {
+      return n._notePositions == _notePositions
+             && n._noteHeads == _noteHeads
+             && n._clefOffsets == _clefOffsets
+             && n._octaveDistance == _octaveDistance
+             && n._showAccidentals == _showAccidentals;
+      }
+
+
 //TODO: method headers
       
 void NoteMappings::write(Xml& xml) const

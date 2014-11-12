@@ -47,6 +47,8 @@ class NoteMappings {
     public:
         NoteMappings();
         explicit NoteMappings(QFile*);
+        bool operator==(const NoteMappings& st) const;
+      
         void write(Xml&) const;
         void read(XmlReader&);
       

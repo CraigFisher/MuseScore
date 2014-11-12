@@ -136,8 +136,8 @@ StaffType::StaffType(const StaffType& source) :
       _fretYOffset(source._fretYOffset),
       _fretMetricsValid(source._fretMetricsValid),
       _refDPI(source._refDPI),
-      _useInnerLedgers(source._useInnerLedgers),
       _useAlternateNoteMappings(source._useAlternateNoteMappings),
+      _useInnerLedgers(source._useInnerLedgers),
       _useAlternateStaffLines(source._useAlternateStaffLines),
       _alternativeStaffLines(source._alternativeStaffLines)
       {
@@ -146,9 +146,9 @@ StaffType::StaffType(const StaffType& source) :
       else
             _altNoteMappings = source._altNoteMappings;
       
-      std::map<qreal, std::vector<qreal>*>::const_iterator itr = source._innerLedgers.begin();
+      std::map<qreal, std::vector<qreal>>::const_iterator itr = source._innerLedgers.begin();
       while(itr != source._innerLedgers.end()) {
-            std::vector<qreal>* innerVector = new std::vector<qreal>(*(itr->second));
+            std::vector<qreal> innerVector = itr->second;
             _innerLedgers[itr->first] = innerVector;
             itr++;
             }
@@ -231,11 +231,6 @@ StaffType::StaffType(StaffType&& other) : StaffType()
 //---------------------------------------------------------
 
 StaffType::~StaffType() {
-      std::map<qreal, std::vector<qreal>*>::iterator itr = _innerLedgers.begin();
-      while(itr != _innerLedgers.end()) {
-            delete itr->second;
-            itr++;
-            }
       delete _altNoteMappings;
       }
 
@@ -297,10 +292,34 @@ bool StaffType::isSameStructure(const StaffType& st) const
          || st._genTimesig   != _genTimesig)
             return false;
 
-      if (_group != StaffGroup::TAB) {                      // common to pitched and percussion
+      //cc
+      if (_group == StaffGroup::TAB) {                      // common to pitched and percussion
             return st._genKeysig      == _genKeysig
                && st._showLedgerLines == _showLedgerLines
                ;
+            }
+      else if (_group == StaffGroup::STANDARD) {
+            if (st._useAlternateNoteMappings == _useAlternateNoteMappings
+                      && st._useInnerLedgers == _useInnerLedgers
+                      && st._useAlternateStaffLines == _useAlternateStaffLines) {
+                  
+                  bool sameMappings = true;
+                  bool sameLedgers = true;
+                  bool sameStaffLines = true;
+                  if (_useAlternateNoteMappings)
+                        sameMappings = *(st._altNoteMappings) == *_altNoteMappings;
+                  if (_useInnerLedgers)
+                        sameLedgers = st._innerLedgers == _innerLedgers;
+                  if (_useAlternateStaffLines)
+                        sameStaffLines = st._useAlternateStaffLines == _useAlternateStaffLines;
+                  
+                  return sameMappings && sameLedgers && sameStaffLines
+                         && st._genKeysig      == _genKeysig
+                         && st._showLedgerLines == _showLedgerLines;
+                  }
+            else {
+                  return false;
+                  }
             }
       else {                                                // TAB-specific
             return st._genDurations == _genDurations
@@ -498,15 +517,13 @@ void StaffType::writeInnerLedgers(Xml& xml) const
       {
       xml.stag(QString("innerLedgers"));
       
-      std::map<qreal, std::vector<qreal>*>::const_iterator lineItr = _innerLedgers.begin();
-      
+      std::map<qreal, std::vector<qreal>>::const_iterator lineItr = _innerLedgers.begin();
       while (lineItr != _innerLedgers.end()) {
             QString lineVal = QString::number(lineItr->first,'f', 1);
             xml.stag(QString("note line=\"%1\"").arg(lineVal));
             
-            const std::vector<qreal>* ledgers = lineItr->second;
-            std::vector<qreal>::const_iterator ledgerItr = ledgers->begin();
-            while (ledgerItr != ledgers->end()) {
+            std::vector<qreal>::const_iterator ledgerItr = lineItr->second.begin();
+            while (ledgerItr != lineItr->second.end()) {
                   xml.tag("ledger", *ledgerItr);
                   ledgerItr++;
                   }
@@ -528,15 +545,12 @@ void StaffType::readInnerLedgers(XmlReader& e)
       while (e.readNextStartElement()) {
             if (e.name().toString() == "note") {
                   qreal noteLine = e.intAttribute("line");
-                  std::vector<qreal> *ledgers = new std::vector<qreal>(); //ledger lines associated with note
+                  std::vector<qreal> ledgers = std::vector<qreal>(); //ledger lines associated with note
                   while (e.readNextStartElement()) {
-                        ledgers->push_back(e.readInt());
+                        ledgers.push_back(e.readInt());
                         }
-                  if (!(ledgers->empty())) { //only add noteLine to map if ledgers exist for it
+                  if (!(ledgers.empty())) { //only add noteLine to map if ledgers exist for it
                         _innerLedgers[noteLine] = ledgers;
-                        }
-                  else {
-                        delete ledgers;
                         }
                   }
             }
@@ -1231,11 +1245,25 @@ static const QString _emptyString = QString();
 //   Static functions for StaffType presets
 //---------------------------------------------------------
 
-const StaffType* StaffType::preset(StaffTypes idx)
+const StaffType* StaffType::preset(int idx) //cc
       {
-      if (int(idx) < 0 || int(idx) >= int(_presets.size()))
+      int _presetSize = _presets.size();
+      int _userTemplateSize = StaffTypeTemplate::userTemplates().size();
+      
+      if (idx < 0 || idx > _presetSize)
             return &_presets[0];
-      return &_presets[int(idx)];
+      
+      if (size_t(idx) < _presets.size())
+            return &_presets[int(idx)];
+      else {
+            idx = idx - _presets.size();
+            if (size_t(idx) < )
+                  
+            
+            return
+      
+            }
+      
       }
 
 const StaffType* StaffType::presetFromXmlName(QString& xmlName)
@@ -1299,7 +1327,8 @@ void StaffType::initStaffTypes()
 //   StaffTypeTemplate
 //---------------------------------------------------------
 
-StaffTypeTemplate::StaffTypeTemplate()
+StaffTypeTemplate::StaffTypeTemplate() :
+      StaffType(StaffGroup::STANDARD, "", QObject::tr(""), 5, 1, true, true, false, true, true, true)
       {
       _useInnerLedgers = true;
       _useAlternateNoteMappings = true;
