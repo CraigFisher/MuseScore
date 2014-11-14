@@ -115,17 +115,17 @@ struct TablatureDurationFont {
 
 // ready-made staff types:
 
-enum class StaffTypes : char {
-      STANDARD,
-      PERC_1LINE, PERC_3LINE, PERC_5LINE,
-      TAB_6SIMPLE, TAB_6COMMON, TAB_6FULL,
-            TAB_4SIMPLE, TAB_4COMMON, TAB_4FULL,
-            TAB_UKULELE, TAB_BALALAJKA, TAB_ITALIAN, TAB_FRENCH,
-      STAFF_TYPES,
-      // some usefull shorthands:
-            PERC_DEFAULT = StaffTypes::PERC_5LINE,
-            TAB_DEFAULT = StaffTypes::TAB_6COMMON
-      };
+//enum class StaffTypes : char {
+//      STANDARD,
+//      PERC_1LINE, PERC_3LINE, PERC_5LINE,
+//      TAB_6SIMPLE, TAB_6COMMON, TAB_6FULL,
+//            TAB_4SIMPLE, TAB_4COMMON, TAB_4FULL,
+//            TAB_UKULELE, TAB_BALALAJKA, TAB_ITALIAN, TAB_FRENCH,
+//      STAFF_TYPES,
+//      // some usefull shorthands:
+//            PERC_DEFAULT = StaffTypes::PERC_5LINE,
+//            TAB_DEFAULT = StaffTypes::TAB_6COMMON
+//      };
 
 static const int  STAFF_GROUP_NAME_MAX_LENGTH   = 32;
 
@@ -384,7 +384,7 @@ class StaffTypeTemplate : public StaffType {
       void setDirty(bool v) { _dirty = v; }
       void setHasFile(bool v) { _hasFile = v; }
       
-      static std::list<StaffTypeTemplate> _userTemplates;
+      static std::vector<StaffTypeTemplate> _userTemplates;
       static const int STAFFTYPE_TEMPLATE_LIST_SIZE = 30;  //TODO: find out reasonable limit (if limit should exist at all)
       static void updateTemplate(StaffTypeTemplate& t);
       static void addTemplate(StaffTypeTemplate& t) { _userTemplates.emplace_back(t); }
@@ -399,7 +399,7 @@ class StaffTypeTemplate : public StaffType {
       
       bool hasFile() const { return _hasFile; } //TODO: MAKE PRIVATE?
       bool dirty() const { return _dirty; }
-      static const std::list<StaffTypeTemplate>& userTemplates() { return _userTemplates; }
+      static const std::vector<StaffTypeTemplate>& userTemplates() { return _userTemplates; }
       static void initUserTemplates();
       static void updateSettings();
       

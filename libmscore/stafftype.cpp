@@ -1245,32 +1245,46 @@ static const QString _emptyString = QString();
 //   Static functions for StaffType presets
 //---------------------------------------------------------
 
+
+
+
+
+                  COMBINE _USERTEMPLATES / _PREINSTALLEDTEMPLATES INTO _PRESETS VECTOR
+
+
+                  TODO: WHEN UPDATING _USERTEMPLATES, ADD SECOND COPY TO _PRESETS LIST
+
+
+
+
+
 const StaffType* StaffType::preset(int idx) //cc
       {
-      int _presetSize = _presets.size();
-      int _userTemplateSize = StaffTypeTemplate::userTemplates().size();
+      const std::vector<StaffTypeTemplate>& _userTemplates = StaffTypeTemplate::userTemplates();
+      int _presetsLength = _presets.size();
+      int _userTemplatesLength = _userTemplates.size();
       
-      if (idx < 0 || idx > _presetSize)
+      if (idx < 0 || idx >= _presetsLength + _userTemplatesLength) //if index out of range
             return &_presets[0];
-      
-      if (size_t(idx) < _presets.size())
+      if (idx < _presetsLength) //within range of _presets list
             return &_presets[int(idx)];
-      else {
-            idx = idx - _presets.size();
-            if (size_t(idx) < )
-                  
-            
-            return
-      
+      else {                    //within range of _userTemplates list
+            idx = idx - _presetsLength;
+            return static_cast<const StaffType*>(&_userTemplates[idx]);
             }
       
       }
 
 const StaffType* StaffType::presetFromXmlName(QString& xmlName)
       {
+      const std::vector<StaffTypeTemplate>& _userTemplates = StaffTypeTemplate::userTemplates();
       for (int i = 0; i < int(_presets.size()); ++i) {
             if (_presets[i].xmlName() == xmlName)
                   return &_presets[i];
+            }
+      for (int i = 0; i < int(_userTemplates.size()); ++i) { //cc
+            if (_userTemplates[i].xmlName() == xmlName)
+                  return &_userTemplates[i];
             }
       return 0;
       }
@@ -1280,6 +1294,11 @@ const StaffType* StaffType::presetFromName(QString& name)
       for (int i = 0; i < (int)_presets.size(); ++i) {
             if (_presets[i].name() == name)
                   return &_presets[i];
+            }
+      const std::vector<StaffTypeTemplate>& _userTemplates = StaffTypeTemplate::userTemplates(); //cc
+      for (int i = 0; (int)_userTemplates.size(); ++i) {
+            if (_userTemplates.at(i).name() == name)
+                  return &_userTemplates.at(i);
             }
       return 0;
       }
@@ -1300,7 +1319,24 @@ void StaffType::initStaffTypes()
       {
       readConfigFile(0);          // get TAB font config, before initStaffTypes()
 
-      _presets = {
+
+
+
+
+
+                                                __
+                                                ||
+                                                ||
+                        TODO: CHANGE NAME BELOW \/
+
+
+
+
+
+
+
+
+      _hardcodeTemplates = {
 //                       group,              xml-name,  human-readable-name,        lin dst clef  bars stmless time  key  ledger
          StaffType(StaffGroup::STANDARD,   "stdNormal", QObject::tr("Standard"),      5, 1, true, true, false, true, true,  true),
          StaffType(StaffGroup::PERCUSSION, "perc1Line", QObject::tr("Perc. 1 line"),  1, 1, true, true, false, true, false, true),
@@ -1365,7 +1401,7 @@ StaffTypeTemplate& StaffTypeTemplate::operator=(StaffTypeTemplate& other)
 //      }
 
 //cc
-std::list<StaffTypeTemplate> StaffTypeTemplate::_userTemplates;
+std::vector<StaffTypeTemplate> StaffTypeTemplate::_userTemplates;
 const int StaffTypeTemplate::STAFFTYPE_TEMPLATE_LIST_SIZE;
 
 //-----------------------------------------------------//cc
@@ -1375,7 +1411,7 @@ const int StaffTypeTemplate::STAFFTYPE_TEMPLATE_LIST_SIZE;
 void StaffTypeTemplate::initUserTemplates()
       {
       QSettings settings;
-      for (int i = STAFFTYPE_TEMPLATE_LIST_SIZE-1; i >= 0; --i) {
+      for (int i = 0; i < STAFFTYPE_TEMPLATE_LIST_SIZE; i++) {
             QString path = settings.value(QString("user-stafftypes-%1").arg(i),"").toString();
             if (!path.isEmpty()) {
                   StaffTypeTemplate st;
@@ -1397,7 +1433,7 @@ void StaffTypeTemplate::initUserTemplates()
                         continue;
                         }
                   st.setFileName(path);
-                  _userTemplates.emplace_front(st); //TODO: Possibly convert _userTemplates into a list of
+                  _userTemplates.emplace_back(st); //TODO: Possibly convert _userTemplates into a list of
                                                  //      pointers instead (and then just push st).
                                                  //OR: create a copy constructor
                   }
@@ -1422,7 +1458,7 @@ void StaffTypeTemplate::updateSettings() {
 //---------------------------------------------------------
 
 void StaffTypeTemplate::updateTemplate(StaffTypeTemplate& sttNew) {
-      std::list<StaffTypeTemplate>::iterator itr = _userTemplates.begin();
+      std::vector<StaffTypeTemplate>::iterator itr = _userTemplates.begin();
       while (itr != _userTemplates.end()) {
             if (itr->_fileInfo.absoluteFilePath() == sttNew._fileInfo.absoluteFilePath()) {
                   (*itr) = sttNew; //swap the old StaffType with the new one
