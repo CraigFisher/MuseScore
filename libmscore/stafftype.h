@@ -25,6 +25,7 @@ namespace Ms {
 class Chord;
 class ChordRest;
 class Staff;
+class StaffTypeTemplate; //cc
 class Xml;
 
 // all in spatium units
@@ -192,6 +193,7 @@ class StaffType {
       // the array of configured fonts
       static QList<TablatureFretFont> _fretFonts;
       static QList<TablatureDurationFont> _durationFonts;
+      static std::vector<StaffType> _prebuiltTemplates;
       static std::vector<StaffType> _presets;
 
       void  setDurationMetrics();
@@ -201,7 +203,7 @@ class StaffType {
       static const char    groupNames[STAFF_GROUP_MAX][STAFF_GROUP_NAME_MAX_LENGTH];      // used in UI
       static const QString fileGroupNames[STAFF_GROUP_MAX];                               // used in .msc? files
 
-   protected:
+   protected: //members accessible by StaffTypeTemplate
       //cc
       bool _useAlternateNoteMappings = false;  // whether notes should have non-traditional positions or shapes
       bool _useInnerLedgers = false;           // whether to allow ledger lines between the top and bottom line of a staff
@@ -211,6 +213,9 @@ class StaffType {
       NoteMappings* _altNoteMappings = 0;
       std::map<qreal, std::vector<qreal>> _innerLedgers;
       std::vector<qreal> _alternativeStaffLines;
+      
+      //cc
+      static void copyUserTemplatesToPresets(std::vector<StaffTypeTemplate>&);
 
    public:
       StaffType();
@@ -232,6 +237,7 @@ class StaffType {
       virtual ~StaffType();
       
       bool operator==(const StaffType&) const;
+      bool operator!=(const StaffType&) const; //cc
       bool isSameStructure(const StaffType&) const;
       
 
@@ -291,6 +297,7 @@ class StaffType {
       static const StaffType* getDefaultPreset(StaffGroup grp);
       static const StaffType* preset(int idx); //cc
       static const StaffType* presetFromXmlName(QString& xmlName);
+      static const int _defaultPreset[STAFF_GROUP_MAX]; //cc formerly global, not a member
 
       void setGenKeysig(bool val)              { _genKeysig = val;        }
       bool genKeysig() const                   { return _genKeysig;       }
@@ -387,7 +394,7 @@ class StaffTypeTemplate : public StaffType {
       static std::vector<StaffTypeTemplate> _userTemplates;
       static const int STAFFTYPE_TEMPLATE_LIST_SIZE = 30;  //TODO: find out reasonable limit (if limit should exist at all)
       static void updateTemplate(StaffTypeTemplate& t);
-      static void addTemplate(StaffTypeTemplate& t) { _userTemplates.emplace_back(t); }
+      static void addTemplate(StaffTypeTemplate& t);
       
       friend class StaffTypeTemplates; //TODO: check if still necessary
       

@@ -271,6 +271,15 @@ bool StaffType::operator==(const StaffType& st) const
             }
       return true;
       }
+      
+//-----------------------------------------------------//cc
+//   operator!=
+//---------------------------------------------------------
+
+bool StaffType::operator!=(const StaffType& st) const
+      {
+      return !(*this == st);
+      }
 
 //---------------------------------------------------------
 //   isSameStructure
@@ -577,6 +586,7 @@ void StaffType::writeStaffLines(Xml& xml) const
 
 void StaffType::readStaffLines(XmlReader& e)
       {
+      _alternativeStaffLines.clear();
       qreal cur = 0.0;
       qreal max = 0.0;
       while (e.readNextStartElement()) {
@@ -587,7 +597,7 @@ void StaffType::readStaffLines(XmlReader& e)
                   _alternativeStaffLines.push_back(cur);
                   }
             }
-      int staffHeight = (int) (max + 0.5); //round max up to the nearest int
+      int staffHeight = (int) (max + 1.5); //round max up to the nearest int plus one
       setLines(staffHeight);
       }
 
@@ -1233,7 +1243,7 @@ bool StaffType::fontData(bool bDuration, int nIdx, QString* pFamily, QString* pD
 //
 //=========================================================
 
-static const int _defaultPreset[STAFF_GROUP_MAX] =
+const int StaffType::_defaultPreset[] =
       { 0,              // default pitched preset is "stdNormal"
         3,              // default percussion preset is "perc5lines"
         5               // default tab preset is "tab6StrCommon"
@@ -1245,46 +1255,18 @@ static const QString _emptyString = QString();
 //   Static functions for StaffType presets
 //---------------------------------------------------------
 
-
-
-
-
-                  COMBINE _USERTEMPLATES / _PREINSTALLEDTEMPLATES INTO _PRESETS VECTOR
-
-
-                  TODO: WHEN UPDATING _USERTEMPLATES, ADD SECOND COPY TO _PRESETS LIST
-
-
-
-
-
 const StaffType* StaffType::preset(int idx) //cc
       {
-      const std::vector<StaffTypeTemplate>& _userTemplates = StaffTypeTemplate::userTemplates();
-      int _presetsLength = _presets.size();
-      int _userTemplatesLength = _userTemplates.size();
-      
-      if (idx < 0 || idx >= _presetsLength + _userTemplatesLength) //if index out of range
+      if (idx < 0 || idx >= int(_presets.size()))
             return &_presets[0];
-      if (idx < _presetsLength) //within range of _presets list
-            return &_presets[int(idx)];
-      else {                    //within range of _userTemplates list
-            idx = idx - _presetsLength;
-            return static_cast<const StaffType*>(&_userTemplates[idx]);
-            }
-      
+      return &_presets[idx];
       }
 
 const StaffType* StaffType::presetFromXmlName(QString& xmlName)
       {
-      const std::vector<StaffTypeTemplate>& _userTemplates = StaffTypeTemplate::userTemplates();
       for (int i = 0; i < int(_presets.size()); ++i) {
             if (_presets[i].xmlName() == xmlName)
                   return &_presets[i];
-            }
-      for (int i = 0; i < int(_userTemplates.size()); ++i) { //cc
-            if (_userTemplates[i].xmlName() == xmlName)
-                  return &_userTemplates[i];
             }
       return 0;
       }
@@ -1295,11 +1277,6 @@ const StaffType* StaffType::presetFromName(QString& name)
             if (_presets[i].name() == name)
                   return &_presets[i];
             }
-      const std::vector<StaffTypeTemplate>& _userTemplates = StaffTypeTemplate::userTemplates(); //cc
-      for (int i = 0; (int)_userTemplates.size(); ++i) {
-            if (_userTemplates.at(i).name() == name)
-                  return &_userTemplates.at(i);
-            }
       return 0;
       }
 #endif
@@ -1309,34 +1286,39 @@ const StaffType* StaffType::getDefaultPreset(StaffGroup grp)
       return &_presets[_idx];
       }
 
+//-----------------------------------------------------//cc
+//   copyUserTemplatesToPresets
+//---------------------------------------------------------
+
+std::vector<StaffType> StaffType::_presets;
+      
+void StaffType::copyUserTemplatesToPresets(std::vector<StaffTypeTemplate>& userTemplates)
+      {
+      //clear out the old userTemplates, if any
+      std::vector<StaffType>::iterator start = _presets.begin() + _prebuiltTemplates.size(); //exclude prebuilt (hardcoded) templates
+      std::vector<StaffType>::iterator stop  = _presets.end();
+      if (start != stop) //,prevents undefined erase behavior
+            _presets.erase(start, stop);
+      
+      //upcast StaffTypeTemplates to StaffTypes and append to _presets
+      for (int i = 0; i < int(userTemplates.size()); i++) {
+            StaffType* st = static_cast<StaffType*>(&userTemplates[i]);
+            _presets.push_back(*st);
+            }
+      }
+
+
 //---------------------------------------------------------
 //   initStaffTypes
 //---------------------------------------------------------
 
-std::vector<StaffType> StaffType::_presets;
+std::vector<StaffType> StaffType::_prebuiltTemplates;
 
 void StaffType::initStaffTypes()
       {
-      readConfigFile(0);          // get TAB font config, before initStaffTypes()
+      readConfigFile(0);          // get TAB font config, before initStaffTypes().
 
-
-
-
-
-
-                                                __
-                                                ||
-                                                ||
-                        TODO: CHANGE NAME BELOW \/
-
-
-
-
-
-
-
-
-      _hardcodeTemplates = {
+      _prebuiltTemplates = {
 //                       group,              xml-name,  human-readable-name,        lin dst clef  bars stmless time  key  ledger
          StaffType(StaffGroup::STANDARD,   "stdNormal", QObject::tr("Standard"),      5, 1, true, true, false, true, true,  true),
          StaffType(StaffGroup::PERCUSSION, "perc1Line", QObject::tr("Perc. 1 line"),  1, 1, true, true, false, true, false, true),
@@ -1357,6 +1339,11 @@ void StaffType::initStaffTypes()
          StaffType(StaffGroup::TAB, "tab6StrItalian",QObject::tr("Tab. 6-str Italian"),6, 1.5, false, true, true,  true,  "MuseScore Tab Italian",15, 0, true,  "MuseScore Tab Renaiss",10, 0, true,  TablatureMinimStyle::NONE,   true,  true,  false, false, true,  true),
          StaffType(StaffGroup::TAB, "tab6StrFrench", QObject::tr("Tab. 6-str French"), 6, 1.5, false, true, true,  true,  "MuseScore Tab French", 15, 0, true,  "MuseScore Tab Renaiss",10, 0, true,  TablatureMinimStyle::NONE,   false, false, false, false, false, false)
          };
+         
+      //cc add prebuilt templates to presets
+      for (int i = 0; i < int(_prebuiltTemplates.size()); i++) {
+            _presets.emplace_back(_prebuiltTemplates[i]);
+            }
       }
 
 //-----------------------------------------------------//cc
@@ -1393,12 +1380,6 @@ StaffTypeTemplate& StaffTypeTemplate::operator=(StaffTypeTemplate& other)
       
       return *this;
       }
-//      
-//void sttDebug(StaffTypeTemplate& stt)
-//      {
-//      qDebug() << "abs file path: " << stt._fileInfo.absoluteFilePath() << ", dirty: " << stt._dirty
-//               << ", hasFile: " << stt._hasFile;
-//      }
 
 //cc
 std::vector<StaffTypeTemplate> StaffTypeTemplate::_userTemplates;
@@ -1438,6 +1419,7 @@ void StaffTypeTemplate::initUserTemplates()
                                                  //OR: create a copy constructor
                   }
             }
+      StaffType::copyUserTemplatesToPresets(_userTemplates);
       }
       
 //-----------------------------------------------------//cc
@@ -1451,6 +1433,16 @@ void StaffTypeTemplate::updateSettings() {
             settings.setValue(QString("user-stafftypes-%1").arg(i), st.fileInfo()->absoluteFilePath());
             i++;
             }
+      }
+
+//-----------------------------------------------------//cc
+//   updateTemplate
+//---------------------------------------------------------
+      
+void StaffTypeTemplate::addTemplate(StaffTypeTemplate& t)
+      {
+      _userTemplates.emplace_back(t);
+      StaffType::copyUserTemplatesToPresets(_userTemplates);
       }
       
 //-----------------------------------------------------//cc
@@ -1466,6 +1458,7 @@ void StaffTypeTemplate::updateTemplate(StaffTypeTemplate& sttNew) {
                   }
             itr++;
             }
+      StaffType::copyUserTemplatesToPresets(_userTemplates);
       }
       
 }                 // namespace Ms

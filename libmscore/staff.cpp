@@ -161,10 +161,7 @@ Staff::Staff(Score* s)
       {
       _score     = s;
       _barLineTo = (lines()-1)*2;
-      
-//cc_temp VERY TEMPORARY
-_notation = 0;
-      
+      //cc TODO: make this match original code perfectly
       }
 
 //---------------------------------------------------------
@@ -468,7 +465,7 @@ void Staff::read(XmlReader& e)
             if (tag == "type") {    // obsolete
                   int staffTypeIdx = e.readInt();
                   qDebug("obsolete: Staff::read staffTypeIdx %d", staffTypeIdx);
-                  _staffType = *StaffType::preset(StaffTypes(staffTypeIdx));
+                  _staffType = *StaffType::preset(staffTypeIdx); //cc TODO: CONFIRM
                   // set default barLineFrom and barLineTo according to staff type num. of lines
                   // (1-line staff bar lines are special)
                   _barLineFrom = (lines() == 1 ? BARLINE_SPAN_1LINESTAFF_FROM : 0);

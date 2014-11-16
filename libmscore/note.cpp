@@ -478,6 +478,10 @@ SymId Note::noteHead() const
       if (_headType != NoteHead::Type::HEAD_AUTO)
             ht = _headType;
 
+//cc_temp VERY TEMP
+Staff* k = staff();
+
+
       //cc
       SymId t;
       if(noteMappings()) {

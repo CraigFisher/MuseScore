@@ -125,8 +125,6 @@ class Staff : public QObject {
 
       VeloList _velocities;         ///< cached value
       PitchList _pitchOffsets;      ///< cached value
-      
-      NoteMappings* _notation; //cc
 
    public:
       Staff(Score* = 0);
@@ -243,8 +241,7 @@ class Staff : public QObject {
       void insertTime(int tick, int len);
       
       //cc
-      void setNotation(NoteMappings*); //TODO: guard access, possibly make friend
-      NoteMappings* const noteMappings() { return _notation; }
+      NoteMappings* noteMappings() { return staffType()->noteMappings(); }
       };
 
 }     // namespace Ms

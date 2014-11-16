@@ -15,6 +15,7 @@
 
 #include "note.h"
 #include <map>
+#include <array>
 #include <vector>
 #include <QFile>
 
@@ -30,8 +31,8 @@ class XmlReader;
 
 class NoteMappings {      
     private:
-        int _notePositions[35];
-        NoteHead::Group _noteHeads[35];
+        std::array<int, 35> _notePositions;
+        std::array<NoteHead::Group, 35> _noteHeads;
         std::map<ClefType, int> _clefOffsets;
         int _octaveDistance = 7;
         bool _showAccidentals = true;

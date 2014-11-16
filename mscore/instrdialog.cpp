@@ -345,7 +345,7 @@ void MuseScore::editInstrList()
                               bool updateNeeded = (ng == StaffGroup::TAB) != (og == StaffGroup::TAB);
 
                               // use selected staff type
-                              if (stfType->name() != staff->staffType()->name())
+                              if (*stfType != *(staff->staffType())) //cc confirm if stafftypes are equal, not just names
                                     rootScore->undo(new ChangeStaffType(staff, *stfType));
 
                               if (updateNeeded)

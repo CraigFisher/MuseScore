@@ -111,9 +111,9 @@ void NoteMappings::writeMappings(Xml& xml) const
             else if (group == NoteHead::Group::HEAD_DIAMOND)
                   groupName = "diamond";
             else if (group == NoteHead::Group::HEAD_CROSS)
-                  groupName = "x";
+                  groupName = "cross";
             else if (group == NoteHead::Group::HEAD_XCIRCLE)
-                  groupName = "circle-x";
+                  groupName = "xcircle";
             else if (group == NoteHead::Group::HEAD_DO)
                   groupName = "do";
             else if (group == NoteHead::Group::HEAD_RE)
@@ -127,7 +127,11 @@ void NoteMappings::writeMappings(Xml& xml) const
             else if (group == NoteHead::Group::HEAD_TI)
                   groupName = "ti";
             else if (group == NoteHead::Group::HEAD_SOL)
-                  groupName = "so";
+                  groupName = "sol";
+            else if (group == NoteHead::Group::HEAD_BREVIS_ALT)
+                  groupName = "brevis_alt";
+            else if (group == NoteHead::Group::HEAD_GROUPS)
+                  groupName = "groups";
             
             xml.tag("notehead-group", groupName);
             xml.etag();
@@ -149,7 +153,6 @@ void NoteMappings::readMappings(XmlReader& e)
                         }
                   else if (tag == "notehead-group") {
                         QString text = e.readElementText();
-                  
                         NoteHead::Group group;
                         if (text == "normal")
                               group = NoteHead::Group::HEAD_NORMAL;

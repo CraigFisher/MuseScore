@@ -478,7 +478,7 @@ Staff* Element::staff() const
 
 NoteMappings* Element::noteMappings() const
       {
-      return staff() ? staff()->noteMappings() : 0;
+      return staff() && staff()->staffType() ? staff()->staffType()->noteMappings() : 0;
       }
 
 //---------------------------------------------------------
