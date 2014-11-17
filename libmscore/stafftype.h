@@ -386,7 +386,7 @@ class StaffTypeTemplate : public StaffType {
       bool _hasFile;
       bool _dirty;
       
-      void setFileName(QString s) { _fileInfo.setFile(s); }
+      void setFileName(QString s);
       const QFileInfo* fileInfo() const { return &_fileInfo; }
       void setDirty(bool v) { _dirty = v; }
       void setHasFile(bool v) { _hasFile = v; }
@@ -395,14 +395,15 @@ class StaffTypeTemplate : public StaffType {
       static const int STAFFTYPE_TEMPLATE_LIST_SIZE = 30;  //TODO: find out reasonable limit (if limit should exist at all)
       static void updateTemplate(StaffTypeTemplate& t);
       static void addTemplate(StaffTypeTemplate& t);
+      static void removeTemplate(StaffTypeTemplate& t);
       
-      friend class StaffTypeTemplates; //TODO: check if still necessary
+      friend class StaffTypeTemplates;
       
     public:
       StaffTypeTemplate();
       StaffTypeTemplate(const StaffTypeTemplate& source) : StaffType(source),
           _fileInfo(source._fileInfo), _hasFile(source._hasFile), _dirty(source._dirty) {};
-      StaffTypeTemplate& operator=(StaffTypeTemplate& other);
+      StaffTypeTemplate& operator=(StaffTypeTemplate other);
       
       bool hasFile() const { return _hasFile; } //TODO: MAKE PRIVATE?
       bool dirty() const { return _dirty; }

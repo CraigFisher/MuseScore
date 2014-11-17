@@ -1364,6 +1364,20 @@ StaffTypeTemplate::StaffTypeTemplate() :
       _alternativeStaffLines.push_back(3);
       _alternativeStaffLines.push_back(4);
       }
+      
+//-----------------------------------------------------//cc
+//   StaffTypeTemplate
+//---------------------------------------------------------
+
+void StaffTypeTemplate::setFileName(QString s)
+      {
+      if (s.isEmpty()) {
+            QFileInfo f;
+            _fileInfo = f;
+            }
+      else
+            _fileInfo.setFile(s);
+      }
 
 //-----------------------------------------------------//cc
 //   operator=
@@ -1371,7 +1385,7 @@ StaffTypeTemplate::StaffTypeTemplate() :
       
 //      TODO: THIS SEEMS INCORRECT (overloading base class assignment operator)
       
-StaffTypeTemplate& StaffTypeTemplate::operator=(StaffTypeTemplate& other)
+StaffTypeTemplate& StaffTypeTemplate::operator=(StaffTypeTemplate other)
       {
       StaffType::operator=(other); //TODO: check what this actually means
       _dirty = other._dirty;
@@ -1433,6 +1447,11 @@ void StaffTypeTemplate::updateSettings() {
             settings.setValue(QString("user-stafftypes-%1").arg(i), st.fileInfo()->absoluteFilePath());
             i++;
             }
+      while (i < STAFFTYPE_TEMPLATE_LIST_SIZE) {
+            settings.remove(QString("user-stafftypes-%1").arg(i));
+            i++;
+            }
+
       }
 
 //-----------------------------------------------------//cc
@@ -1449,11 +1468,29 @@ void StaffTypeTemplate::addTemplate(StaffTypeTemplate& t)
 //   updateTemplate
 //---------------------------------------------------------
 
-void StaffTypeTemplate::updateTemplate(StaffTypeTemplate& sttNew) {
+void StaffTypeTemplate::updateTemplate(StaffTypeTemplate& sttNew)
+      {
       std::vector<StaffTypeTemplate>::iterator itr = _userTemplates.begin();
       while (itr != _userTemplates.end()) {
             if (itr->_fileInfo.absoluteFilePath() == sttNew._fileInfo.absoluteFilePath()) {
                   (*itr) = sttNew; //swap the old StaffType with the new one
+                  break;
+                  }
+            itr++;
+            }
+      StaffType::copyUserTemplatesToPresets(_userTemplates);
+      }
+
+//-----------------------------------------------------//cc
+//   removeTemplate
+//---------------------------------------------------------
+      
+void StaffTypeTemplate::removeTemplate(StaffTypeTemplate& t)
+      {
+      std::vector<StaffTypeTemplate>::iterator itr = _userTemplates.begin();
+      while (itr != _userTemplates.end()) {
+            if (itr->_fileInfo.absoluteFilePath() == t._fileInfo.absoluteFilePath()) {
+                  _userTemplates.erase(itr);
                   break;
                   }
             itr++;

@@ -103,10 +103,10 @@ StaffTypeTemplates::StaffTypeTemplates(QWidget *parent) :
 
       connect(staffTypeSelector, SIGNAL(currentRowChanged(int)), SLOT(handleTemplateSwitch(int)));
       connect(exitButton, SIGNAL(clicked()), SLOT(handleExitButton()));
-      connect(loadStaffTypeButton, SIGNAL(clicked()), SLOT(load()));
-      connect(newStaffTypeButton, SIGNAL(clicked()), SLOT(create()));
-      connect(removeStaffTypeButton, SIGNAL(clicked()), SLOT(remove()));
-      connect(duplicateStaffTypeButton, SIGNAL(clicked()), SLOT(duplicate()));
+      connect(loadStaffTypeButton, SIGNAL(clicked()), this, SLOT(load()));
+      connect(newStaffTypeButton, SIGNAL(clicked()),  SLOT(create()));
+      connect(removeStaffTypeButton, SIGNAL(clicked()), this, SLOT(remove()));
+      connect(duplicateStaffTypeButton, SIGNAL(clicked()), this, SLOT(duplicate()));
       connect(saveStaffTypesButton, SIGNAL(clicked()), SLOT(save()));
 
       doubleFlatOffset->setMinimum(-24); //TODO: determine if there are more logical values here
@@ -304,11 +304,39 @@ void StaffTypeTemplates::create()
       
 //---------------------------------------------------------
 //   removeStaffType
+//          remove STT from userTemplates and Settings
+//          but does not delete the actual file
 //---------------------------------------------------------
 
 void StaffTypeTemplates::remove()
       {
+      if (!curTemplate)
+            return;
+      
+      //remove STT from userTemplates and settings
+      if (curTemplate->hasFile()) {
+            StaffTypeTemplate::removeTemplate(*curTemplate);
+            StaffTypeTemplate::updateSettings();
+            }
 
+      //remove STT from localTemplates
+      std::vector<StaffTypeTemplate>::iterator itr = localTemplates.begin();
+      while (itr != localTemplates.end()) {
+            if (&(*itr) == curTemplate) {
+                  localTemplates.erase(itr);
+                  break;
+                  }
+            itr++;
+            }
+            
+      //remove widget item
+      QListWidgetItem* item = staffTypeSelector->takeItem(staffTypeSelector->currentRow());
+      delete item;
+      
+      if (staffTypeSelector->count() == 0) {
+            enableInput(false);
+            curTemplate = NULL;
+            }
       }
 
 //---------------------------------------------------------
@@ -317,7 +345,32 @@ void StaffTypeTemplates::remove()
 
 void StaffTypeTemplates::duplicate()
       {
+      if (!curTemplate)
+            return;
 
+      //copy the template
+      StaffTypeTemplate st = *curTemplate;
+      st.setFileName("");
+      st.setDirty(false);
+      st.setHasFile(false);
+
+      //append the word 'copy' to end
+      QString name =  QString("%1 %2").arg(st.name()).arg("copy");
+      st.setXmlName(name);
+      st.setName(name);
+
+      // add copy to local list
+      localTemplates.push_back(st);
+      curTemplate = &localTemplates.back();
+
+      // add copy's name and key to the list widget
+      QListWidgetItem* item = new QListWidgetItem;
+      item->setText(name);
+      item->setData(Qt::UserRole, "");
+      staffTypeSelector->addItem(item);
+      staffTypeSelector->setCurrentItem(item);
+      if (!inputEnabled)
+            enableInput(true);
 	}
       
 //---------------------------------------------------------
@@ -520,6 +573,8 @@ void StaffTypeTemplates::enableInput(bool enable) const //TODO: rename to "enabl
       
 StaffTypeTemplate* StaffTypeTemplates::templateByItem(QListWidgetItem* item)
       {
+      if (!item)
+            return NULL;
       QString itemKey;
       QString templateKey;
       itemKey = item->data(Qt::UserRole).toString();
@@ -529,7 +584,7 @@ StaffTypeTemplate* StaffTypeTemplates::templateByItem(QListWidgetItem* item)
             if (itemKey[itemKey.size() - 1] == '*')
                   itemKey = itemKey.remove(itemKey.size()-1, 1);
             }
-
+            
       //search local templates until "itemKey == templateKey"
       for (StaffTypeTemplate& stt : localTemplates) {
             if (useFilePath)
@@ -553,6 +608,9 @@ StaffTypeTemplate* StaffTypeTemplates::templateByItem(QListWidgetItem* item)
 
 QListWidgetItem* StaffTypeTemplates::itemByTemplate(StaffTypeTemplate* stt)
       {
+      if (!stt)
+            return NULL;
+      
       if (stt == curTemplate)
             return staffTypeSelector->currentItem();
       
@@ -635,6 +693,20 @@ int StaffTypeTemplates::clefIndex(ClefType ct) const
                   return i;
             }
       return -1;
+      }
+      
+//---------------------------------------------------------
+//    debugLocals
+//---------------------------------------------------------
+      
+void StaffTypeTemplates::debugLocals()
+      {
+      qDebug()<<"...Local Templates...";
+      std::vector<StaffTypeTemplate>::iterator itr = localTemplates.begin();
+      while (itr != localTemplates.end()) {
+            itr->debug();
+            itr++;
+            }
       }
 
 //---------------------------------------------------------

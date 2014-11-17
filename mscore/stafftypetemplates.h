@@ -36,7 +36,7 @@ class StaffTypeTemplates : public QDialog, private Ui::StaffTypeTemplates {
       mutable bool inputEnabled = true;
       int newTemplateNameIndex = 0;
       StaffTypeTemplate* curTemplate;
-      std::list<StaffTypeTemplate> localTemplates; //local copy of userTemplates
+      std::vector<StaffTypeTemplate> localTemplates; //local copy of userTemplates
       
       void setValues() const;
       void enableInput(bool) const;
@@ -55,6 +55,7 @@ class StaffTypeTemplates : public QDialog, private Ui::StaffTypeTemplates {
       int clefIdx; //index of a clef, used in clefLookup
       int noteheadIndex(NoteHead::Group) const;
       int clefIndex(ClefType) const;
+      void debugLocals();
 
     signals:
       void closed(bool);
