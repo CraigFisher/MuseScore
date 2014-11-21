@@ -15,6 +15,7 @@
 
 #include "ui_stafftypetemplates.h"
 #include "libmscore/stafftype.h"
+#include <QTableView>
 
 //cc
 namespace Ui {
@@ -23,6 +24,81 @@ class StaffTypeTemplates;
 
 namespace Ms {
 
+
+//////////////////////////////////
+//////////////////////////////////
+//////////////////////////////////
+      //TODO: SEPARATE HEADER FILE
+//////////////////////////////////
+//////////////////////////////////
+//////////////////////////////////
+
+//---------------------------------------------------------
+//   InnerLedgerWidget
+//---------------------------------------------------------
+
+class InnerLedgerWidget : public QWidget
+{
+      Q_OBJECT
+    public:
+      InnerLedgerWidget(QWidget *parent = 0);
+      void setData(const std::map<qreal, std::vector<qreal>>*);
+ 
+    private:
+      QStandardItemModel _model;
+      QTableView*  _table;
+      QPushButton* _addButton;
+      QPushButton* _deleteButton;
+      QWidget* _parent;
+      
+      std::vector<qreal> parseLedgers(QString);
+      void setColumnParameters();
+      
+    private slots:
+      void addLedgerMapping();
+      void deleteLedgerMappings();
+      void updateInnerLedgers(QStandardItem*);
+      
+    signals:
+      void innerLedgersChanged(qreal, std::vector<qreal>*);
+};
+
+//---------------------------------------------------------
+//   LedgerItemDelegate
+//---------------------------------------------------------
+
+class LedgerItemDelegate : public QItemDelegate
+{
+      Q_OBJECT
+    public:
+      explicit LedgerItemDelegate(QObject *parent = 0);
+
+      virtual QWidget* createEditor(QWidget *parent, const QStyleOptionViewItem &option,
+                         const QModelIndex &index) const;
+      
+      void setEditorData(QWidget *editor, const QModelIndex &index) const;
+      void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
+      void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+ 
+    signals:
+      void buttonClicked(const QModelIndex &index);
+
+    private:
+      QStyle::State  _state;
+      QRect oldRect;
+};
+
+//////////////////////////////////
+//////////////////////////////////
+//////////////////////////////////
+           //TODO: SEPARATE HEADER (THE ABOVE)
+//////////////////////////////////
+//////////////////////////////////
+//////////////////////////////////
+
+
+
+//TODO: HANDLE NECESSARY DELETIONS IN A DESTRUCTOR
 class StaffTypeTemplates : public QDialog, private Ui::StaffTypeTemplates {
 	Q_OBJECT
       
@@ -32,11 +108,14 @@ class StaffTypeTemplates : public QDialog, private Ui::StaffTypeTemplates {
 
     private:
       Ui::StaffTypeTemplates *ui;
+      InnerLedgerWidget* innerLedgerWidget;
       
       mutable bool inputEnabled = true;
       int newTemplateNameIndex = 0;
       StaffTypeTemplate* curTemplate;
       std::vector<StaffTypeTemplate> localTemplates; //local copy of userTemplates
+      
+      std::list<QStandardItem*> InnerLedgerWidgetItems;
       
       void setValues() const;
       void enableInput(bool) const;
@@ -90,6 +169,8 @@ class StaffTypeTemplates : public QDialog, private Ui::StaffTypeTemplates {
       void setNaturalNotehead(int headIdx) { setNotehead(2, headIdx); }
       void setSharpNotehead(int headIdx) { setNotehead(3, headIdx); }
       void setDoubleSharpNotehead(int headIdx) { setNotehead(4, headIdx); }
+      
+      void setInnerLedgers(qreal pos, std::vector<qreal>* ledgers);
       
       //TODO: SET Notehead AND CLEFOFFSET
 };

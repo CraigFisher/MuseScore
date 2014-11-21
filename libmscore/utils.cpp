@@ -803,7 +803,7 @@ int absStep(int line, ClefType clef, NoteMappings* altNotation)
 
 int relStep(int line, ClefType clef, NoteMappings* altNotation)
       {
-      if (altNotation) //cc
+      if (altNotation && clef != ClefType::TAB && clef != ClefType::PERC) //cc
             return altNotation->clefOffset(clef) - line;
       else
             return ClefInfo::pitchOffset(clef) - line;

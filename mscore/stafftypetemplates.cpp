@@ -77,6 +77,8 @@ StaffTypeTemplates::StaffTypeTemplates(QWidget *parent) :
       ui(new Ui::StaffTypeTemplates)
       {
       setupUi(this);
+      innerLedgerWidget = new InnerLedgerWidget(staffLineEditorContainer); //TODO: correct name
+      innerLedgerWidget->show();
       
       /* retrieve STT::userTemplates and
          use them to populate localTemplates */
@@ -153,6 +155,8 @@ void StaffTypeTemplates::connectInput() const
       connect(naturalNotehead, SIGNAL(currentIndexChanged(int)), SLOT(setNaturalNotehead(int)));
       connect(sharpNotehead, SIGNAL(currentIndexChanged(int)), SLOT(setSharpNotehead(int)));
       connect(doubleSharpNotehead, SIGNAL(currentIndexChanged(int)), SLOT(setDoubleSharpNotehead(int)));
+      
+      connect(innerLedgerWidget, SIGNAL(innerLedgersChanged(qreal, std::vector<qreal>*)), this, SLOT(setInnerLedgers(qreal, std::vector<qreal>*)));
       }
 
 //---------------------------------------------------------
@@ -178,6 +182,8 @@ void StaffTypeTemplates::disconnectInput() const
       disconnect(naturalNotehead, SIGNAL(currentIndexChanged(int)), 0, 0);
       disconnect(sharpNotehead, SIGNAL(currentIndexChanged(int)), 0, 0);
       disconnect(doubleSharpNotehead, SIGNAL(currentIndexChanged(int)), 0, 0);
+      
+      disconnect(innerLedgerWidget, SIGNAL(innerLedgersChanged(qreal, std::vector<qreal>*)), 0, 0);
       }
       
 //---------------------------------------------------------
@@ -210,6 +216,11 @@ void StaffTypeTemplates::setValues() const
       naturalNotehead->    setCurrentIndex(noteheadIndex(mappings->tpc2HeadGroup(nTpc)));
       sharpNotehead->      setCurrentIndex(noteheadIndex(mappings->tpc2HeadGroup(sTpc)));
       doubleSharpNotehead->setCurrentIndex(noteheadIndex(mappings->tpc2HeadGroup(ssTpc)));
+      
+      //SET INNERLEDGERS
+      innerLedgerWidget->setData(curTemplate->innerLedgers());
+      
+      //TODO: SET STAFFLINES
       
       ClefType curClef = clefLookup[clefIdx];
       clefOffset->setValue(mappings->clefOffset(curClef));
@@ -565,6 +576,7 @@ void StaffTypeTemplates::enableInput(bool enable) const //TODO: rename to "enabl
       clefOffset->setEnabled(enable);
       showAccidentals->setEnabled(enable);
       octaveDistance->setEnabled(enable);
+      innerLedgerWidget->setEnabled(enable);
       }
       
 //---------------------------------------------------------
@@ -677,6 +689,15 @@ void StaffTypeTemplates::setOctaveDistance(int val)
       markTemplateDirty(curTemplate, true);
       }
       
+void StaffTypeTemplates::setInnerLedgers(qreal pos, std::vector<qreal>* ledgers)
+      {
+      if (ledgers)
+            curTemplate->setInnerLedgers(pos, ledgers);
+      else
+            curTemplate->removeInnerLedgerMapping(pos);
+      markTemplateDirty(curTemplate, true);
+      }
+      
 int StaffTypeTemplates::noteheadIndex(NoteHead::Group group) const
       {
       for (int i = 0; i < 14; i++) {
@@ -708,31 +729,197 @@ void StaffTypeTemplates::debugLocals()
             itr++;
             }
       }
-
-//---------------------------------------------------------
-//   closeEvent
-//---------------------------------------------------------
       
-//void StaffTypeTemplates::closeEvent(QCloseEvent* ev)
-//      {
-//      emit closed(false);
-//      QWidget::closeEvent(ev);
-//      }
-      
-//---------------------------------------------------------
-//   showStaffTypeTemplates
-//---------------------------------------------------------
+//////////////////////////////////
+//////////////////////////////////
+//////////////////////////////////
+           //TODO: SEPARATE HEADER
+//////////////////////////////////
+//////////////////////////////////
+//////////////////////////////////
 
-//void MuseScore::showStaffTypeTemplates(bool visible)
-//      {
-//      if (staffTypeTemplates == 0) {
-//            if (!visible)
-//                  return;
-//            staffTypeTemplates = new StaffTypeTemplates(this);
-//            connect(staffTypeTemplates, SIGNAL(closed(bool)), notationId, SLOT(setChecked(bool)));
-//            }
-//      staffTypeTemplates->setVisible(visible);
-//      notationId->setChecked(visible);
-//      }
+InnerLedgerWidget::InnerLedgerWidget(QWidget *parent) :
+      QWidget(parent), _table(0), _addButton(0), _deleteButton(0), _parent(parent)
+{
+      _table = new QTableView();
+      _table->verticalHeader()->hide();
+      _table->setSelectionBehavior(QAbstractItemView::SelectRows);
+      _table->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+      _addButton = new QPushButton("Add", this);
+      _deleteButton = new QPushButton("Delete", this);
+      
+      LedgerItemDelegate* itemDelegate = new LedgerItemDelegate(_table);
+      _table->setItemDelegate(itemDelegate);
+      _table->setModel(&_model);
+
+      connect(_addButton, SIGNAL(clicked()), this, SLOT(addLedgerMapping()));
+      connect(_deleteButton, SIGNAL(clicked()), this, SLOT(deleteLedgerMappings()));
+      connect(&_model, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(updateInnerLedgers(QStandardItem*))); //cc_temp
+ 
+      QGridLayout* mainLayout = new QGridLayout(parent);
+      mainLayout->addWidget(_table, 0, 0, 1, 2);
+      mainLayout->addWidget(_addButton, 1, 0, 1, 1);
+      mainLayout->addWidget(_deleteButton, 1, 1, 1, 1);
+}
+
+void InnerLedgerWidget::setColumnParameters()
+      {
+      _model.setHeaderData(0, Qt::Horizontal, "Position");
+      _model.setHeaderData(1, Qt::Horizontal, "Ledgers");
+      _table->setColumnWidth(0, _parent->width() * 0.473); //HACK
+      _table->setColumnWidth(1, _parent->width() * 0.473);
+      }
+
+void InnerLedgerWidget::addLedgerMapping()
+      {
+      QStandardItem* item1 = new QStandardItem; //TODO: MAKE SURE THESE ARE DESTROYED
+      QStandardItem* item2 = new QStandardItem;
+      item1->setData(0.0, Qt::EditRole);
+      item2->setData("", Qt::EditRole);
+      QList<QStandardItem*> row;
+      row.append(item1);
+      row.append(item2);
+      _model.appendRow(row);
+      setColumnParameters();
+      }
+
+void InnerLedgerWidget::deleteLedgerMappings()
+      {
+      QModelIndexList rows = _table->selectionModel()->selectedRows(0);
+      for (int i = rows.size() - 1; i >= 0; i--) {
+            
+            //remove row from model
+            int row = rows.at(i).row();
+            qreal position = rows.at(i).data(Qt::EditRole).value<qreal>();
+            QList<QStandardItem*> colsToDelete = _model.takeRow(row);
+            
+            //delete its children items
+            while (colsToDelete.isEmpty())
+                  delete colsToDelete.takeFirst();
+            emit innerLedgersChanged(position, NULL);
+            }
+      }
+
+void InnerLedgerWidget::setData(const std::map<qreal, std::vector<qreal>>* ledgerMap)
+      {
+      _model.clear();
+      std::map<qreal, std::vector<qreal>>::const_iterator posItr = ledgerMap->begin();
+      while (posItr != ledgerMap->end()) {
+            qreal pos = posItr->first;
+            QString ledgerString;
+
+            std::vector<qreal>::const_iterator ledgerItr = posItr->second.begin();
+            while (ledgerItr != posItr->second.end()) {
+                  ledgerString.append(QString::number(*ledgerItr,'f', 2)).append(',');
+                  ledgerItr++;
+                  }
+            
+            QStandardItem* item1 = new QStandardItem; //TODO: MAKE SURE THESE ARE DESTROYED
+            QStandardItem* item2 = new QStandardItem;
+            item1->setData(pos, Qt::EditRole);
+            item2->setData(ledgerString, Qt::EditRole);
+            QList<QStandardItem*> row;
+            row.append(item1);
+            row.append(item2);
+            _model.appendRow(row);
+            
+            posItr++;
+            }
+      setColumnParameters();
+      }
+
+void InnerLedgerWidget::updateInnerLedgers(QStandardItem* item)
+      {
+      qreal pos = 0.0;
+      std::vector<qreal> ledgers;
+      QStandardItem* posItem = _model.item(item->row(), 0);
+      QStandardItem* ledgerItem = _model.item(item->row(), 1);
+      
+      pos = posItem->data(Qt::EditRole).value<qreal>();
+      ledgers = parseLedgers(ledgerItem->data(Qt::EditRole).value<QString>());
+      
+      if (!ledgers.empty())
+            emit innerLedgersChanged(pos, &ledgers);
+      else
+            emit innerLedgersChanged(pos, NULL);
+      }
+      
+std::vector<qreal> InnerLedgerWidget::parseLedgers(QString ledgerString)
+      {
+      std::vector<qreal> ledgers;
+      QStringList intList = ledgerString.split(",", QString::SkipEmptyParts);
+      foreach (const QString& s, intList) {
+            bool ok;
+            qreal next = s.toDouble(&ok);
+            if (ok)
+                  ledgers.push_back(next);
+            else {
+                  ledgers.clear();
+                  break;
+                  }
+            }
+      return ledgers;
+      }
+
+//////////////////////////////////
+//////////////////////////////////
+//////////////////////////////////
+
+//////////////////////////////////
+//////////////////////////////////
+//////////////////////////////////
+
+LedgerItemDelegate::LedgerItemDelegate(QObject *parent) :
+    QItemDelegate(parent)
+{
+    _state =  QStyle::State_Enabled; //TODO: STILL NECESSARY?
+}
+
+QWidget* LedgerItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
+      {
+      if(index.column() % 2 == 0) {
+            QDoubleSpinBox *spinner = new QDoubleSpinBox(parent);
+            spinner->setDecimals(2);
+            spinner->setSingleStep(0.5);
+            spinner->setRange(-50.0, 50.0);
+            spinner->installEventFilter(const_cast<LedgerItemDelegate*>(this));
+            return spinner;
+            }
+      else {
+            QLineEdit *editor = new QLineEdit(parent);
+            editor->installEventFilter(const_cast<LedgerItemDelegate*>(this));
+            return editor;
+            }
+      }
+
+void LedgerItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
+      {
+      if(index.column() % 2 == 0) {
+            QDoubleSpinBox* spinner = static_cast<QDoubleSpinBox*>(editor);
+            spinner->setValue(index.data(Qt::EditRole).value<qreal>());
+            }
+      else {
+            QLineEdit* lineEdit = static_cast<QLineEdit*>(editor);
+            lineEdit->setText(index.data(Qt::EditRole).value<QString>());
+            }
+      }
+      
+void LedgerItemDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+      {
+      if(index.column() % 2 == 0) {
+            QDoubleSpinBox* spinner = static_cast<QDoubleSpinBox*>(editor);
+            spinner->interpretText();
+            model->setData(index, spinner->value(), Qt::EditRole);//TODO ... INTERPRET TEXT FROM QDOUBLESPINBOX
+            }
+      else {
+            QLineEdit *lineEdit = static_cast<QLineEdit*>(editor);
+            model->setData(index, lineEdit->text(), Qt::EditRole);
+            }
+      }
+ 
+void LedgerItemDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const
+      {
+      editor->setGeometry(option.rect);
+      }
       
 }

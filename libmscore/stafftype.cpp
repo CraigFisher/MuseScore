@@ -528,7 +528,7 @@ void StaffType::writeInnerLedgers(Xml& xml) const
       
       std::map<qreal, std::vector<qreal>>::const_iterator lineItr = _innerLedgers.begin();
       while (lineItr != _innerLedgers.end()) {
-            QString lineVal = QString::number(lineItr->first,'f', 1);
+            QString lineVal = QString::number(lineItr->first,'f', 2);
             xml.stag(QString("note line=\"%1\"").arg(lineVal));
             
             std::vector<qreal>::const_iterator ledgerItr = lineItr->second.begin();
@@ -553,14 +553,20 @@ void StaffType::readInnerLedgers(XmlReader& e)
       {
       while (e.readNextStartElement()) {
             if (e.name().toString() == "note") {
-                  qreal noteLine = e.intAttribute("line");
+                  qreal noteLine = e.doubleAttribute("line");
                   std::vector<qreal> ledgers = std::vector<qreal>(); //ledger lines associated with note
                   while (e.readNextStartElement()) {
-                        ledgers.push_back(e.readInt());
+                        ledgers.push_back(e.readDouble());
                         }
                   if (!(ledgers.empty())) { //only add noteLine to map if ledgers exist for it
                         _innerLedgers[noteLine] = ledgers;
                         }
+                  else {
+      qDebug()<<"note empty";
+                        }
+                  }
+            else {
+      qDebug()<<"note note";
                   }
             }
       }

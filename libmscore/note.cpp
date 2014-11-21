@@ -2092,6 +2092,11 @@ void Note::updateRelLine(int relLine, bool undoable)
 
       Staff* s = score()->staff(staffIdx() + chord()->staffMove());
       ClefType clef = s->clef(chord()->tick());
+      
+      
+StaffType* k = staff()->staffType();
+      
+      
       int line = relStep(relLine, clef, staff()->noteMappings());
       if (line != _line) {
             if (undoable)
