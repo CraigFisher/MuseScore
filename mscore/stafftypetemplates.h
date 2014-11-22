@@ -51,16 +51,16 @@ class InnerLedgerWidget : public QWidget
       QPushButton* _deleteButton;
       QWidget* _parent;
       
-      std::vector<qreal> parseLedgers(QString);
+      std::vector<qreal> parseLedgers(const QString* originalStr, QString* correctedStr);
       void setColumnParameters();
       
     private slots:
       void addLedgerMapping();
       void deleteLedgerMappings();
-      void updateInnerLedgers(QStandardItem*);
+      void updateInnerLedgers();
       
     signals:
-      void innerLedgersChanged(qreal, std::vector<qreal>*);
+      void innerLedgersChanged(std::map<qreal, std::vector<qreal>>*);
 };
 
 //---------------------------------------------------------
@@ -170,7 +170,7 @@ class StaffTypeTemplates : public QDialog, private Ui::StaffTypeTemplates {
       void setSharpNotehead(int headIdx) { setNotehead(3, headIdx); }
       void setDoubleSharpNotehead(int headIdx) { setNotehead(4, headIdx); }
       
-      void setInnerLedgers(qreal pos, std::vector<qreal>* ledgers);
+      void setInnerLedgers(std::map<qreal, std::vector<qreal>>*);
       
       //TODO: SET Notehead AND CLEFOFFSET
 };

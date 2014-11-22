@@ -156,7 +156,7 @@ void StaffTypeTemplates::connectInput() const
       connect(sharpNotehead, SIGNAL(currentIndexChanged(int)), SLOT(setSharpNotehead(int)));
       connect(doubleSharpNotehead, SIGNAL(currentIndexChanged(int)), SLOT(setDoubleSharpNotehead(int)));
       
-      connect(innerLedgerWidget, SIGNAL(innerLedgersChanged(qreal, std::vector<qreal>*)), this, SLOT(setInnerLedgers(qreal, std::vector<qreal>*)));
+      connect(innerLedgerWidget, SIGNAL(innerLedgersChanged(std::map<qreal, std::vector<qreal>>*)), this, SLOT(setInnerLedgers(std::map<qreal, std::vector<qreal>>*)));
       }
 
 //---------------------------------------------------------
@@ -183,7 +183,7 @@ void StaffTypeTemplates::disconnectInput() const
       disconnect(sharpNotehead, SIGNAL(currentIndexChanged(int)), 0, 0);
       disconnect(doubleSharpNotehead, SIGNAL(currentIndexChanged(int)), 0, 0);
       
-      disconnect(innerLedgerWidget, SIGNAL(innerLedgersChanged(qreal, std::vector<qreal>*)), 0, 0);
+      disconnect(innerLedgerWidget, SIGNAL(innerLedgersChanged(std::map<qreal, std::vector<qreal>>*)), 0, 0);
       }
       
 //---------------------------------------------------------
@@ -689,12 +689,9 @@ void StaffTypeTemplates::setOctaveDistance(int val)
       markTemplateDirty(curTemplate, true);
       }
       
-void StaffTypeTemplates::setInnerLedgers(qreal pos, std::vector<qreal>* ledgers)
+void StaffTypeTemplates::setInnerLedgers(std::map<qreal, std::vector<qreal>>* ledgers)
       {
-      if (ledgers)
-            curTemplate->setInnerLedgers(pos, ledgers);
-      else
-            curTemplate->removeInnerLedgerMapping(pos);
+      curTemplate->setInnerLedgers(ledgers);
       markTemplateDirty(curTemplate, true);
       }
       
@@ -754,7 +751,7 @@ InnerLedgerWidget::InnerLedgerWidget(QWidget *parent) :
 
       connect(_addButton, SIGNAL(clicked()), this, SLOT(addLedgerMapping()));
       connect(_deleteButton, SIGNAL(clicked()), this, SLOT(deleteLedgerMappings()));
-      connect(&_model, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(updateInnerLedgers(QStandardItem*))); //cc_temp
+      connect(&_model, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(updateInnerLedgers())); //TODO: MAKE SURE THIS WORKS
  
       QGridLayout* mainLayout = new QGridLayout(parent);
       mainLayout->addWidget(_table, 0, 0, 1, 2);
@@ -774,7 +771,9 @@ void InnerLedgerWidget::addLedgerMapping()
       {
       QStandardItem* item1 = new QStandardItem; //TODO: MAKE SURE THESE ARE DESTROYED
       QStandardItem* item2 = new QStandardItem;
-      item1->setData(0.0, Qt::EditRole);
+
+//do NOT initialize any real data, it may conflict
+      item1->setData("", Qt::EditRole);
       item2->setData("", Qt::EditRole);
       QList<QStandardItem*> row;
       row.append(item1);
@@ -787,16 +786,14 @@ void InnerLedgerWidget::deleteLedgerMappings()
       {
       QModelIndexList rows = _table->selectionModel()->selectedRows(0);
       for (int i = rows.size() - 1; i >= 0; i--) {
-            
             //remove row from model
             int row = rows.at(i).row();
-            qreal position = rows.at(i).data(Qt::EditRole).value<qreal>();
             QList<QStandardItem*> colsToDelete = _model.takeRow(row);
             
             //delete its children items
             while (colsToDelete.isEmpty())
                   delete colsToDelete.takeFirst();
-            emit innerLedgersChanged(position, NULL);
+            emit updateInnerLedgers();
             }
       }
 
@@ -828,33 +825,44 @@ void InnerLedgerWidget::setData(const std::map<qreal, std::vector<qreal>>* ledge
       setColumnParameters();
       }
 
-void InnerLedgerWidget::updateInnerLedgers(QStandardItem* item)
+void InnerLedgerWidget::updateInnerLedgers()
       {
-      qreal pos = 0.0;
-      std::vector<qreal> ledgers;
-      QStandardItem* posItem = _model.item(item->row(), 0);
-      QStandardItem* ledgerItem = _model.item(item->row(), 1);
-      
-      pos = posItem->data(Qt::EditRole).value<qreal>();
-      ledgers = parseLedgers(ledgerItem->data(Qt::EditRole).value<QString>());
-      
-      if (!ledgers.empty())
-            emit innerLedgersChanged(pos, &ledgers);
-      else
-            emit innerLedgersChanged(pos, NULL);
+      std::map<qreal, std::vector<qreal>> ledgerMap;
+      for (int i = 0; i < _model.rowCount(); i++) {
+            QString originalStr = _model.item(i, 1)->data(Qt::EditRole).value<QString>();
+            QString correctedStr;
+            std::vector<qreal> ledgers = parseLedgers(&originalStr, &correctedStr);
+
+            //if originalStr needs to be corrected, correct it
+            if (originalStr != correctedStr) {
+                  disconnect(&_model, SIGNAL(itemChanged(QStandardItem*)), 0, 0);
+                  _model.setData(_model.item(i, 1)->index(), correctedStr, Qt::EditRole);
+                  connect(&_model, SIGNAL(itemChanged(QStandardItem*)), this, SLOT(updateInnerLedgers()));
+                  }
+            
+            if (_model.item(i, 0)->data(Qt::EditRole).value<QString>() != "" && !ledgers.empty()) {
+                  qreal position = _model.item(i, 0)->data(Qt::EditRole).value<qreal>();
+                  ledgerMap[position] = ledgers;
+                  }
+            }
+      emit innerLedgersChanged(&ledgerMap);
       }
       
-std::vector<qreal> InnerLedgerWidget::parseLedgers(QString ledgerString)
+std::vector<qreal> InnerLedgerWidget::parseLedgers(const QString* originalStr, QString* correctedStr)
       {
       std::vector<qreal> ledgers;
-      QStringList intList = ledgerString.split(",", QString::SkipEmptyParts);
+      QStringList intList = originalStr->split(",", QString::SkipEmptyParts);
       foreach (const QString& s, intList) {
             bool ok;
             qreal next = s.toDouble(&ok);
-            if (ok)
-                  ledgers.push_back(next);
+            if (ok) {
+                  qreal nearest = round(next * 100) / 100;
+                  *correctedStr = correctedStr->append(QString::number(nearest,'f', 2)).append(',');
+                  ledgers.push_back(nearest);
+                  }
             else {
                   ledgers.clear();
+                  *correctedStr = QString();
                   break;
                   }
             }
@@ -908,8 +916,23 @@ void LedgerItemDelegate::setModelData(QWidget *editor, QAbstractItemModel *model
       {
       if(index.column() % 2 == 0) {
             QDoubleSpinBox* spinner = static_cast<QDoubleSpinBox*>(editor);
+            QStandardItemModel* _model = static_cast<QStandardItemModel*>(model);
+            qreal spinnerVal = spinner->value();
+
+            //check if position is already mapped to ledgers
+            int row = index.row();
+            for (int i = 0; i < _model->rowCount(); i++) {
+                  if (i == row)
+                        continue;
+                  qreal val = _model->item(i, 0)->data(Qt::EditRole).value<qreal>();
+                  if (spinnerVal == val) {
+                        QMessageBox::warning(0, QObject::tr("MuseScore: InnerLedgers Error"), "Line position already mapped.");
+                        return;
+                        }
+                  }
+            
             spinner->interpretText();
-            model->setData(index, spinner->value(), Qt::EditRole);//TODO ... INTERPRET TEXT FROM QDOUBLESPINBOX
+            model->setData(index, spinnerVal, Qt::EditRole);                              //save the new data
             }
       else {
             QLineEdit *lineEdit = static_cast<QLineEdit*>(editor);

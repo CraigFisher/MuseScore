@@ -288,7 +288,7 @@ class StaffType {
       void setAlternativeStaffLines(std::vector<qreal>&, int);
       const std::vector<qreal>* alternativeStaffLines() { return &_alternativeStaffLines; }
       void clearInnerLedgers() { _innerLedgers.clear(); }
-      void setInnerLedgers(qreal pos, std::vector<qreal>* ledgers) { _innerLedgers[pos] = *ledgers; }
+      void setInnerLedgers(std::map<qreal, std::vector<qreal>>* ledgerMap) { _innerLedgers = *ledgerMap; }
       void removeInnerLedgerMapping(qreal pos) { _innerLedgers.erase(pos); }
       const std::map<qreal, std::vector<qreal>>* innerLedgers() { return &_innerLedgers; }
       
