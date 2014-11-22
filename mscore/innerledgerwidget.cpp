@@ -20,6 +20,7 @@
 
 #include "innerledgerwidget.h"
 
+//cc
 namespace Ms {
 
 //---------------------------------------------------------
@@ -29,12 +30,12 @@ namespace Ms {
 InnerLedgerWidget::InnerLedgerWidget(QWidget *parent) :
       QWidget(parent), _table(0), _addButton(0), _deleteButton(0), _parent(parent)
 {
-      _table = new QTableView();
+      _table = new QTableView(parent);
       _table->verticalHeader()->hide();
       _table->setSelectionBehavior(QAbstractItemView::SelectRows);
       _table->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-      _addButton = new QPushButton("Add", this);
-      _deleteButton = new QPushButton("Delete", this);
+      _addButton = new QPushButton("Add", parent);
+      _deleteButton = new QPushButton("Delete", parent);
       
       LedgerItemDelegate* itemDelegate = new LedgerItemDelegate(_table);
       _table->setItemDelegate(itemDelegate);
