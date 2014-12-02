@@ -98,6 +98,7 @@ class Chord : public ChordRest {
       void processSiblings(std::function<void(Element*)> func);
       void layoutPitched();
       void layoutTablature();
+      bool useInnerLedgers() const; //cc
 
    public:
       Chord(Score* s = 0);

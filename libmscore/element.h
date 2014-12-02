@@ -610,7 +610,7 @@ class StaffLines : public Element {
       qreal dist;
       qreal lw;
       int lines;
-      std::vector<int> _linePositions; //cc
+      std::vector<qreal> _linePositions; //cc
 
    public:
       StaffLines(Score*);

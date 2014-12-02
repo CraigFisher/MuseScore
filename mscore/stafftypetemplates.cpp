@@ -80,6 +80,8 @@ StaffTypeTemplates::StaffTypeTemplates(QWidget *parent) :
       innerLedgerWidget = new InnerLedgerWidget(staffLineEditorContainer); //TODO: correct name
       innerLedgerWidget->show();
       
+//TODO: PROPERLY DESTROY OBJECTS
+      
       /* retrieve STT::userTemplates and
          use them to populate localTemplates */
       for (const StaffTypeTemplate& st : StaffTypeTemplate::userTemplates()) {
@@ -156,7 +158,8 @@ void StaffTypeTemplates::connectInput() const
       connect(sharpNotehead, SIGNAL(currentIndexChanged(int)), SLOT(setSharpNotehead(int)));
       connect(doubleSharpNotehead, SIGNAL(currentIndexChanged(int)), SLOT(setDoubleSharpNotehead(int)));
       
-      connect(innerLedgerWidget, SIGNAL(innerLedgersChanged(std::map<qreal, std::vector<qreal>>*)), this, SLOT(setInnerLedgers(std::map<qreal, std::vector<qreal>>*)));
+      connect(innerLedgerWidget, SIGNAL(innerLedgersChanged(std::map<qreal, std::vector<qreal>>&)), this, SLOT(setInnerLedgers(std::map<qreal, std::vector<qreal>>&)));
+      connect(staffLineWidget, SIGNAL(editingFinished()), SLOT(updateStaffLines()));
       }
 
 //---------------------------------------------------------
@@ -183,7 +186,8 @@ void StaffTypeTemplates::disconnectInput() const
       disconnect(sharpNotehead, SIGNAL(currentIndexChanged(int)), 0, 0);
       disconnect(doubleSharpNotehead, SIGNAL(currentIndexChanged(int)), 0, 0);
       
-      disconnect(innerLedgerWidget, SIGNAL(innerLedgersChanged(std::map<qreal, std::vector<qreal>>*)), 0, 0);
+      disconnect(innerLedgerWidget, SIGNAL(innerLedgersChanged(std::map<qreal, std::vector<qreal>>&)), 0, 0);
+      disconnect(staffLineWidget, SIGNAL(editingFinished()), 0, 0);
       }
       
 //---------------------------------------------------------
@@ -220,7 +224,12 @@ void StaffTypeTemplates::setValues() const
       //SET INNERLEDGERS
       innerLedgerWidget->setData(curTemplate->innerLedgers());
       
-      //TODO: SET STAFFLINES
+      //SET STAFFLINES
+      QString staffLineStr;
+      const std::vector<qreal>& staffLines = curTemplate->alternativeStaffLines();
+      for (const qreal& val : staffLines)
+            staffLineStr.append(QString::number(val,'f', 2)).append(',');
+      staffLineWidget->setText(staffLineStr);
       
       ClefType curClef = clefLookup[clefIdx];
       clefOffset->setValue(mappings->clefOffset(curClef));
@@ -690,9 +699,41 @@ void StaffTypeTemplates::setOctaveDistance(int val)
       markTemplateDirty(curTemplate, true);
       }
       
-void StaffTypeTemplates::setInnerLedgers(std::map<qreal, std::vector<qreal>>* ledgers)
+void StaffTypeTemplates::setInnerLedgers(std::map<qreal, std::vector<qreal>>& ledgers)
       {
       curTemplate->setInnerLedgers(ledgers);
+      markTemplateDirty(curTemplate, true);
+      }
+
+      
+void StaffTypeTemplates::updateStaffLines()
+      {
+      QString staffLineStr = staffLineWidget->text();
+      QString correctedStr;
+      std::vector<qreal> staffLines;
+      QStringList numberList = staffLineStr.split(",", QString::SkipEmptyParts);
+      foreach (const QString& s, numberList) {
+            bool ok;
+            qreal next = s.toDouble(&ok);
+            if (ok) {
+                  qreal nearest = round(next * 100) / 100;
+                  correctedStr = correctedStr.append(QString::number(nearest,'f', 2)).append(',');
+                  staffLines.push_back(nearest);
+                  }
+            else {
+                  staffLines.clear();
+                  correctedStr = QString();
+                  break;
+                  }
+            }
+            
+      if (staffLines.empty()) {
+            disconnect(staffLineWidget, SIGNAL(editingFinished()), 0, 0);
+            staffLineWidget->setText("");
+            connect(staffLineWidget, SIGNAL(editingFinished()), SLOT(updateStaffLines()));
+            }
+            
+      curTemplate->setAlternativeStaffLines(staffLines);
       markTemplateDirty(curTemplate, true);
       }
       

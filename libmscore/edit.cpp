@@ -762,18 +762,50 @@ NoteVal Score::noteValForPosition(Position pos, bool &error)
                   }
 
             case StaffGroup::STANDARD: {
-                  AccidentalVal acci = s->measure()->findAccidental(s, staffIdx, line);
-                  int step           = absStep(line, clef, st->noteMappings());
-                  int octave         = step/7;
-                  nval.pitch         = step2pitch(step) + octave * 12 + int(acci);  //cc TODO: FIX: IMPROVED STEP2PITCH WILL MAKE THIS ACCIDENTAL EXTRANEOUS
-                  if (styleB(StyleIdx::concertPitch))
-                        nval.tpc1 = step2tpc(step % 7, acci);
-                  else {
-                        nval.pitch += instr->transpose().chromatic;
-                        nval.tpc2 = step2tpc(step % 7, acci);
+                  if (!st->noteMappings()) {
+                        AccidentalVal acci = s->measure()->findAccidental(s, staffIdx, line);
+                        int step           = absStep(line, clef, NULL);
+                        int octave         = step/7;
+                        nval.pitch         = step2pitch(step) + octave * 12 + int(acci);
+                        if (styleB(StyleIdx::concertPitch))
+                              nval.tpc1 = step2tpc(step % 7, acci);
+                        else {
+                              nval.pitch += instr->transpose().chromatic;
+                              nval.tpc2 = step2tpc(step % 7, acci);
+                              }
                         }
-                  }
+                  else {
+                        //cc
+                        AccidentalVal acci;
+                        NoteMappings* altNotation = st->noteMappings();
+                        int octaveDistance = altNotation->octaveDistance();
+                        
+                        //for allowing traditional sharps/flats system to work.
+                        //    ony temporary, until "show accidentals" is distinguished from "use traditional accidental system"
+                        //     This may cause incorrect note placement if a 7-distance octave is not traditionally mapped.
+                        if (octaveDistance == 7)
+                              acci = s->measure()->findAccidental(s, staffIdx, line);
+                        else
+                              acci = AccidentalVal::NATURAL;
+                        
+                        int step           = absStep(line, clef, altNotation);
+                        int correction = 5 * (octaveDistance - 7);
+                        step = step + correction; //Converts step to units in new octave distance.  If octaveDistance == 7, then correction == 0.
+                        int octave = step / octaveDistance;
+                        int tpcOffset = step - (octave * octaveDistance);
+                        int tpc = altNotation->getTpc(tpcOffset, int(acci));
+                        if (styleB(StyleIdx::concertPitch)) {
+                              nval.tpc1 = tpc;
+                              nval.pitch = altNotation->getPitch(tpc, step);
+                              }
+                        else {
+                              nval.tpc2 = tpc;
+                              nval.pitch = altNotation->getPitch(tpc, step);
+                              nval.pitch += instr->transpose().chromatic;
+                              }
+                        }
                   break;
+                  }
             }
       return nval;
       }

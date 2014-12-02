@@ -219,14 +219,11 @@ Note::Note(Score* s)
       _dots[2]           = 0;
       _playEvents.append(NoteEvent());    // add default play event
       _mark             = 0;
-
-      _altAccidental     = new Accidental(score()); //cc
       }
 
 Note::~Note()
       {
       delete _accidental;
-      delete _altAccidental; //cc
       qDeleteAll(_el);
       delete _tieFor;
       delete _dots[0];
@@ -263,17 +260,8 @@ Note::Note(const Note& n, bool link)
       _userDotPosition   = n._userDotPosition;
       _accidental        = 0;
 
-      //cc
-      // if (n._accidental) {
-      //      add(new Accidental(*(n._accidental)));
-      if (n._accidental) {
-      //cc_temp
-//            if(noteMappings() && noteMappings()->noAccidentals()) {
-//                  add(new Accidental(score()));
-//            } else {
-                  add(new Accidental(*(n._accidental)));
-//            }
-      }
+      if (n._accidental)
+            add(new Accidental(*(n._accidental)));
 
       // types in _el: SYMBOL, IMAGE, FINGERING, TEXT, BEND
       for (Element* e : n._el) {
@@ -300,8 +288,6 @@ Note::Note(const Note& n, bool link)
             }
       _lineOffset = n._lineOffset;
       _mark      = n._mark;
-          
-      _altAccidental     = new Accidental(score()); //cc
       }
 
 //---------------------------------------------------------
@@ -477,18 +463,12 @@ SymId Note::noteHead() const
             }
       if (_headType != NoteHead::Type::HEAD_AUTO)
             ht = _headType;
-
-//cc_temp VERY TEMP
-Staff* k = staff();
-
-
       //cc
       SymId t;
-      if(noteMappings()) {
+      if(noteMappings())
             t = noteHead(up, noteMappings()->tpc2HeadGroup(_tpc[0]), ht);
-      } else {      
+      else
             t = noteHead(up, _headGroup, ht);
-      }
 
       if (t == SymId::noSym) {
             qDebug("invalid note head %hhd/%hhd", _headGroup, ht);
@@ -1770,16 +1750,18 @@ NoteType Note::noteType() const
       return chord()->noteType();
       }
 
-//cc
-Q_INVOKABLE Ms::Accidental* Note::accidental() const {
+//-----------------------------------------------------//cc
+//   accidental()
+//          return accidental unless it should be hidden
+//---------------------------------------------------------
 
-      //cc_temp
-//     if(noteMappings() && noteMappings()->noAccidentals()) {
-//           return _altAccidental;
-//     } else {
+Q_INVOKABLE Ms::Accidental* Note::accidental() const
+      {
+      if(noteMappings() && noteMappings()->showAccidentals())
+            return NULL;
+      else
             return _accidental;
-//     }
-}
+      }
 
 
 //---------------------------------------------------------
@@ -1847,8 +1829,9 @@ void Note::scanElements(void* data, void (*func)(void*, Element*), bool all)
             }
       for (Spanner* sp : _spannerFor)
             sp->scanElements(data, func, all);
-      if (!dragMode && accidental()/*//cc_temp VERY BAD PRACTICE*/)
-            func(data, accidental()/*//cc_temp VERY BAD PRACTICE*/);
+      if (!dragMode && _accidental)
+            if (!noteMappings() || noteMappings()->showAccidentals()) //cc
+                  func(data, _accidental);
       if (chord()) {
             for (int i = 0; i < chord()->dots(); ++i) {
                   if (_dots[i])

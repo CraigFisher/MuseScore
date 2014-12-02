@@ -105,17 +105,17 @@ void InnerLedgerWidget::deleteLedgerMappings()
 //   setData
 //---------------------------------------------------------
 
-void InnerLedgerWidget::setData(const std::map<qreal, std::vector<qreal>>* ledgerMap)
+void InnerLedgerWidget::setData(const std::map<qreal, std::vector<qreal>>& ledgerMap)
       {
       _model.clear();
-      std::map<qreal, std::vector<qreal>>::const_iterator posItr = ledgerMap->begin();
-      while (posItr != ledgerMap->end()) {
+      std::map<qreal, std::vector<qreal>>::const_iterator posItr = ledgerMap.begin();
+      while (posItr != ledgerMap.end()) {
             qreal pos = posItr->first;
             QString ledgerString;
 
             std::vector<qreal>::const_iterator ledgerItr = posItr->second.begin();
             while (ledgerItr != posItr->second.end()) {
-                  ledgerString.append(QString::number(*ledgerItr,'f', 2)).append(',');
+                  ledgerString.append(QString::number(*ledgerItr,'f', 2)).append(','); //TODO: UPDATE ALL THESE RELATED PRECISIONS TO '1' DECIMAL PRECISION
                   ledgerItr++;
                   }
             
@@ -157,7 +157,7 @@ void InnerLedgerWidget::updateInnerLedgers()
                   ledgerMap[position] = ledgers;
                   }
             }
-      emit innerLedgersChanged(&ledgerMap);
+      emit innerLedgersChanged(ledgerMap);
       }
 
 //---------------------------------------------------------
@@ -167,8 +167,8 @@ void InnerLedgerWidget::updateInnerLedgers()
 std::vector<qreal> InnerLedgerWidget::parseLedgers(const QString* originalStr, QString* correctedStr)
       {
       std::vector<qreal> ledgers;
-      QStringList intList = originalStr->split(",", QString::SkipEmptyParts);
-      foreach (const QString& s, intList) {
+      QStringList numberList = originalStr->split(",", QString::SkipEmptyParts);
+      foreach (const QString& s, numberList) {
             bool ok;
             qreal next = s.toDouble(&ok);
             if (ok) {

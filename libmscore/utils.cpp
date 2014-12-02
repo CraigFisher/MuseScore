@@ -828,7 +828,7 @@ int pitch2step(int pitch) //cc TODO: THIS PROBABLY NEEDS A NOTEMAPPINGS OPTIONS,
 //   step2pitch
 //---------------------------------------------------------
 
-int step2pitch(int step) //cc TODO: THIS PROBABLY NEEDS A NOTEMAPPINGS OPTION
+int step2pitch(int step)
       {
       static const char tab[7] = { 0, 2, 4, 5, 7, 9, 11 };
       return tab[step % 7];

@@ -26,7 +26,7 @@ class InnerLedgerWidget : public QWidget {
      Q_OBJECT
    public:
      InnerLedgerWidget(QWidget *parent = 0);
-     void setData(const std::map<qreal, std::vector<qreal>>*);
+     void setData(const std::map<qreal, std::vector<qreal>>&);
  
    private:
      QStandardItemModel _model;
@@ -44,7 +44,7 @@ class InnerLedgerWidget : public QWidget {
      void updateInnerLedgers();
       
    signals:
-     void innerLedgersChanged(std::map<qreal, std::vector<qreal>>*);
+     void innerLedgersChanged(std::map<qreal, std::vector<qreal>>&);
      };
 
 //---------------------------------------------------------

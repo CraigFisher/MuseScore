@@ -941,28 +941,25 @@ QPointF StaffLines::canvasPos() const
 
 void StaffLines::layout()
       {
+      _linePositions.clear();   //cc
       StaffType* st = staff() ? staff()->staffType() : 0;
       qreal _spatium = spatium();
 
-      bool alternative = false; //cc
       if (st) {      
             dist = st->lineDistance().val() * _spatium;
-            if (st->useAlternateStaffLines()) { //cc
-                  lines = st->alternativeStaffLines()->size();
-                  alternative = false;
-                  }
-            else
-                  lines = st->lines();
+            lines = st->lines();
             }
       else {
             dist  = _spatium;
             lines = 5;
             }
       //cc
-      for (int i = 0; i < lines; i++) {
+      bool alternative = st->useAlternateStaffLines();
+      int size = alternative ? st->alternativeStaffLines().size() : lines;
+      for (int i = 0; i < size; i++) {
             int nextDistance;
             if (alternative)
-                  nextDistance = st->alternativeStaffLines()->at(i);
+                  nextDistance = st->alternativeStaffLines().at(i);
             else
                   nextDistance = i;
             _linePositions.push_back(dist * nextDistance);

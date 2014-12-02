@@ -47,7 +47,7 @@ class NoteMappings {
 
     public:
         NoteMappings();
-        explicit NoteMappings(QFile*);
+        explicit NoteMappings(const QString&);
         bool operator==(const NoteMappings& st) const;
       
         void write(Xml&) const;
@@ -64,8 +64,11 @@ class NoteMappings {
         int clefOffset(ClefType ct) const            { return   _clefOffsets.at(ct);   }
         int octaveDistance() const { return _octaveDistance; }
         bool showAccidentals() const { return _showAccidentals; }
-
-//        friend class MuseScore; //TODO: still necessary?
+                                                 //   TODO: POSSIBLY provide option for "use accidentals" (for note placement)
+                                                 //         as opposed to just "show accidentals"
+        int getPitch(int tpc, int step);
+        int getTpc(int position, int accidental);
+        int getTpc(int position);
       };
 }
 #endif

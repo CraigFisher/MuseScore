@@ -205,11 +205,6 @@ class StaffType {
 
    protected: //members accessible by StaffTypeTemplate
       //cc
-      bool _useAlternateNoteMappings = false;  // whether notes should have non-traditional positions or shapes
-      bool _useInnerLedgers = false;           // whether to allow ledger lines between the top and bottom line of a staff
-      bool _useAlternateStaffLines = false; // whether to use non-traditional positionings of stafflines
-      
-      //cc
       NoteMappings* _altNoteMappings = 0;
       std::map<qreal, std::vector<qreal>> _innerLedgers;
       std::vector<qreal> _alternativeStaffLines;
@@ -277,20 +272,16 @@ class StaffType {
       qreal doty2() const;
       
       //cc
-      bool useInnerLedgers() const { return _useInnerLedgers; }
-      void setUseInnerLedgers(bool v) { _useInnerLedgers = v; }
-      bool useAlternateNoteMappings() const { return _useAlternateNoteMappings; }
-      void setUseAlternateNoteMappings(bool v) { _useAlternateNoteMappings = v; }
-      bool useAlternateStaffLines() const { return _useAlternateStaffLines; }
-      void setUseAlternateStaffLines(bool v) { _useAlternateStaffLines = v; }
+      bool useInnerLedgers() const { return !_innerLedgers.empty(); }
+      bool useAlternateNoteMappings() const { return _altNoteMappings != NULL; }
+      bool useAlternateStaffLines() const { return !_alternativeStaffLines.empty(); }
 
       //cc
-      void setAlternativeStaffLines(std::vector<qreal>&, int);
-      const std::vector<qreal>* alternativeStaffLines() { return &_alternativeStaffLines; }
+      void setAlternativeStaffLines(std::vector<qreal>&);
+      void setInnerLedgers(std::map<qreal, std::vector<qreal>>& ledgerMap) { _innerLedgers = ledgerMap; }
       void clearInnerLedgers() { _innerLedgers.clear(); }
-      void setInnerLedgers(std::map<qreal, std::vector<qreal>>* ledgerMap) { _innerLedgers = *ledgerMap; }
-      void removeInnerLedgerMapping(qreal pos) { _innerLedgers.erase(pos); }
-      const std::map<qreal, std::vector<qreal>>* innerLedgers() { return &_innerLedgers; }
+      const std::vector<qreal>& alternativeStaffLines() { return _alternativeStaffLines; }
+      const std::map<qreal, std::vector<qreal>>& innerLedgers() { return _innerLedgers; }
       
       //cc
       NoteMappings* noteMappings() { return _altNoteMappings; }
@@ -403,6 +394,7 @@ class StaffTypeTemplate : public StaffType {
       
     public:
       StaffTypeTemplate();
+      StaffTypeTemplate(const QString&);
       StaffTypeTemplate(const StaffTypeTemplate& source) : StaffType(source),
           _fileInfo(source._fileInfo), _hasFile(source._hasFile), _dirty(source._dirty) {};
       StaffTypeTemplate& operator=(StaffTypeTemplate other);

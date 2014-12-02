@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Stafftype Templates</string>
   </property>
   <widget class="QListWidget" name="staffTypeSelector">
    <property name="geometry">
@@ -803,11 +803,11 @@
      <x>500</x>
      <y>80</y>
      <width>221</width>
-     <height>241</height>
+     <height>251</height>
     </rect>
    </property>
    <property name="title">
-    <string>InnerLedger Mappings</string>
+    <string>Inner Ledger Mappings</string>
    </property>
    <widget class="QWidget" name="staffLineEditorContainer" native="true">
     <property name="geometry">
@@ -815,7 +815,7 @@
       <x>10</x>
       <y>30</y>
       <width>201</width>
-      <height>201</height>
+      <height>211</height>
      </rect>
     </property>
    </widget>
@@ -846,6 +846,32 @@
     <string/>
    </property>
   </widget>
+  <widget class="QGroupBox" name="groupBox_4">
+   <property name="geometry">
+    <rect>
+     <x>499</x>
+     <y>329</y>
+     <width>221</width>
+     <height>141</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Staff Lines</string>
+   </property>
+   <widget class="QLineEdit" name="staffLineWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>201</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+  </widget>
   <zorder>layoutWidget</zorder>
   <zorder>staffTypeSelector</zorder>
   <zorder>layoutWidget</zorder>
@@ -855,6 +881,7 @@
   <zorder>groupBox_3</zorder>
   <zorder>label</zorder>
   <zorder>lineEdit</zorder>
+  <zorder>groupBox_4</zorder>
  </widget>
  <resources/>
  <connections/>

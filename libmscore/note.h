@@ -218,7 +218,6 @@ class Note : public Element {
 
 
       Accidental* _accidental;
-      Accidental* _altAccidental; //cc
 
       ElementList _el;        ///< fingering, other text, symbols or images
       Tie* _tieFor;
@@ -304,11 +303,8 @@ class Note : public Element {
       void undoSetTpc2(int tpc)      { undoChangeProperty(P_ID::TPC2, tpc); }
       int transposeTpc(int tpc);
 
-      //cc
-      // Q_INVOKABLE Ms::Accidental* accidental() const    {return _accidental; } 
-      Q_INVOKABLE Ms::Accidental* accidental() const; 
-      void setAccidental(Accidental* a)   { _accidental = a;    } 
-      // void setAccidental(Accidental* a); 
+      Q_INVOKABLE Ms::Accidental* accidental() const; //cc
+      void setAccidental(Accidental* a)   { _accidental = a;    }
 
       Accidental::Type accidentalType() const { return _accidental ? _accidental->accidentalType() : Accidental::Type::NONE; }
       void setAccidentalType(Accidental::Type type);

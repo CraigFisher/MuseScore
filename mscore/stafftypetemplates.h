@@ -97,7 +97,8 @@ class StaffTypeTemplates : public QDialog, private Ui::StaffTypeTemplates {
       void setSharpNotehead(int headIdx) { setNotehead(3, headIdx); }
       void setDoubleSharpNotehead(int headIdx) { setNotehead(4, headIdx); }
       
-      void setInnerLedgers(std::map<qreal, std::vector<qreal>>*);
+      void setInnerLedgers(std::map<qreal, std::vector<qreal>>&);
+      void updateStaffLines();
       
       //TODO: SET Notehead AND CLEFOFFSET
 };

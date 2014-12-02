@@ -2139,7 +2139,7 @@ Shortcut Shortcut::sc[] = {
         0,
         "stafftype-panel",
         Qt::ApplicationShortcut,
-        QT_TRANSLATE_NOOP("action","Staff Templates")
+        QT_TRANSLATE_NOOP("action","Stafftype Templates")
         ),
       Shortcut(
          MsWidget::MAIN_WINDOW,

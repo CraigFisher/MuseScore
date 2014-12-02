@@ -136,9 +136,6 @@ StaffType::StaffType(const StaffType& source) :
       _fretYOffset(source._fretYOffset),
       _fretMetricsValid(source._fretMetricsValid),
       _refDPI(source._refDPI),
-      _useAlternateNoteMappings(source._useAlternateNoteMappings),
-      _useInnerLedgers(source._useInnerLedgers),
-      _useAlternateStaffLines(source._useAlternateStaffLines),
       _alternativeStaffLines(source._alternativeStaffLines)
       {
       if (source._altNoteMappings) //if not NULL
@@ -199,9 +196,6 @@ void swap(StaffType& first, StaffType& second)
       swap(first._fretYOffset, second._fretYOffset);
       swap(first._fretMetricsValid, second._fretMetricsValid);
       swap(first._refDPI, second._refDPI);
-      swap(first._useInnerLedgers, second._useInnerLedgers);
-      swap(first._useAlternateNoteMappings, second._useAlternateNoteMappings);
-      swap(first._useAlternateStaffLines, second._useAlternateStaffLines);
       swap(first._altNoteMappings, second._altNoteMappings);
       swap(first._innerLedgers, second._innerLedgers);
       swap(first._alternativeStaffLines, second._alternativeStaffLines);
@@ -308,19 +302,19 @@ bool StaffType::isSameStructure(const StaffType& st) const
                ;
             }
       else if (_group == StaffGroup::STANDARD) {
-            if (st._useAlternateNoteMappings == _useAlternateNoteMappings
-                      && st._useInnerLedgers == _useInnerLedgers
-                      && st._useAlternateStaffLines == _useAlternateStaffLines) {
+            if (st.useAlternateStaffLines() == useAlternateStaffLines()
+                      && st.useInnerLedgers() == useInnerLedgers()
+                      && st.useAlternateStaffLines() == useAlternateStaffLines()) {
                   
                   bool sameMappings = true;
                   bool sameLedgers = true;
                   bool sameStaffLines = true;
-                  if (_useAlternateNoteMappings)
+                  if (useAlternateNoteMappings())
                         sameMappings = *(st._altNoteMappings) == *_altNoteMappings;
-                  if (_useInnerLedgers)
+                  if (useInnerLedgers())
                         sameLedgers = st._innerLedgers == _innerLedgers;
-                  if (_useAlternateStaffLines)
-                        sameStaffLines = st._useAlternateStaffLines == _useAlternateStaffLines;
+                  if (useAlternateStaffLines())
+                        sameStaffLines = st.useAlternateStaffLines() == useAlternateStaffLines();
                   
                   return sameMappings && sameLedgers && sameStaffLines
                          && st._genKeysig      == _genKeysig
@@ -348,9 +342,14 @@ bool StaffType::isSameStructure(const StaffType& st) const
 //   setAlternativeStaffLines
 //---------------------------------------------------------
       
-void StaffType::setAlternativeStaffLines(std::vector<qreal>& positions, int staffHeight) {
+void StaffType::setAlternativeStaffLines(std::vector<qreal>& positions) {
+      qreal max = 0.0;
+      foreach (const qreal& pos, positions) {
+            if (pos > max)
+                  max = pos;
+            }
+      setLines((int)(max + 1.5));
       _alternativeStaffLines = positions;
-      _lines = staffHeight;
       }
 
 //---------------------------------------------------------
@@ -406,13 +405,13 @@ void StaffType::write(Xml& xml) const
             if (!_showLedgerLines)
                   xml.tag("ledgerlines", _showLedgerLines);
             }
-            if (_useInnerLedgers) {
+            if (useInnerLedgers()) {
                   writeInnerLedgers(xml);
                   }
-            if (_altNoteMappings) {
+            if (useAlternateNoteMappings()) {
                   _altNoteMappings->write(xml);
                   }
-            if (_useAlternateStaffLines) {
+            if (useAlternateStaffLines()) {
                   writeStaffLines(xml);
                   }
       else {
@@ -561,12 +560,6 @@ void StaffType::readInnerLedgers(XmlReader& e)
                   if (!(ledgers.empty())) { //only add noteLine to map if ledgers exist for it
                         _innerLedgers[noteLine] = ledgers;
                         }
-                  else {
-      qDebug()<<"note empty";
-                        }
-                  }
-            else {
-      qDebug()<<"note note";
                   }
             }
       }
@@ -1358,17 +1351,29 @@ void StaffType::initStaffTypes()
 
 StaffTypeTemplate::StaffTypeTemplate() :
       StaffType(StaffGroup::STANDARD, "", QObject::tr(""), 5, 1, true, true, false, true, true, true)
-      {
-      _useInnerLedgers = true;
-      _useAlternateNoteMappings = true;
-      _useAlternateStaffLines = true;
-      
-      _altNoteMappings = new NoteMappings(); //TODO: when copying stafftypetemplate
-      _alternativeStaffLines.push_back(0);   //      over to a stafftype, make sure
-      _alternativeStaffLines.push_back(1);   //      to make a "deep" copy of
-      _alternativeStaffLines.push_back(2);   //      _altNoteMappings
+      {      
+      _altNoteMappings = new NoteMappings();
+      _alternativeStaffLines.push_back(0);
+      _alternativeStaffLines.push_back(1);
+      _alternativeStaffLines.push_back(2);
       _alternativeStaffLines.push_back(3);
       _alternativeStaffLines.push_back(4);
+      }
+      
+//-----------------------------------------------------//cc
+//   StaffTypeTemplate
+//---------------------------------------------------------
+
+StaffTypeTemplate::StaffTypeTemplate(const QString& path)
+      {
+      QFile f(path);
+      if (!(f.open(QIODevice::ReadOnly))) {
+            qDebug()<<f.errorString();
+            qFatal("");
+            }
+
+      XmlReader e(&f);
+      read(e);
       }
       
 //-----------------------------------------------------//cc

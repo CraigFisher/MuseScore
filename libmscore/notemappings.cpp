@@ -18,6 +18,7 @@ namespace Ms {
 
 //---------------------------------------------------------
 //   NoteMappings
+//          For alternative notations.
 //---------------------------------------------------------
 
 NoteMappings::NoteMappings() : _notePositions { 3, 0, 4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3,
@@ -32,23 +33,6 @@ NoteMappings::NoteMappings() : _notePositions { 3, 0, 4, 1, 5, 2, 6, 3, 0, 4, 1,
                                             defaultHg, defaultHg, defaultHg, defaultHg, defaultHg }
       {
       setTraditionalClefOffsets();
-      }
-
-//---------------------------------------------------------
-//   NoteMappings
-//---------------------------------------------------------
-
-NoteMappings::NoteMappings(QFile* f)
-      {
-      if (!(f->open(QIODevice::ReadOnly)))
-            throw (QObject::tr("failed to open."));
-      XmlReader e(f);
-      while (e.readNextStartElement()) {
-            if (e.name().toString() == "noteMappings")
-                  read(e);
-            else
-                  throw (QObject::tr("improper format."));
-            }
       }
       
 bool NoteMappings::operator==(const NoteMappings& n) const
@@ -295,6 +279,54 @@ void NoteMappings::readClefOffsets(XmlReader& e)
             }
       }
 
+inline int positive_modulo(int i, int n) {
+    return (i % n + n) % n;
+}
+
+//TODO: implement key-aware decisions
+int NoteMappings::getTpc(int position, int accidental) {
+      int tpc = getTpc(position);
+      int adjustedTpc = (tpc + (accidental * 7)) % 35;     //check if an accidental-adjusted value gives same tpc
+      if (_notePositions[adjustedTpc + 1] == position)     //    if so, choose it instead
+            return adjustedTpc;
+      else
+            return tpc;
+      }
+
+//TODO: implement key-aware decisions
+//      find simpler way to write this function
+int NoteMappings::getTpc(int position) {
+      position = positive_modulo(position, 12);
+
+      //check for tpc's without sharps or flats
+      for (int i = 14; i < 21; i++) {
+            if (positive_modulo(_notePositions[i], _octaveDistance) == position)
+                  return i - 1;
+            }
+      
+      //check sharps and flats
+      for (int i = 7; i < 14; i++) {
+            if (positive_modulo(_notePositions[i], _octaveDistance) == position)
+                  return i - 1;
+            }
+      for (int i = 21; i < 28; i++) {
+            if (positive_modulo(_notePositions[i], _octaveDistance) == position)
+                  return i - 1;
+            }
+      
+      //save double flats/sharps as last resorts
+      for (int i = 0; i < 14; i++) {
+            if (positive_modulo(_notePositions[i], _octaveDistance) == position)
+                  return i - 1;
+            }
+      for (int i = 21; i < 35; i++) {
+            if (positive_modulo(_notePositions[i], _octaveDistance) == position)
+                  return i - 1;
+            }
+      
+      qFatal("position is not mapped by any tpc");
+      }
+
 void NoteMappings::setTraditionalClefOffsets() {
       _clefOffsets[ClefType::G] = 45;
       _clefOffsets[ClefType::G1] = 52;
@@ -313,6 +345,13 @@ void NoteMappings::setTraditionalClefOffsets() {
       _clefOffsets[ClefType::G4] = 47;
       _clefOffsets[ClefType::F_8VA] = 40;
       _clefOffsets[ClefType::F_15MA] = 47;
+      }
+      
+int NoteMappings::getPitch(int tpc, int step) {
+      static const int pitches[12] = { 10, 5, 0, 7, 2, 9, 4, 11, 6, 1, 8, 3 };
+      
+      int octave = (step - _notePositions[tpc + 1]) / _octaveDistance;
+      return pitches[(tpc + 12) % 12] + (12 * octave);
       }
 
 }

@@ -241,7 +241,7 @@ class Staff : public QObject {
       void insertTime(int tick, int len);
       
       //cc
-      NoteMappings* noteMappings() { return staffType()->noteMappings(); }
+      NoteMappings* noteMappings() { return staffType()->noteMappings(); } //TODO: change name to something like "altNoteMappings"
       };
 
 }     // namespace Ms
