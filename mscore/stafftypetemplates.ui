@@ -833,7 +833,7 @@
     <string/>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit">
+  <widget class="QLineEdit" name="templateNameForm">
    <property name="geometry">
     <rect>
      <x>230</x>
@@ -880,7 +880,7 @@
   <zorder>groupBox_2</zorder>
   <zorder>groupBox_3</zorder>
   <zorder>label</zorder>
-  <zorder>lineEdit</zorder>
+  <zorder>templateNameForm</zorder>
   <zorder>groupBox_4</zorder>
  </widget>
  <resources/>

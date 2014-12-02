@@ -160,6 +160,7 @@ void StaffTypeTemplates::connectInput() const
       
       connect(innerLedgerWidget, SIGNAL(innerLedgersChanged(std::map<qreal, std::vector<qreal>>&)), this, SLOT(setInnerLedgers(std::map<qreal, std::vector<qreal>>&)));
       connect(staffLineWidget, SIGNAL(editingFinished()), SLOT(updateStaffLines()));
+      connect(templateNameForm, SIGNAL(textEdited(const QString&)), SLOT(updateTemplateName(const QString&)));
       }
 
 //---------------------------------------------------------
@@ -188,6 +189,7 @@ void StaffTypeTemplates::disconnectInput() const
       
       disconnect(innerLedgerWidget, SIGNAL(innerLedgersChanged(std::map<qreal, std::vector<qreal>>&)), 0, 0);
       disconnect(staffLineWidget, SIGNAL(editingFinished()), 0, 0);
+      disconnect(templateNameForm, SIGNAL(textEdited(const QString&)), 0, 0);
       }
       
 //---------------------------------------------------------
@@ -235,6 +237,7 @@ void StaffTypeTemplates::setValues() const
       clefOffset->setValue(mappings->clefOffset(curClef));
       showAccidentals->setChecked(mappings->showAccidentals());
       octaveDistance->setValue(mappings->octaveDistance());
+      templateNameForm->setText(curTemplate->name());
       }
       
 //---------------------------------------------------------
@@ -702,6 +705,17 @@ void StaffTypeTemplates::setOctaveDistance(int val)
 void StaffTypeTemplates::setInnerLedgers(std::map<qreal, std::vector<qreal>>& ledgers)
       {
       curTemplate->setInnerLedgers(ledgers);
+      markTemplateDirty(curTemplate, true);
+      }
+      
+void StaffTypeTemplates::updateTemplateName(const QString& newName)
+      {
+      curTemplate->setName(newName);
+      curTemplate->setXmlName(newName);
+      if (curTemplate->dirty())
+            staffTypeSelector->currentItem()->setText(newName + "*");
+      else
+            staffTypeSelector->currentItem()->setText(newName);
       markTemplateDirty(curTemplate, true);
       }
 

@@ -58,7 +58,7 @@ class StaffTypeTemplates : public QDialog, private Ui::StaffTypeTemplates {
       const static ClefType clefLookup[17];
       
       int noteLetterIdx; //index of a note's letter, used in tpcLookup
-      int clefIdx; //index of a clef, used in clefLookup
+      int clefIdx;       //index of a clef, used in clefLookup
       int noteheadIndex(NoteHead::Group) const;
       int clefIndex(ClefType) const;
       void debugLocals();
@@ -67,17 +67,17 @@ class StaffTypeTemplates : public QDialog, private Ui::StaffTypeTemplates {
       void closed(bool);
 
     private slots:
-      void load();      //STUB
+      void load();
       void create();
-      void remove();    //STUB
-      void duplicate(); //STUB
+      void remove();
+      void duplicate();
       bool save();
       bool save(StaffTypeTemplate* stt);
       void handleExitButton();
       void handleTemplateSwitch(int);
       
-      void switchNoteLetter(const QString& text);
-      void switchClef(const QString& text);
+      void switchNoteLetter(const QString&);
+      void switchClef(const QString&);
       
       void setShowAccidental(bool);
       void setOctaveDistance(int);
@@ -100,7 +100,7 @@ class StaffTypeTemplates : public QDialog, private Ui::StaffTypeTemplates {
       void setInnerLedgers(std::map<qreal, std::vector<qreal>>&);
       void updateStaffLines();
       
-      //TODO: SET Notehead AND CLEFOFFSET
+      void updateTemplateName(const QString&);
 };
 
 }
