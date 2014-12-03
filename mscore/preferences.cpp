@@ -41,7 +41,6 @@
 #include "fluid/fluid.h"
 #include "pathlistdialog.h"
 #include "mstyle/mconfig.h"
-#include "libmscore/notemappings.h"
 #include "resourceManager.h"
 #include "synthesizer/msynthesizer.h"
 
@@ -671,9 +670,6 @@ PreferenceDialog::PreferenceDialog(QWidget* parent)
       connect(jackDriver, SIGNAL(toggled(bool)), SLOT(exclusiveAudioDriver(bool)));
       connect(useJackAudio, SIGNAL(toggled(bool)), SLOT(nonExclusiveJackDriver(bool)));
       connect(useJackMidi,  SIGNAL(toggled(bool)), SLOT(nonExclusiveJackDriver(bool)));
-
-//cc_temp
-//      connect(altNotationFileButton, SIGNAL(clicked()), SLOT(altNotationFileButtonClicked())); //cc
 
       updateRemote();
       }
@@ -1512,19 +1508,6 @@ void PreferenceDialog::resetAllValues()
             localShortcuts[s->key()] = new Shortcut(*s);
       updateSCListView();
       }
-
-////cc
-////---------------------------------------------------------
-////   altNotationFileButtonClicked
-////---------------------------------------------------------
-//
-//void PreferenceDialog::altNotationFileButtonClicked()
-//{
-//    QString fn = mscore->getNotationFilename(true);
-//    if (fn.isEmpty())
-//       return;
-//    altNotationFile->setText(fn);
-//}
     
 //---------------------------------------------------------
 //   styleFileButtonClicked

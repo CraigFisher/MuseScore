@@ -589,6 +589,9 @@ void StaffTypeTemplates::enableInput(bool enable) const //TODO: rename to "enabl
       showAccidentals->setEnabled(enable);
       octaveDistance->setEnabled(enable);
       innerLedgerWidget->setEnabled(enable);
+      staffLineEditorContainer->setEnabled(enable);
+      staffLineWidget->setEnabled(enable);
+      templateNameForm->setEnabled(enable);
       }
       
 //---------------------------------------------------------
