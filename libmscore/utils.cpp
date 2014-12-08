@@ -829,6 +829,10 @@ int absStep(int tpc, int pitch, NoteMappings* altNotation)
       //cc
       if(altNotation) { //cc
             int octave = pitch / 12;
+            if (tpc == 0 || tpc == 7) //TODO: possibly implement check more efficiently
+                  octave++;
+            if (tpc == 26 || tpc == 33)
+                  octave--;
             int octaveDistance = altNotation->octaveDistance();
             int correction = 5 * (octaveDistance - 7); //necessary when octaveDistance != 7
             line = altNotation->tpc2Position(tpc) + (octave * octaveDistance) - correction;

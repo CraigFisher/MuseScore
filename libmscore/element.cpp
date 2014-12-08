@@ -912,7 +912,7 @@ void StaffLines::layout()
       bool alternative = st->useAlternateStaffLines();
       int size = alternative ? st->alternativeStaffLines().size() : lines;
       for (int i = 0; i < size; i++) {
-            int nextDistance;
+            qreal nextDistance;
             if (alternative)
                   nextDistance = st->alternativeStaffLines().at(i);
             else
@@ -969,8 +969,31 @@ void StaffLines::draw(QPainter* painter) const
             painter->drawLine(QLineF(x1, y, x2, y));
             }
 
-      painter->setPen(QPen(curColor(), lw, Qt::SolidLine, Qt::FlatCap));
-      painter->drawLines(ll);
+      //cc_temp DOTTED LINE HACK
+      bool dottedLines = false;
+      if (dottedLines) {
+            QPen dottedPen(curColor(), lw, Qt::SolidLine, Qt::FlatCap);
+            QPen solidPen(curColor(), lw, Qt::SolidLine, Qt::FlatCap);
+            QVector<qreal> dashes;
+            dashes << 15 << 5;
+            dottedPen.setDashPattern(dashes);
+
+            painter->setPen(solidPen);
+            if (ll.size() != 0)
+                  painter->drawLine(ll[0]);
+            
+            painter->setPen(dottedPen);
+            for (int i = 1; i < ll.size() - 1; i++)
+                  painter->drawLine(ll[i]);
+            
+            painter->setPen(solidPen);
+            if (ll.size() != 0)
+                  painter->drawLine(ll[ll.size() - 1]);
+            }
+      else {
+            painter->setPen(QPen(curColor(), lw, Qt::SolidLine, Qt::FlatCap));
+            painter->drawLines(ll);
+            }
       }
 
 //---------------------------------------------------------
