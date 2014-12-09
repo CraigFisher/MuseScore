@@ -1254,16 +1254,40 @@ void Note::endDrag()
             // on PITCHED / PERCUSSION staves, dragging a note changes the note pitch
             int nLine   = _line + _lineOffset;
             // get note context
+            int tick      = chord()->tick();
             ClefType clef = staff->clef(tick);
             Key key       = staff->key(tick);
+
             // determine new pitch of dragged note
-            int nPitch = line2pitch(nLine, clef, key);
-            if (!concertPitch()) {
-                  Interval interval = staff->part()->instrument()->transpose();
-                  nPitch += interval.chromatic;
+            int nPitch;
+            int tpc1;
+            int tpc2;
+            NoteMappings* altNotation = noteMappings();
+            if (noteMappings()) { //cc
+                  //   note: This may cause incorrect note placement
+                  //   if a distance-7 octave is not traditionally mapped
+                  //   If users ever require non-traditinal distance-7 octaves,
+                  //      key-aware decisions will need to be implemented, but
+                  //      currently this doesn't seem to be a priority.
+                  int octaveDistance = altNotation->octaveDistance();
+                  int correction = 5 * (octaveDistance - 7);
+                  int step = absStep(nLine, clef, altNotation) + correction; //cc TODO: possibly move 'correction' to absStep
+                  int octave = step / octaveDistance;
+                  int tpcOffset = step - (octave * octaveDistance);
+                  tpc1 = altNotation->getTpc(tpcOffset, 0);
+                  tpc2 = tpc1;
+                  nPitch = altNotation->getPitch(tpc1, step);
                   }
-            int tpc1 = pitch2tpc(nPitch, key, Prefer::NEAREST);
-            int tpc2 = pitch2tpc(nPitch - transposition(), key, Prefer::NEAREST);
+            else {
+                  nPitch = line2pitch(nLine, clef, key);
+                  if (!concertPitch()) {
+                        Interval interval = staff->part()->instrument()->transpose();
+                        nPitch += interval.chromatic;
+                        }
+                  tpc1   = pitch2tpc(nPitch, key, Prefer::NEAREST);
+                  tpc2   = pitch2tpc(nPitch - transposition(), key, Prefer::NEAREST);
+                  }
+
             // undefined for non-tablature staves
             for (Note* nn : tiedNotes()) {
                   if (nn->pitch() != nPitch)
@@ -1852,7 +1876,7 @@ NoteType Note::noteType() const
 
 Q_INVOKABLE Ms::Accidental* Note::accidental() const
       {
-      if(noteMappings() && noteMappings()->showAccidentals())
+      if(noteMappings() && !noteMappings()->showAccidentals())// && false) //cc_temp very temp
             return NULL;
       else
             return _accidental;
@@ -1925,7 +1949,7 @@ void Note::scanElements(void* data, void (*func)(void*, Element*), bool all)
       for (Spanner* sp : _spannerFor)
             sp->scanElements(data, func, all);
       if (!dragMode && _accidental)
-            if (!noteMappings() || noteMappings()->showAccidentals()) //cc
+            if (!noteMappings() || noteMappings()->showAccidentals())// || true) //cc_temp very temp //cc
                   func(data, _accidental);
       if (chord()) {
             for (int i = 0; i < chord()->dots(); ++i) {

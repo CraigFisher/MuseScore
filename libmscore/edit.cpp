@@ -1039,7 +1039,7 @@ NoteVal Score::noteValForPosition(Position pos, bool &error)
                               acci = AccidentalVal::NATURAL;
                         
                         int step           = absStep(line, clef, altNotation);
-                        int correction = 5 * (octaveDistance - 7);
+                        int correction = 5 * (octaveDistance - 7); //cc TODO: possibly move 'correction' to absStep
                         step = step + correction; //Converts step to units in new octave distance.  If octaveDistance == 7, then correction == 0.
                         int octave = step / octaveDistance;
                         int tpcOffset = step - (octave * octaveDistance);
