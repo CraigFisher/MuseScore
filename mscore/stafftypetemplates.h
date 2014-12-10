@@ -62,6 +62,8 @@ class StaffTypeTemplates : public QDialog, private Ui::StaffTypeTemplates {
       int noteheadIndex(NoteHead::Group) const;
       int clefIndex(ClefType) const;
       void debugLocals();
+      
+      void updatePreview() const;
 
     signals:
       void closed(bool);
@@ -99,7 +101,6 @@ class StaffTypeTemplates : public QDialog, private Ui::StaffTypeTemplates {
       
       void setInnerLedgers(std::map<qreal, std::vector<qreal>>&);
       void updateStaffLines();
-      
       void updateTemplateName(const QString&);
 };
 

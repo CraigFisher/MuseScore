@@ -11,7 +11,11 @@
 //=============================================================================
 
 #include "stafftypetemplates.h"
+#include "libmscore/score.h"
+#include "libmscore/staff.h"
+#include "libmscore/measure.h"
 #include "musescore.h"
+#include "file.h"
 #include "libmscore/xml.h"
 
 //cc
@@ -68,6 +72,8 @@ const ClefType StaffTypeTemplates::clefLookup[17] = {
       ClefType::F_15MA
 };
 
+extern Score::FileError readScore(Score* score, QString name, bool ignoreVersionError);
+
 //---------------------------------------------------------
 //   StaffTypeTemplates
 //---------------------------------------------------------
@@ -118,6 +124,10 @@ StaffTypeTemplates::StaffTypeTemplates(QWidget *parent) :
       naturalOffset->setMinimum(-24);
       sharpOffset->setMinimum(-24);
       doubleSharpOffset->setMinimum(-24);
+            
+      Score* previewScore = new Score(MScore::defaultStyle());
+      if (readScore(previewScore, QString(":/data/stafftype_templates_sample.mscx"), false) == Score::FileError::FILE_NO_ERROR)
+            preview->setScore(previewScore);
       
       noteLetterIdx = noteComboBox->currentIndex();
       clefIdx = clefComboBox->currentIndex();
@@ -238,6 +248,8 @@ void StaffTypeTemplates::setValues() const
       showAccidentals->setChecked(mappings->showAccidentals());
       octaveDistance->setValue(mappings->octaveDistance());
       templateNameForm->setText(curTemplate->name());
+      
+      updatePreview();
       }
       
 //---------------------------------------------------------
@@ -545,6 +557,8 @@ void StaffTypeTemplates::switchClef(const QString& text)
       
       disconnectInput();
       clefOffset->setValue(mappings->clefOffset(curClef));
+      
+      //TODO: change preview's clef to reflect active cleftype
       connectInput();
       }
       
@@ -676,6 +690,7 @@ void StaffTypeTemplates::setOffset(int accidentalIdx, int offset)
       int tpc = tpcLookup[noteLetterIdx][accidentalIdx];
       curTemplate->noteMappings()->setNotePosition(tpc, offset);
       markTemplateDirty(curTemplate, true);
+      updatePreview();
       }
       
 void StaffTypeTemplates::setNotehead(int accidentalIdx, int headIdx)
@@ -683,6 +698,7 @@ void StaffTypeTemplates::setNotehead(int accidentalIdx, int headIdx)
       int tpc = tpcLookup[noteLetterIdx][accidentalIdx];
       curTemplate->noteMappings()->setNoteHeadGroup(tpc, noteheadLookup[headIdx]);
       markTemplateDirty(curTemplate, true);
+      updatePreview();
       }
       
 void StaffTypeTemplates::setClefOffset(int clefOffset)
@@ -690,24 +706,28 @@ void StaffTypeTemplates::setClefOffset(int clefOffset)
       ClefType curClef = clefLookup[clefIdx];
       curTemplate->noteMappings()->setClefOffset(curClef, clefOffset);
       markTemplateDirty(curTemplate, true);
+      updatePreview();
       }
       
 void StaffTypeTemplates::setShowAccidental(bool val)
       {
       curTemplate->noteMappings()->setShowAccidentals(val);
       markTemplateDirty(curTemplate, true);
+      updatePreview();
       }
       
 void StaffTypeTemplates::setOctaveDistance(int val)
       {
       curTemplate->noteMappings()->setOctaveDistance(val);
       markTemplateDirty(curTemplate, true);
+      updatePreview();
       }
       
 void StaffTypeTemplates::setInnerLedgers(std::map<qreal, std::vector<qreal>>& ledgers)
       {
       curTemplate->setInnerLedgers(ledgers);
       markTemplateDirty(curTemplate, true);
+      updatePreview();
       }
       
 void StaffTypeTemplates::updateTemplateName(const QString& newName)
@@ -720,7 +740,6 @@ void StaffTypeTemplates::updateTemplateName(const QString& newName)
             staffTypeSelector->currentItem()->setText(newName);
       markTemplateDirty(curTemplate, true);
       }
-
       
 void StaffTypeTemplates::updateStaffLines()
       {
@@ -751,6 +770,18 @@ void StaffTypeTemplates::updateStaffLines()
             
       curTemplate->setAlternativeStaffLines(staffLines);
       markTemplateDirty(curTemplate, true);
+      }
+      
+void StaffTypeTemplates::updatePreview() const
+      {
+      if (preview) {
+            StaffType* st = static_cast<StaffType*>(curTemplate);
+            preview->score()->staff(0)->setStaffType(st);
+            preview->score()->cmdUpdateNotes();
+            preview->score()->doLayout();
+            preview->updateAll();
+            preview->update();
+            }
       }
       
 int StaffTypeTemplates::noteheadIndex(NoteHead::Group group) const

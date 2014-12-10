@@ -156,5 +156,6 @@
         <file>data/icons/arrow_down.svg</file>
         <file>data/icons/arrow_up.svg</file>
         <file>data/icons/clef-bass.svg</file>
+        <file>data/stafftype_templates_sample.mscx</file>
     </qresource>
 </RCC>
