@@ -121,20 +121,6 @@ struct TablatureDurationFont {
       bool read(XmlReader&);
       };
 
-// ready-made staff types:
-
-//enum class StaffTypes : char {
-//      STANDARD,
-//      PERC_1LINE, PERC_3LINE, PERC_5LINE,
-//      TAB_6SIMPLE, TAB_6COMMON, TAB_6FULL,
-//            TAB_4SIMPLE, TAB_4COMMON, TAB_4FULL,
-//            TAB_UKULELE, TAB_BALALAJKA, TAB_ITALIAN, TAB_FRENCH,
-//      STAFF_TYPES,
-//      // some usefull shorthands:
-//            PERC_DEFAULT = StaffTypes::PERC_5LINE,
-//            TAB_DEFAULT = StaffTypes::TAB_6COMMON
-//      };
-
 static const int  STAFF_GROUP_NAME_MAX_LENGTH   = 32;
 
 //---------------------------------------------------------
@@ -234,12 +220,12 @@ class StaffType {
                   bool linesThrough, TablatureMinimStyle minimStyle, bool onLines, bool showRests,
                   bool stemsDown, bool stemThrough, bool upsideDown, bool useNumbers);
 
+      virtual ~StaffType();
       //cc
       StaffType(const StaffType&);
-      friend void swap(StaffType& first, StaffType& second);
+      friend void swap(StaffType& first, StaffType& second); //for copy and swap idiom
       StaffType& operator=(StaffType other);
       StaffType(StaffType&& other);
-      virtual ~StaffType();
       
       bool operator==(const StaffType&) const;
       bool operator!=(const StaffType&) const; //cc
@@ -300,7 +286,7 @@ class StaffType {
       static const StaffType* getDefaultPreset(StaffGroup grp);
       static const StaffType* preset(int idx); //cc
       static const StaffType* presetFromXmlName(QString& xmlName);
-      static const int _defaultPreset[STAFF_GROUP_MAX]; //cc formerly global, not a member
+      static const int _defaultPreset[STAFF_GROUP_MAX]; //cc
 
       void setGenKeysig(bool val)              { _genKeysig = val;          }
       bool genKeysig() const                   { return _genKeysig;         }
@@ -402,7 +388,7 @@ class StaffTypeTemplate : public StaffType {
       static void addTemplate(StaffTypeTemplate& t);
       static void removeTemplate(StaffTypeTemplate& t);
       
-      friend class StaffTypeTemplates;
+      friend class StaffTypeTemplates; //only StaffTypeTemplatesDialog should be able to add or remove user templates
       
     public:
       StaffTypeTemplate();
@@ -419,7 +405,7 @@ class StaffTypeTemplate : public StaffType {
       
       void debug() const { qDebug() << "afp: " << _fileInfo.absoluteFilePath() << ", name: " << name()
                << ", xml: " << xmlName() << ", dirty: " << _dirty
-               << ", hasFile: " << _hasFile; }; //cc_temp TODO: remove later
+               << ", hasFile: " << _hasFile; };
       };
 
 //---------------------------------------------------------

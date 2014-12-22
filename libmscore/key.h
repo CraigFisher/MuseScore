@@ -98,10 +98,6 @@ class AccidentalState {
       uchar state[161]; // (0 -- 4) | TIE_CONTEXT //cc TODO: sync with a firm max octave distance value
 
    public:
-   
-//cc_temp very temp
-uchar* getState() { return state; }
-   
       AccidentalState() {}
       void init(Key key);
       AccidentalVal accidentalVal(int line) const;

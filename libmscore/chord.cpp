@@ -646,7 +646,7 @@ void Chord::createLedgerLines(int track, vector<LedgerLineData>& vecLines, bool 
             _ledgerLines = h;
             }
       }
-    
+
 //---------------------------------------------------------
 //   addLedgerLines
 //---------------------------------------------------------
@@ -793,10 +793,10 @@ void Chord::addLedgerLines(int move)
             if (minLine < 0 || maxLine > lineBelow || useInnerLedgers) //cc
                   createLedgerLines(track, vecLines, !staff()->invisible());
             }
-            
+
             return;                       // no ledger lines for this chord
       }
-      
+
 //-----------------------------------------------------------------------------
 //   computeUp
 //    rules:

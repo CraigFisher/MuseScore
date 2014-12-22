@@ -56,7 +56,6 @@ class System;
 */
 
 class Segment : public Element {
-
       Q_OBJECT
       Q_PROPERTY(Ms::Segment*       next              READ next1)
       Q_PROPERTY(Ms::Segment*       nextInMeasure     READ next)

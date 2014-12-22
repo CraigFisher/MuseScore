@@ -73,7 +73,7 @@ class StaffTypeTemplatesOld : public QDialog, private Ui::StaffTypeTemplatesOld 
       Q_OBJECT
 
    public:
-      StaffTypeTemplatesOld(const StaffType&, QWidget* parent = 0);
+      StaffTypeTemplatesOld(const StaffType&, QWidget* parent = 0); //deprecated, should be replaced with StaffTypeTemplateDialog
       StaffType* staffType() const;
       };
 

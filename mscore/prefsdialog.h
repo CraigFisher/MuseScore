@@ -79,8 +79,6 @@ class PreferenceDialog : public QDialog, private Ui::PrefsDialogBase {
       void changeSoundfontPaths();
       void updateTranslationClicked();
 
-//      void altNotationFileButtonClicked(); //cc_temp
-
    signals:
       void preferencesChanged();
 

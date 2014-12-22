@@ -236,7 +236,7 @@ void StaffListItem::staffTypeChanged(int idx)
       PartListItem* pli = static_cast<PartListItem*>(QTreeWidgetItem::parent());
       pli->updateClefs();
       
-      if (_staff && *(_staff->staffType()) != *stfType) { //cc confirm if stafftypes are equal, not just names
+      if (_staff && *(_staff->staffType()) != *stfType) { //cc TODO: confirm if stafftypes are equal, not just names
             if (_op != ListItemOp::I_DELETE && _op != ListItemOp::ADD)
                   _op = ListItemOp::UPDATE;
             }

@@ -144,7 +144,7 @@ static const char* noteHeadNames[] = {
 
 SymId Note::noteHead(int direction, NoteHead::Group g, NoteHead::Type t)
       {
-      return noteHeads[direction][int(g)][int(t)]; 
+      return noteHeads[direction][int(g)][int(t)];
       };
 
 //---------------------------------------------------------
@@ -1869,19 +1869,18 @@ NoteType Note::noteType() const
       return chord()->noteType();
       }
 
-//-----------------------------------------------------//cc
+//---------------------------------------------------------
 //   accidental()
 //          return accidental unless it should be hidden
-//---------------------------------------------------------
+//-----------------------------------------------------//cc
 
 Q_INVOKABLE Ms::Accidental* Note::accidental() const
       {
-      if(noteMappings() && !noteMappings()->showAccidentals())// && false) //cc_temp very temp
+      if(noteMappings() && !noteMappings()->showAccidentals()) //cc
             return NULL;
       else
             return _accidental;
       }
-
 
 //---------------------------------------------------------
 //   noteTypeUserName
@@ -1933,7 +1932,7 @@ QPointF Note::canvasPos() const
       }
 
 //---------------------------------------------------------
-//   scanElement
+//   scanElements
 //---------------------------------------------------------
 
 void Note::scanElements(void* data, void (*func)(void*, Element*), bool all)
@@ -1948,8 +1947,9 @@ void Note::scanElements(void* data, void (*func)(void*, Element*), bool all)
             }
       for (Spanner* sp : _spannerFor)
             sp->scanElements(data, func, all);
+
       if (!dragMode && _accidental)
-            if (!noteMappings() || noteMappings()->showAccidentals())// || true) //cc_temp very temp //cc
+            if (!noteMappings() || noteMappings()->showAccidentals()) //cc
                   func(data, _accidental);
       if (chord()) {
             for (int i = 0; i < chord()->dots(); ++i) {
@@ -2040,7 +2040,6 @@ int Note::line() const
 void Note::setLine(int n)
       {
       _line = n;
-
       int off = 0;
       if (staff())
             off = staff()->staffType()->stepOffset();
@@ -2138,11 +2137,6 @@ void Note::updateRelLine(int relLine, bool undoable)
 
       Staff* s = score()->staff(staffIdx() + chord()->staffMove());
       ClefType clef = s->clef(chord()->tick());
-      
-      
-StaffType* k = staff()->staffType();
-      
-      
       int line = relStep(relLine, clef, staff()->noteMappings());
       if (line != _line) {
             if (undoable)
@@ -2245,8 +2239,6 @@ QVariant Note::getProperty(P_ID propertyId) const
             }
       return Element::getProperty(propertyId);
       }
-
-
 
 //---------------------------------------------------------
 //   setProperty

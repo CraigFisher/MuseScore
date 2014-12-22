@@ -293,7 +293,8 @@ void Part::read114(XmlReader& e)
                   if (lines == 2 || lines == 3)
                         staff->staffType()->setLineDistance(Spatium(2.0));
 
-                        staff->setBarLineFrom(bf);
+                  staff->setLines(lines);       // this also sets stepOffset
+                  staff->setBarLineFrom(bf);
                   staff->setBarLineTo(bt);
                   }
             }

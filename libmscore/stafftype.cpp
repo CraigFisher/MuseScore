@@ -21,8 +21,6 @@
 
 namespace Ms {
 
-extern bool useFactorySettings;
-
 //---------------------------------------------------------
 //   StaffTypeTablature
 //---------------------------------------------------------
@@ -283,8 +281,6 @@ bool StaffType::operator!=(const StaffType& st) const
 //    same as operator==, but ignores names and fonts
 //---------------------------------------------------------
 
-//cc TODO: possibly append new members here
-
 bool StaffType::isSameStructure(const StaffType& st) const
       {
       if (st.group()         != group()                     // common to all type groups
@@ -362,7 +358,6 @@ void StaffType::setAlternativeStaffLines(std::vector<qreal>& positions) {
 void StaffType::setLines(int val)
       {
       _lines = val;
-      
       if (_group != StaffGroup::TAB) {
             switch(_lines) {
                   case 1:
@@ -1415,12 +1410,10 @@ void StaffTypeTemplate::setFileName(QString s)
 //-----------------------------------------------------//cc
 //   operator=
 //---------------------------------------------------------
-      
-//      TODO: THIS SEEMS INCORRECT (overloading base class assignment operator)
-      
+
 StaffTypeTemplate& StaffTypeTemplate::operator=(StaffTypeTemplate other)
       {
-      StaffType::operator=(other); //TODO: check what this actually means
+      StaffType::operator=(other);
       _dirty = other._dirty;
       _hasFile = other._hasFile;
       _fileInfo = other._fileInfo;
@@ -1461,9 +1454,7 @@ void StaffTypeTemplate::initUserTemplates()
                         continue;
                         }
                   st.setFileName(path);
-                  _userTemplates.emplace_back(st); //TODO: Possibly convert _userTemplates into a list of
-                                                 //      pointers instead (and then just push st).
-                                                 //OR: create a copy constructor
+                  _userTemplates.emplace_back(st);
                   }
             }
       StaffType::copyUserTemplatesToPresets(_userTemplates);
@@ -1530,6 +1521,5 @@ void StaffTypeTemplate::removeTemplate(StaffTypeTemplate& t)
             }
       StaffType::copyUserTemplatesToPresets(_userTemplates);
       }
-      
 }                 // namespace Ms
 
