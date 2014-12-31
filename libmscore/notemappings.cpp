@@ -79,7 +79,7 @@ void NoteMappings::writeMappings(Xml& xml) const
       xml.stag("mappings");
             
       for (int tpc = -1; tpc < 34; tpc++) {
-            QString name = tpc2name(tpc, NoteSpellingType::STANDARD, false, false);
+            QString name = tpc2name(tpc, NoteSpellingType::STANDARD, NoteCaseType::UPPER);
             
             xml.stag(QString("note name=\"%1\" tpc=\"%2\"").arg(name).arg(tpc));
             xml.tag("line-offset", _notePositions[tpc + 1]);
