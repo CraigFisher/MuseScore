@@ -42,11 +42,11 @@ QT5_WRAP_UI (ui_headers
       instrwizard.ui timesigwizard.ui newwizard.ui aboutbox.ui aboutmusicxmlbox.ui
       transposedialog.ui lineproperties.ui excerptsdialog.ui  stafftext.ui tupletdialog.ui
       glissandoprop.ui articulation.ui metaedit.ui palette.ui select.ui
-      synthcontrol.ui splitstaff.ui cellproperties.ui keyedit.ui selectinstr.ui
+      synthcontrol.ui splitstaff.ui cellproperties.ui keyedit.ui selectinstr.ui stafftypetemplatesdialog.ui
       fretdprops.ui editstafftype.ui sectionbreak.ui  bend.ui tremolobar.ui textproperties.ui
       editpitch.ui editstringdata.ui editraster.ui mediadialog.ui textstyle.ui albummanager.ui layer.ui
       omrpanel.ui startdialog.ui masterpalette.ui harmonyedit.ui pathlistdialog.ui
-      note_groups.ui resourceManager.ui stafftypetemplates.ui
+      note_groups.ui resourceManager.ui stafftypetemplatesold.ui
       startcenter.ui scorePreview.ui scoreBrowser.ui
       logindialog.ui uploadscoredialog.ui breaksdialog.ui
 
@@ -227,7 +227,11 @@ add_executable ( ${ExecutableName}
       timesigproperties.cpp newwizard.cpp transposedialog.cpp
       excerptsdialog.cpp metaedit.cpp magbox.cpp
       capella.cpp capxml.cpp exportaudio.cpp palettebox.cpp
+<<<<<<< HEAD
       textproperties.cpp synthcontrol.cpp drumroll.cpp pianoroll.cpp piano.cpp
+=======
+      textproperties.cpp synthcontrol.cpp drumroll.cpp pianoroll.cpp piano.cpp stafftypetemplatesdialog.cpp
+>>>>>>> rename StaffTypeTemplates as StaffTypeTemplatesDialog
       pianoview.cpp drumview.cpp scoretab.cpp keyedit.cpp harmonyedit.cpp
       updatechecker.cpp importove.cpp ove.cpp ruler.cpp
       importgtp.cpp importgtp-gp4.cpp importgtp-gp5.cpp importgtp-gp6.cpp fotomode.cpp drumtools.cpp

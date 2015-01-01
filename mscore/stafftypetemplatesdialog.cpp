@@ -10,7 +10,7 @@
 //  the file LICENCE.GPL
 //=============================================================================
 
-#include "stafftypetemplates.h"
+#include "stafftypetemplatesdialog.h"
 #include "libmscore/score.h"
 #include "libmscore/staff.h"
 #include "libmscore/measure.h"
@@ -27,7 +27,7 @@
 
 namespace Ms {
 
-const int StaffTypeTemplates::tpcLookup[7][5] = { { 0,  7,  14, 21, 28},
+const int StaffTypeTemplatesDialog::tpcLookup[7][5] = { { 0,  7,  14, 21, 28},
                                                   { 2,  9,  16, 23, 30},
                                                   { 4,  11, 18, 25, 32},
                                                   { -1, 6,  13, 20, 27},
@@ -35,7 +35,7 @@ const int StaffTypeTemplates::tpcLookup[7][5] = { { 0,  7,  14, 21, 28},
                                                   { 3,  10, 17, 24, 31},
                                                   { 5,  12, 19, 26, 33} };
       
-const NoteHead::Group StaffTypeTemplates::noteheadLookup[14] = {
+const NoteHead::Group StaffTypeTemplatesDialog::noteheadLookup[14] = {
             NoteHead::Group::HEAD_NORMAL,
             NoteHead::Group::HEAD_CROSS,
             NoteHead::Group::HEAD_DIAMOND,
@@ -52,7 +52,7 @@ const NoteHead::Group StaffTypeTemplates::noteheadLookup[14] = {
             NoteHead::Group::HEAD_BREVIS_ALT
             };
       
-const ClefType StaffTypeTemplates::clefLookup[17] = {
+const ClefType StaffTypeTemplatesDialog::clefLookup[17] = {
       ClefType::G,
       ClefType::G1,
       ClefType::G2,
@@ -75,12 +75,12 @@ const ClefType StaffTypeTemplates::clefLookup[17] = {
 extern Score::FileError readScore(Score* score, QString name, bool ignoreVersionError);
 
 //---------------------------------------------------------
-//   StaffTypeTemplates
+//   StaffTypeTemplatesDialog
 //---------------------------------------------------------
 
-StaffTypeTemplates::StaffTypeTemplates(QWidget *parent) :
+StaffTypeTemplatesDialog::StaffTypeTemplatesDialog(QWidget *parent) :
       QDialog(parent),
-      ui(new Ui::StaffTypeTemplates)
+      ui(new Ui::StaffTypeTemplatesDialog)
       {
       setupUi(this);
       innerLedgerWidget = new InnerLedgerWidget(staffLineEditorContainer); //TODO: correct name
@@ -136,10 +136,10 @@ StaffTypeTemplates::StaffTypeTemplates(QWidget *parent) :
       }
       
 //---------------------------------------------------------
-//   ~StaffTypeTemplates
+//   ~StaffTypeTemplatesDialog
 //---------------------------------------------------------
 
-StaffTypeTemplates::~StaffTypeTemplates()
+StaffTypeTemplatesDialog::~StaffTypeTemplatesDialog()
       {
       delete ui;
 	}
@@ -148,7 +148,7 @@ StaffTypeTemplates::~StaffTypeTemplates()
 //   connectInput
 //---------------------------------------------------------
 
-void StaffTypeTemplates::connectInput() const
+void StaffTypeTemplatesDialog::connectInput() const
       {
       connect(noteComboBox, SIGNAL(currentIndexChanged(const QString&)), SLOT(switchNoteLetter(const QString&)));
       connect(clefComboBox, SIGNAL(currentIndexChanged(const QString&)), SLOT(switchClef(const QString&)));
@@ -177,7 +177,7 @@ void StaffTypeTemplates::connectInput() const
 //   disconnectInput
 //---------------------------------------------------------
 
-void StaffTypeTemplates::disconnectInput() const
+void StaffTypeTemplatesDialog::disconnectInput() const
       {
       disconnect(noteComboBox, SIGNAL(currentIndexChanged(const QString&)), 0, 0);
       disconnect(clefComboBox, SIGNAL(currentIndexChanged(const QString&)), 0, 0);
@@ -207,7 +207,7 @@ void StaffTypeTemplates::disconnectInput() const
 //       set all widget values based on curTemplate
 //---------------------------------------------------------
       
-void StaffTypeTemplates::setValues() const
+void StaffTypeTemplatesDialog::setValues() const
       {
       if (curTemplate == NULL)
             return;
@@ -256,7 +256,7 @@ void StaffTypeTemplates::setValues() const
 //   loadStaffType
 //---------------------------------------------------------
       
-void StaffTypeTemplates::load()
+void StaffTypeTemplatesDialog::load()
       {
       StaffTypeTemplate st;
       try {
@@ -312,7 +312,7 @@ void StaffTypeTemplates::load()
 //   newStaffType
 //---------------------------------------------------------
       
-void StaffTypeTemplates::create()
+void StaffTypeTemplatesDialog::create()
       {
       // create a default STT
       StaffTypeTemplate st;
@@ -343,7 +343,7 @@ void StaffTypeTemplates::create()
 //          but does not delete the actual file
 //---------------------------------------------------------
 
-void StaffTypeTemplates::remove()
+void StaffTypeTemplatesDialog::remove()
       {
       if (!curTemplate)
             return;
@@ -378,7 +378,7 @@ void StaffTypeTemplates::remove()
 //   duplicateStaffType
 //---------------------------------------------------------
 
-void StaffTypeTemplates::duplicate()
+void StaffTypeTemplatesDialog::duplicate()
       {
       if (!curTemplate)
             return;
@@ -414,7 +414,7 @@ void StaffTypeTemplates::duplicate()
 //    return true on successful save
 //---------------------------------------------------------
       
-bool StaffTypeTemplates::save()
+bool StaffTypeTemplatesDialog::save()
       {
       return save(curTemplate);
       }
@@ -424,7 +424,7 @@ bool StaffTypeTemplates::save()
 //    return true on successful save
 //---------------------------------------------------------
       
-bool StaffTypeTemplates::save(StaffTypeTemplate* stt)
+bool StaffTypeTemplatesDialog::save(StaffTypeTemplate* stt)
       {
       if (stt == NULL)
             return false;
@@ -494,7 +494,7 @@ bool StaffTypeTemplates::save(StaffTypeTemplate* stt)
 //   handleCancelButton
 //---------------------------------------------------------
       
-void StaffTypeTemplates::handleExitButton()
+void StaffTypeTemplatesDialog::handleExitButton()
       {
       for (StaffTypeTemplate& stt : localTemplates) {
             if (stt.dirty() || !stt.hasFile()) {
@@ -519,7 +519,7 @@ void StaffTypeTemplates::handleExitButton()
 //   handleTemplateSwitch
 //---------------------------------------------------------
 
-void StaffTypeTemplates::handleTemplateSwitch(int row)
+void StaffTypeTemplatesDialog::handleTemplateSwitch(int row)
       {
       curTemplate = templateByItem(staffTypeSelector->item(row));
       disconnectInput();
@@ -531,7 +531,7 @@ void StaffTypeTemplates::handleTemplateSwitch(int row)
 //   switchNoteLetter
 //---------------------------------------------------------
       
-void StaffTypeTemplates::switchNoteLetter(const QString& text)
+void StaffTypeTemplatesDialog::switchNoteLetter(const QString& text)
       {
       doubleFlatLabel->setText(text + "bb");
       flatLabel->setText(text + "b");
@@ -549,7 +549,7 @@ void StaffTypeTemplates::switchNoteLetter(const QString& text)
 //   switchClef
 //---------------------------------------------------------
       
-void StaffTypeTemplates::switchClef(const QString& text)
+void StaffTypeTemplatesDialog::switchClef(const QString& text)
       {
       clefIdx = clefComboBox->currentIndex();
       ClefType curClef = clefLookup[clefIdx];
@@ -566,7 +566,7 @@ void StaffTypeTemplates::switchClef(const QString& text)
 //   markSelectorItemDirty
 //---------------------------------------------------------
       
-void StaffTypeTemplates::markTemplateDirty(StaffTypeTemplate* stt, bool dirty)
+void StaffTypeTemplatesDialog::markTemplateDirty(StaffTypeTemplate* stt, bool dirty)
       {
       if (stt->dirty() == dirty)
             return;
@@ -582,7 +582,7 @@ void StaffTypeTemplates::markTemplateDirty(StaffTypeTemplate* stt, bool dirty)
 //   enableInput
 //---------------------------------------------------------
       
-void StaffTypeTemplates::enableInput(bool enable) const //TODO: rename to "enableEditorForms" or something
+void StaffTypeTemplatesDialog::enableInput(bool enable) const //TODO: rename to "enableEditorForms" or something
       {
       inputEnabled = enable;
       
@@ -612,7 +612,7 @@ void StaffTypeTemplates::enableInput(bool enable) const //TODO: rename to "enabl
 //   templateByItem
 //---------------------------------------------------------
       
-StaffTypeTemplate* StaffTypeTemplates::templateByItem(QListWidgetItem* item)
+StaffTypeTemplate* StaffTypeTemplatesDialog::templateByItem(QListWidgetItem* item)
       {
       if (!item)
             return NULL;
@@ -647,7 +647,7 @@ StaffTypeTemplate* StaffTypeTemplates::templateByItem(QListWidgetItem* item)
 //   itemByTemplate
 //---------------------------------------------------------
 
-QListWidgetItem* StaffTypeTemplates::itemByTemplate(StaffTypeTemplate* stt)
+QListWidgetItem* StaffTypeTemplatesDialog::itemByTemplate(StaffTypeTemplate* stt)
       {
       if (!stt)
             return NULL;
@@ -685,7 +685,7 @@ QListWidgetItem* StaffTypeTemplates::itemByTemplate(StaffTypeTemplate* stt)
       
 //TODO: ADD METHOD HEADERS
       
-void StaffTypeTemplates::setOffset(int accidentalIdx, int offset)
+void StaffTypeTemplatesDialog::setOffset(int accidentalIdx, int offset)
       {
       int tpc = tpcLookup[noteLetterIdx][accidentalIdx];
       curTemplate->noteMappings()->setNotePosition(tpc, offset);
@@ -693,7 +693,7 @@ void StaffTypeTemplates::setOffset(int accidentalIdx, int offset)
       updatePreview();
       }
       
-void StaffTypeTemplates::setNotehead(int accidentalIdx, int headIdx)
+void StaffTypeTemplatesDialog::setNotehead(int accidentalIdx, int headIdx)
       {
       int tpc = tpcLookup[noteLetterIdx][accidentalIdx];
       curTemplate->noteMappings()->setNoteHeadGroup(tpc, noteheadLookup[headIdx]);
@@ -701,7 +701,7 @@ void StaffTypeTemplates::setNotehead(int accidentalIdx, int headIdx)
       updatePreview();
       }
       
-void StaffTypeTemplates::setClefOffset(int clefOffset)
+void StaffTypeTemplatesDialog::setClefOffset(int clefOffset)
       {
       ClefType curClef = clefLookup[clefIdx];
       curTemplate->noteMappings()->setClefOffset(curClef, clefOffset);
@@ -709,28 +709,28 @@ void StaffTypeTemplates::setClefOffset(int clefOffset)
       updatePreview();
       }
       
-void StaffTypeTemplates::setShowAccidental(bool val)
+void StaffTypeTemplatesDialog::setShowAccidental(bool val)
       {
       curTemplate->noteMappings()->setShowAccidentals(val);
       markTemplateDirty(curTemplate, true);
       updatePreview();
       }
       
-void StaffTypeTemplates::setOctaveDistance(int val)
+void StaffTypeTemplatesDialog::setOctaveDistance(int val)
       {
       curTemplate->noteMappings()->setOctaveDistance(val);
       markTemplateDirty(curTemplate, true);
       updatePreview();
       }
       
-void StaffTypeTemplates::setInnerLedgers(std::map<qreal, std::vector<qreal>>& ledgers)
+void StaffTypeTemplatesDialog::setInnerLedgers(std::map<qreal, std::vector<qreal>>& ledgers)
       {
       curTemplate->setInnerLedgers(ledgers);
       markTemplateDirty(curTemplate, true);
       updatePreview();
       }
       
-void StaffTypeTemplates::updateTemplateName(const QString& newName)
+void StaffTypeTemplatesDialog::updateTemplateName(const QString& newName)
       {
       curTemplate->setName(newName);
       curTemplate->setXmlName(newName);
@@ -741,7 +741,7 @@ void StaffTypeTemplates::updateTemplateName(const QString& newName)
       markTemplateDirty(curTemplate, true);
       }
       
-void StaffTypeTemplates::updateStaffLines()
+void StaffTypeTemplatesDialog::updateStaffLines()
       {
       QString staffLineStr = staffLineWidget->text();
       QString correctedStr;
@@ -772,7 +772,7 @@ void StaffTypeTemplates::updateStaffLines()
       markTemplateDirty(curTemplate, true);
       }
       
-void StaffTypeTemplates::updatePreview() const
+void StaffTypeTemplatesDialog::updatePreview() const
       {
       if (preview) {
             StaffType* st = static_cast<StaffType*>(curTemplate);
@@ -784,7 +784,7 @@ void StaffTypeTemplates::updatePreview() const
             }
       }
       
-int StaffTypeTemplates::noteheadIndex(NoteHead::Group group) const
+int StaffTypeTemplatesDialog::noteheadIndex(NoteHead::Group group) const
       {
       for (int i = 0; i < 14; i++) {
             if (noteheadLookup[i] == group)
@@ -793,7 +793,7 @@ int StaffTypeTemplates::noteheadIndex(NoteHead::Group group) const
       return -1;
       }
 
-int StaffTypeTemplates::clefIndex(ClefType ct) const
+int StaffTypeTemplatesDialog::clefIndex(ClefType ct) const
       {
       for (int i = 0; i < 17; i++) {
             if (clefLookup[i] == ct)
@@ -806,7 +806,7 @@ int StaffTypeTemplates::clefIndex(ClefType ct) const
 //    debugLocals
 //---------------------------------------------------------
       
-void StaffTypeTemplates::debugLocals()
+void StaffTypeTemplatesDialog::debugLocals()
       {
       qDebug()<<"...Local Templates...";
       std::vector<StaffTypeTemplate>::iterator itr = localTemplates.begin();

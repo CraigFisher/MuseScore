@@ -10,31 +10,31 @@
 //  the file LICENCE.GPL
 //=============================================================================
 
-#ifndef STAFFTYPETEMPLATES_H
-#define STAFFTYPETEMPLATES_H
+#ifndef STAFFTYPETEMPLATESDIALOG_H
+#define STAFFTYPETEMPLATESDIALOG_H
 
-#include "ui_stafftypetemplates.h"
+#include "ui_stafftypetemplatesdialog.h"
 #include "libmscore/stafftype.h"
 #include "innerledgerwidget.h"
 #include <QTableView>
 
 //cc
 namespace Ui {
-class StaffTypeTemplates;
+class StaffTypeTemplatesDialog;
 }
 
 namespace Ms {
 
 //TODO: HANDLE NECESSARY DELETIONS IN A DESTRUCTOR
-class StaffTypeTemplates : public QDialog, private Ui::StaffTypeTemplates {
+class StaffTypeTemplatesDialog : public QDialog, private Ui::StaffTypeTemplatesDialog {
 	Q_OBJECT
       
     public:
-      StaffTypeTemplates(QWidget *parent = 0);
-      ~StaffTypeTemplates();
+      StaffTypeTemplatesDialog(QWidget *parent = 0);
+      ~StaffTypeTemplatesDialog();
 
     private:
-      Ui::StaffTypeTemplates *ui;
+      Ui::StaffTypeTemplatesDialog *ui;
       InnerLedgerWidget* innerLedgerWidget;
       
       mutable bool inputEnabled = true;
@@ -106,4 +106,4 @@ class StaffTypeTemplates : public QDialog, private Ui::StaffTypeTemplates {
 
 }
 
-#endif // STAFFTYPETEMPLATES_H
+#endif // STAFFTYPETEMPLATESDIALOG_H

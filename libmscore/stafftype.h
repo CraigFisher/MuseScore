@@ -388,7 +388,7 @@ class StaffTypeTemplate : public StaffType {
       static void addTemplate(StaffTypeTemplate& t);
       static void removeTemplate(StaffTypeTemplate& t);
       
-      friend class StaffTypeTemplates; //only StaffTypeTemplatesDialog should be able to add or remove user templates
+      friend class StaffTypeTemplatesDialog; //only StaffTypeTemplatesDialogDialog should be able to add or remove user templates
       
     public:
       StaffTypeTemplate();

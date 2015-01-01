@@ -91,8 +91,7 @@ class Seq;
 class ImportMidiPanel;
 class Startcenter;
 class HelpBrowser;
-=======
-class StaffTypeTemplates; //cc
+class StaffTypeTemplatesDialog; //cc
 class NoteMappings;
 
 struct PluginDescription;
@@ -280,7 +279,6 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       Debugger* debugger                   { 0 };
       MeasureListEditor* measureListEdit   { 0 };
       PageSettings* pageSettings           { 0 };
-      StaffTypeTemplates* staffTypeTemplates { 0 }; //cc
 
       QWidget* symbolDialog                { 0 };
 
@@ -405,7 +403,7 @@ class MuseScore : public QMainWindow, public MuseScoreCore {
       void showNavigator(bool);
       void showMixer(bool);
       void showSynthControl(bool);
-      void showStaffTypeTemplates(bool); //cc
+      void showStaffTypeTemplatesDialog(bool); //cc
       void showSelectionWindow(bool);
       void showSearchDialog();
       void splitWindow(bool horizontal);

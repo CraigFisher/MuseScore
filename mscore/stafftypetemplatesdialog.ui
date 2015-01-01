@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>StaffTypeTemplates</class>
- <widget class="QWidget" name="StaffTypeTemplates">
+ <class>StaffTypeTemplatesDialog</class>
+ <widget class="QWidget" name="StaffTypeTemplatesDialog">
   <property name="geometry">
    <rect>
     <x>0</x>

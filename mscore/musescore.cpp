@@ -106,7 +106,7 @@
 #include "help.h"
 #include "awl/aslider.h"
 #include "libmscore/notemappings.h" //cc
-#include "stafftypetemplates.h"           //cc
+#include "stafftypetemplatesdialog.h"           //cc
 
 #ifdef AEOLUS
 extern Ms::Synthesizer* createAeolus();
@@ -4068,7 +4068,7 @@ void MuseScore::cmd(QAction* a, const QString& cmd)
             showSynthControl(a->isChecked());
       //cc
       else if (cmd == "stafftype-dialog") {
-            StaffTypeTemplates stt(this);
+            StaffTypeTemplatesDialog stt(this);
             stt.exec();
             }
       else if (cmd == "toggle-selection-window")
