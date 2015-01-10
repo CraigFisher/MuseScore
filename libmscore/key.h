@@ -95,7 +95,7 @@ class KeySigEvent {
 static const int TIE_CONTEXT = 0x10;
 
 class AccidentalState {
-      uchar state[161]; // (0 -- 4) | TIE_CONTEXT //cc TODO: sync with a firm max octave distance value
+      uchar state[75];    // (0 -- 4) | TIE_CONTEXT
 
    public:
       AccidentalState() {}
