@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<museScore version="2.01">
+<museScore version="2.04">
   <programVersion>2.0.0</programVersion>
   <programRevision>3543170</programRevision>
   <Score>
@@ -11,12 +11,14 @@
     <Style>
       <staffUpperBorder>8</staffUpperBorder>
       <staffLowerBorder>0</staffLowerBorder>
-      <maxSystemDistance>8.5</maxSystemDistance>
+      <minSystemDistance>10.5</minSystemDistance>
+      <maxSystemDistance>15.5</maxSystemDistance>
       <bracketWidth>0.3</bracketWidth>
       <bracketDistance>0.2</bracketDistance>
       <barNoteDistance>0.5</barNoteDistance>
       <noteBarDistance>0.5</noteBarDistance>
       <showMeasureNumber>0</showMeasureNumber>
+      <musicalSymbolFont>Bravura</musicalSymbolFont>
       <showFooter>0</showFooter>
       <evenFooterL></evenFooterL>
       <evenFooterC></evenFooterC>
@@ -24,7 +26,7 @@
       <oddFooterR></oddFooterR>
       <page-layout>
         <page-height>680.315</page-height>
-        <page-width>1020.47</page-width>
+        <page-width>1440</page-width>
         <page-margins type="even">
           <left-margin>8.50394</left-margin>
           <right-margin>8.50394</right-margin>
@@ -59,6 +61,8 @@
     <metaTag name="workTitle">Lachrimae Antiquae</metaTag>
     <PageList>
       <Page>
+        <System>
+          </System>
         <System>
           </System>
         </Page>
@@ -129,138 +133,28 @@
     <Staff id="1">
       <Measure number="1">
         <TimeSig>
-          <sigN>3</sigN>
+          <sigN>5</sigN>
           <sigD>4</sigD>
           <showCourtesySig>0</showCourtesySig>
           </TimeSig>
         <Chord>
           <durationType>quarter</durationType>
           <Note>
-            <pitch>24</pitch>
-            <tpc>14</tpc>
+            <Accidental>
+              <subtype>double flat</subtype>
+              </Accidental>
+            <pitch>58</pitch>
+            <tpc>0</tpc>
             </Note>
+          </Chord>
+        <Chord>
+          <durationType>quarter</durationType>
           <Note>
             <Accidental>
               <subtype>flat</subtype>
               </Accidental>
             <pitch>59</pitch>
             <tpc>7</tpc>
-            </Note>
-          <Note>
-            <pitch>72</pitch>
-            <tpc>14</tpc>
-            </Note>
-          </Chord>
-        <Chord>
-          <durationType>quarter</durationType>
-          <Note>
-            <pitch>26</pitch>
-            <tpc>16</tpc>
-            </Note>
-          <Note>
-            <Accidental>
-              <subtype>natural</subtype>
-              </Accidental>
-            <pitch>60</pitch>
-            <tpc>14</tpc>
-            </Note>
-          <Note>
-            <pitch>74</pitch>
-            <tpc>16</tpc>
-            </Note>
-          </Chord>
-        <Chord>
-          <durationType>quarter</durationType>
-          <Note>
-            <pitch>28</pitch>
-            <tpc>18</tpc>
-            </Note>
-          <Note>
-            <Accidental>
-              <subtype>sharp</subtype>
-              </Accidental>
-            <pitch>61</pitch>
-            <tpc>21</tpc>
-            </Note>
-          <Note>
-            <pitch>76</pitch>
-            <tpc>18</tpc>
-            </Note>
-          </Chord>
-        </Measure>
-      <Measure number="2">
-        <Chord>
-          <durationType>quarter</durationType>
-          <Note>
-            <pitch>29</pitch>
-            <tpc>13</tpc>
-            </Note>
-          <Note>
-            <Accidental>
-              <subtype>flat</subtype>
-              </Accidental>
-            <pitch>61</pitch>
-            <tpc>9</tpc>
-            </Note>
-          <Note>
-            <pitch>77</pitch>
-            <tpc>13</tpc>
-            </Note>
-          </Chord>
-        <Chord>
-          <durationType>quarter</durationType>
-          <Note>
-            <pitch>31</pitch>
-            <tpc>15</tpc>
-            </Note>
-          <Note>
-            <Accidental>
-              <subtype>natural</subtype>
-              </Accidental>
-            <pitch>62</pitch>
-            <tpc>16</tpc>
-            </Note>
-          <Note>
-            <pitch>79</pitch>
-            <tpc>15</tpc>
-            </Note>
-          </Chord>
-        <Chord>
-          <durationType>quarter</durationType>
-          <Note>
-            <pitch>33</pitch>
-            <tpc>17</tpc>
-            </Note>
-          <Note>
-            <Accidental>
-              <subtype>sharp</subtype>
-              </Accidental>
-            <pitch>63</pitch>
-            <tpc>23</tpc>
-            </Note>
-          <Note>
-            <pitch>81</pitch>
-            <tpc>17</tpc>
-            </Note>
-          </Chord>
-        </Measure>
-      <Measure number="3">
-        <Chord>
-          <durationType>quarter</durationType>
-          <Note>
-            <pitch>35</pitch>
-            <tpc>19</tpc>
-            </Note>
-          <Note>
-            <Accidental>
-              <subtype>flat</subtype>
-              </Accidental>
-            <pitch>63</pitch>
-            <tpc>11</tpc>
-            </Note>
-          <Note>
-            <pitch>83</pitch>
-            <tpc>19</tpc>
             </Note>
           </Chord>
         <Chord>
@@ -270,11 +164,19 @@
             <tpc>14</tpc>
             </Note>
           <Note>
+            <pitch>48</pitch>
+            <tpc>14</tpc>
+            </Note>
+          <Note>
             <Accidental>
               <subtype>natural</subtype>
               </Accidental>
-            <pitch>64</pitch>
-            <tpc>18</tpc>
+            <pitch>60</pitch>
+            <tpc>14</tpc>
+            </Note>
+          <Note>
+            <pitch>72</pitch>
+            <tpc>14</tpc>
             </Note>
           <Note>
             <pitch>84</pitch>
@@ -284,23 +186,113 @@
         <Chord>
           <durationType>quarter</durationType>
           <Note>
+            <Accidental>
+              <subtype>sharp</subtype>
+              </Accidental>
+            <pitch>61</pitch>
+            <tpc>21</tpc>
+            </Note>
+          </Chord>
+        <Chord>
+          <durationType>quarter</durationType>
+          <Note>
+            <Accidental>
+              <subtype>double sharp</subtype>
+              </Accidental>
+            <pitch>62</pitch>
+            <tpc>28</tpc>
+            </Note>
+          </Chord>
+        </Measure>
+      <Measure number="2">
+        <Chord>
+          <durationType>quarter</durationType>
+          <Note>
+            <Accidental>
+              <subtype>double flat</subtype>
+              </Accidental>
+            <pitch>60</pitch>
+            <tpc>2</tpc>
+            </Note>
+          </Chord>
+        <Chord>
+          <durationType>quarter</durationType>
+          <Note>
+            <Accidental>
+              <subtype>flat</subtype>
+              </Accidental>
+            <pitch>61</pitch>
+            <tpc>9</tpc>
+            </Note>
+          </Chord>
+        <Chord>
+          <durationType>quarter</durationType>
+          <Note>
             <pitch>38</pitch>
             <tpc>16</tpc>
             </Note>
           <Note>
+            <pitch>50</pitch>
+            <tpc>16</tpc>
+            </Note>
+          <Note>
             <Accidental>
-              <subtype>sharp</subtype>
+              <subtype>natural</subtype>
               </Accidental>
-            <pitch>65</pitch>
-            <tpc>25</tpc>
+            <pitch>62</pitch>
+            <tpc>16</tpc>
+            </Note>
+          <Note>
+            <pitch>74</pitch>
+            <tpc>16</tpc>
             </Note>
           <Note>
             <pitch>86</pitch>
             <tpc>16</tpc>
             </Note>
           </Chord>
+        <Chord>
+          <durationType>quarter</durationType>
+          <Note>
+            <Accidental>
+              <subtype>sharp</subtype>
+              </Accidental>
+            <pitch>63</pitch>
+            <tpc>23</tpc>
+            </Note>
+          </Chord>
+        <Chord>
+          <durationType>quarter</durationType>
+          <Note>
+            <Accidental>
+              <subtype>double sharp</subtype>
+              </Accidental>
+            <pitch>64</pitch>
+            <tpc>30</tpc>
+            </Note>
+          </Chord>
         </Measure>
-      <Measure number="4">
+      <Measure number="3">
+        <Chord>
+          <durationType>quarter</durationType>
+          <Note>
+            <Accidental>
+              <subtype>double flat</subtype>
+              </Accidental>
+            <pitch>62</pitch>
+            <tpc>4</tpc>
+            </Note>
+          </Chord>
+        <Chord>
+          <durationType>quarter</durationType>
+          <Note>
+            <Accidental>
+              <subtype>flat</subtype>
+              </Accidental>
+            <pitch>63</pitch>
+            <tpc>11</tpc>
+            </Note>
+          </Chord>
         <Chord>
           <durationType>quarter</durationType>
           <Note>
@@ -308,11 +300,19 @@
             <tpc>18</tpc>
             </Note>
           <Note>
+            <pitch>52</pitch>
+            <tpc>18</tpc>
+            </Note>
+          <Note>
             <Accidental>
-              <subtype>flat</subtype>
+              <subtype>natural</subtype>
               </Accidental>
             <pitch>64</pitch>
-            <tpc>6</tpc>
+            <tpc>18</tpc>
+            </Note>
+          <Note>
+            <pitch>76</pitch>
+            <tpc>18</tpc>
             </Note>
           <Note>
             <pitch>88</pitch>
@@ -322,7 +322,53 @@
         <Chord>
           <durationType>quarter</durationType>
           <Note>
+            <Accidental>
+              <subtype>sharp</subtype>
+              </Accidental>
+            <pitch>65</pitch>
+            <tpc>25</tpc>
+            </Note>
+          </Chord>
+        <Chord>
+          <durationType>quarter</durationType>
+          <Note>
+            <Accidental>
+              <subtype>double sharp</subtype>
+              </Accidental>
+            <pitch>66</pitch>
+            <tpc>32</tpc>
+            </Note>
+          </Chord>
+        </Measure>
+      <Measure number="4">
+        <Chord>
+          <durationType>quarter</durationType>
+          <Note>
+            <Accidental>
+              <subtype>double flat</subtype>
+              </Accidental>
+            <pitch>63</pitch>
+            <tpc>-1</tpc>
+            </Note>
+          </Chord>
+        <Chord>
+          <durationType>quarter</durationType>
+          <Note>
+            <Accidental>
+              <subtype>flat</subtype>
+              </Accidental>
+            <pitch>64</pitch>
+            <tpc>6</tpc>
+            </Note>
+          </Chord>
+        <Chord>
+          <durationType>quarter</durationType>
+          <Note>
             <pitch>41</pitch>
+            <tpc>13</tpc>
+            </Note>
+          <Note>
+            <pitch>53</pitch>
             <tpc>13</tpc>
             </Note>
           <Note>
@@ -333,8 +379,54 @@
             <tpc>13</tpc>
             </Note>
           <Note>
+            <pitch>76</pitch>
+            <tpc>18</tpc>
+            </Note>
+          <Note>
             <pitch>89</pitch>
             <tpc>13</tpc>
+            </Note>
+          </Chord>
+        <Chord>
+          <durationType>quarter</durationType>
+          <Note>
+            <Accidental>
+              <subtype>sharp</subtype>
+              </Accidental>
+            <pitch>66</pitch>
+            <tpc>20</tpc>
+            </Note>
+          </Chord>
+        <Chord>
+          <durationType>quarter</durationType>
+          <Note>
+            <Accidental>
+              <subtype>double sharp</subtype>
+              </Accidental>
+            <pitch>67</pitch>
+            <tpc>27</tpc>
+            </Note>
+          </Chord>
+        </Measure>
+      <Measure number="5">
+        <Chord>
+          <durationType>quarter</durationType>
+          <Note>
+            <Accidental>
+              <subtype>double flat</subtype>
+              </Accidental>
+            <pitch>65</pitch>
+            <tpc>1</tpc>
+            </Note>
+          </Chord>
+        <Chord>
+          <durationType>quarter</durationType>
+          <Note>
+            <Accidental>
+              <subtype>flat</subtype>
+              </Accidental>
+            <pitch>66</pitch>
+            <tpc>8</tpc>
             </Note>
           </Chord>
         <Chord>
@@ -344,42 +436,8 @@
             <tpc>15</tpc>
             </Note>
           <Note>
-            <Accidental>
-              <subtype>sharp</subtype>
-              </Accidental>
-            <pitch>66</pitch>
-            <tpc>20</tpc>
-            </Note>
-          <Note>
-            <pitch>91</pitch>
+            <pitch>55</pitch>
             <tpc>15</tpc>
-            </Note>
-          </Chord>
-        </Measure>
-      <Measure number="5">
-        <Chord>
-          <durationType>quarter</durationType>
-          <Note>
-            <pitch>45</pitch>
-            <tpc>17</tpc>
-            </Note>
-          <Note>
-            <Accidental>
-              <subtype>flat</subtype>
-              </Accidental>
-            <pitch>66</pitch>
-            <tpc>8</tpc>
-            </Note>
-          <Note>
-            <pitch>93</pitch>
-            <tpc>17</tpc>
-            </Note>
-          </Chord>
-        <Chord>
-          <durationType>quarter</durationType>
-          <Note>
-            <pitch>47</pitch>
-            <tpc>19</tpc>
             </Note>
           <Note>
             <Accidental>
@@ -389,16 +447,16 @@
             <tpc>15</tpc>
             </Note>
           <Note>
-            <pitch>95</pitch>
-            <tpc>19</tpc>
+            <pitch>77</pitch>
+            <tpc>13</tpc>
+            </Note>
+          <Note>
+            <pitch>91</pitch>
+            <tpc>15</tpc>
             </Note>
           </Chord>
         <Chord>
           <durationType>quarter</durationType>
-          <Note>
-            <pitch>48</pitch>
-            <tpc>14</tpc>
-            </Note>
           <Note>
             <Accidental>
               <subtype>sharp</subtype>
@@ -406,9 +464,15 @@
             <pitch>68</pitch>
             <tpc>22</tpc>
             </Note>
+          </Chord>
+        <Chord>
+          <durationType>quarter</durationType>
           <Note>
-            <pitch>96</pitch>
-            <tpc>14</tpc>
+            <Accidental>
+              <subtype>double sharp</subtype>
+              </Accidental>
+            <pitch>69</pitch>
+            <tpc>29</tpc>
             </Note>
           </Chord>
         </Measure>
@@ -416,9 +480,15 @@
         <Chord>
           <durationType>quarter</durationType>
           <Note>
-            <pitch>50</pitch>
-            <tpc>16</tpc>
+            <Accidental>
+              <subtype>double flat</subtype>
+              </Accidental>
+            <pitch>67</pitch>
+            <tpc>3</tpc>
             </Note>
+          </Chord>
+        <Chord>
+          <durationType>quarter</durationType>
           <Note>
             <Accidental>
               <subtype>flat</subtype>
@@ -426,16 +496,16 @@
             <pitch>68</pitch>
             <tpc>10</tpc>
             </Note>
-          <Note>
-            <pitch>98</pitch>
-            <tpc>16</tpc>
-            </Note>
           </Chord>
         <Chord>
           <durationType>quarter</durationType>
           <Note>
-            <pitch>52</pitch>
-            <tpc>18</tpc>
+            <pitch>45</pitch>
+            <tpc>17</tpc>
+            </Note>
+          <Note>
+            <pitch>57</pitch>
+            <tpc>17</tpc>
             </Note>
           <Note>
             <Accidental>
@@ -445,16 +515,16 @@
             <tpc>17</tpc>
             </Note>
           <Note>
-            <pitch>100</pitch>
-            <tpc>18</tpc>
+            <pitch>79</pitch>
+            <tpc>15</tpc>
+            </Note>
+          <Note>
+            <pitch>93</pitch>
+            <tpc>17</tpc>
             </Note>
           </Chord>
         <Chord>
           <durationType>quarter</durationType>
-          <Note>
-            <pitch>53</pitch>
-            <tpc>13</tpc>
-            </Note>
           <Note>
             <Accidental>
               <subtype>sharp</subtype>
@@ -462,17 +532,243 @@
             <pitch>70</pitch>
             <tpc>24</tpc>
             </Note>
+          </Chord>
+        <Chord>
+          <durationType>quarter</durationType>
           <Note>
-            <pitch>101</pitch>
-            <tpc>13</tpc>
+            <Accidental>
+              <subtype>double sharp</subtype>
+              </Accidental>
+            <pitch>71</pitch>
+            <tpc>31</tpc>
             </Note>
           </Chord>
         </Measure>
       <Measure number="7">
+        <LayoutBreak>
+          <subtype>line</subtype>
+          <pause>3</pause>
+          </LayoutBreak>
         <Chord>
           <durationType>quarter</durationType>
           <Note>
-            <pitch>55</pitch>
+            <Accidental>
+              <subtype>double flat</subtype>
+              </Accidental>
+            <pitch>69</pitch>
+            <tpc>5</tpc>
+            </Note>
+          </Chord>
+        <Chord>
+          <durationType>quarter</durationType>
+          <Note>
+            <Accidental>
+              <subtype>flat</subtype>
+              </Accidental>
+            <pitch>70</pitch>
+            <tpc>12</tpc>
+            </Note>
+          </Chord>
+        <Chord>
+          <durationType>quarter</durationType>
+          <Note>
+            <pitch>47</pitch>
+            <tpc>19</tpc>
+            </Note>
+          <Note>
+            <pitch>59</pitch>
+            <tpc>19</tpc>
+            </Note>
+          <Note>
+            <Accidental>
+              <subtype>natural</subtype>
+              </Accidental>
+            <pitch>71</pitch>
+            <tpc>19</tpc>
+            </Note>
+          <Note>
+            <pitch>81</pitch>
+            <tpc>17</tpc>
+            </Note>
+          <Note>
+            <pitch>95</pitch>
+            <tpc>19</tpc>
+            </Note>
+          </Chord>
+        <Chord>
+          <durationType>quarter</durationType>
+          <Note>
+            <Accidental>
+              <subtype>sharp</subtype>
+              </Accidental>
+            <pitch>72</pitch>
+            <tpc>26</tpc>
+            </Note>
+          </Chord>
+        <Chord>
+          <durationType>quarter</durationType>
+          <Note>
+            <Accidental>
+              <subtype>double sharp</subtype>
+              </Accidental>
+            <pitch>73</pitch>
+            <tpc>33</tpc>
+            </Note>
+          </Chord>
+        </Measure>
+      <Measure number="8">
+        <TimeSig>
+          <sigN>6</sigN>
+          <sigD>4</sigD>
+          <showCourtesySig>1</showCourtesySig>
+          </TimeSig>
+        <Chord>
+          <durationType>half</durationType>
+          <Note>
+            <Accidental>
+              <subtype>double flat</subtype>
+              </Accidental>
+            <pitch>70</pitch>
+            <tpc>0</tpc>
+            </Note>
+          </Chord>
+        <Chord>
+          <durationType>half</durationType>
+          <Note>
+            <Accidental>
+              <subtype>flat</subtype>
+              </Accidental>
+            <pitch>71</pitch>
+            <tpc>7</tpc>
+            </Note>
+          </Chord>
+        <Chord>
+          <durationType>half</durationType>
+          <Note>
+            <Accidental>
+              <subtype>natural</subtype>
+              </Accidental>
+            <pitch>72</pitch>
+            <tpc>14</tpc>
+            </Note>
+          </Chord>
+        </Measure>
+      <Measure number="9">
+        <TimeSig>
+          <sigN>4</sigN>
+          <sigD>4</sigD>
+          <showCourtesySig>1</showCourtesySig>
+          </TimeSig>
+        <Chord>
+          <durationType>half</durationType>
+          <Note>
+            <Accidental>
+              <subtype>sharp</subtype>
+              </Accidental>
+            <pitch>73</pitch>
+            <tpc>21</tpc>
+            </Note>
+          </Chord>
+        <Chord>
+          <durationType>half</durationType>
+          <Note>
+            <Accidental>
+              <subtype>double sharp</subtype>
+              </Accidental>
+            <pitch>74</pitch>
+            <tpc>28</tpc>
+            </Note>
+          </Chord>
+        <tick>19680</tick>
+        <Chord>
+          <track>1</track>
+          <durationType>whole</durationType>
+          <Note>
+            <track>1</track>
+            <Accidental>
+              <subtype>double flat</subtype>
+              <track>1</track>
+              </Accidental>
+            <pitch>58</pitch>
+            <tpc>0</tpc>
+            </Note>
+          </Chord>
+        </Measure>
+      <Measure number="10">
+        <Chord>
+          <durationType>whole</durationType>
+          <Note>
+            <Accidental>
+              <subtype>flat</subtype>
+              </Accidental>
+            <pitch>59</pitch>
+            <tpc>7</tpc>
+            </Note>
+          </Chord>
+        </Measure>
+      <Measure number="11">
+        <Chord>
+          <durationType>whole</durationType>
+          <Note>
+            <pitch>60</pitch>
+            <tpc>14</tpc>
+            </Note>
+          </Chord>
+        </Measure>
+      <Measure number="12">
+        <Chord>
+          <durationType>whole</durationType>
+          <Note>
+            <Accidental>
+              <subtype>sharp</subtype>
+              </Accidental>
+            <pitch>61</pitch>
+            <tpc>21</tpc>
+            </Note>
+          </Chord>
+        </Measure>
+      <Measure number="13">
+        <Chord>
+          <durationType>whole</durationType>
+          <Note>
+            <Accidental>
+              <subtype>double sharp</subtype>
+              </Accidental>
+            <pitch>62</pitch>
+            <tpc>28</tpc>
+            </Note>
+          </Chord>
+        </Measure>
+      <Measure number="14">
+        <Chord>
+          <durationType>half</durationType>
+          <Note>
+            <Accidental>
+              <subtype>sharp</subtype>
+              </Accidental>
+            <pitch>54</pitch>
+            <tpc>20</tpc>
+            </Note>
+          <Note>
+            <pitch>57</pitch>
+            <tpc>17</tpc>
+            </Note>
+          <Note>
+            <Accidental>
+              <subtype>sharp</subtype>
+              </Accidental>
+            <pitch>61</pitch>
+            <tpc>21</tpc>
+            </Note>
+          <Note>
+            <Accidental>
+              <subtype>flat</subtype>
+              </Accidental>
+            <pitch>63</pitch>
+            <tpc>11</tpc>
+            </Note>
+          <Note>
+            <pitch>67</pitch>
             <tpc>15</tpc>
             </Note>
           <Note>
@@ -483,96 +779,123 @@
             <tpc>12</tpc>
             </Note>
           <Note>
-            <pitch>103</pitch>
-            <tpc>15</tpc>
+            <pitch>74</pitch>
+            <tpc>16</tpc>
+            </Note>
+          <Note>
+            <Accidental>
+              <subtype>sharp</subtype>
+              </Accidental>
+            <pitch>78</pitch>
+            <tpc>20</tpc>
+            </Note>
+          <Note>
+            <Accidental>
+              <subtype>sharp</subtype>
+              </Accidental>
+            <pitch>82</pitch>
+            <tpc>24</tpc>
             </Note>
           </Chord>
         <Chord>
           <durationType>quarter</durationType>
+          <Note>
+            <pitch>54</pitch>
+            <tpc>20</tpc>
+            </Note>
+          <Note>
+            <pitch>57</pitch>
+            <tpc>17</tpc>
+            </Note>
+          <Note>
+            <pitch>61</pitch>
+            <tpc>21</tpc>
+            </Note>
+          <Note>
+            <pitch>63</pitch>
+            <tpc>11</tpc>
+            </Note>
+          <Note>
+            <pitch>67</pitch>
+            <tpc>15</tpc>
+            </Note>
+          <Note>
+            <pitch>70</pitch>
+            <tpc>12</tpc>
+            </Note>
+          <Note>
+            <pitch>74</pitch>
+            <tpc>16</tpc>
+            </Note>
+          <Note>
+            <pitch>78</pitch>
+            <tpc>20</tpc>
+            </Note>
+          </Chord>
+        <Rest>
+          <durationType>quarter</durationType>
+          </Rest>
+        </Measure>
+      <Measure number="15">
+        <LayoutBreak>
+          <subtype>line</subtype>
+          <pause>3</pause>
+          </LayoutBreak>
+        <Chord>
+          <durationType>whole</durationType>
+          <Note>
+            <Accidental>
+              <subtype>sharp</subtype>
+              </Accidental>
+            <pitch>54</pitch>
+            <tpc>20</tpc>
+            </Note>
           <Note>
             <pitch>57</pitch>
             <tpc>17</tpc>
             </Note>
           <Note>
             <Accidental>
-              <subtype>natural</subtype>
-              </Accidental>
-            <pitch>71</pitch>
-            <tpc>19</tpc>
-            </Note>
-          <Note>
-            <pitch>105</pitch>
-            <tpc>17</tpc>
-            </Note>
-          </Chord>
-        <Chord>
-          <durationType>quarter</durationType>
-          <Note>
-            <pitch>59</pitch>
-            <tpc>19</tpc>
-            </Note>
-          <Note>
-            <Accidental>
               <subtype>sharp</subtype>
               </Accidental>
-            <pitch>72</pitch>
-            <tpc>26</tpc>
-            </Note>
-          <Note>
-            <pitch>107</pitch>
-            <tpc>19</tpc>
-            </Note>
-          </Chord>
-        </Measure>
-      <Measure number="8">
-        <Chord>
-          <durationType>quarter</durationType>
-          <Note>
-            <pitch>60</pitch>
-            <tpc>14</tpc>
+            <pitch>61</pitch>
+            <tpc>21</tpc>
             </Note>
           <Note>
             <Accidental>
               <subtype>flat</subtype>
               </Accidental>
-            <pitch>71</pitch>
-            <tpc>7</tpc>
+            <pitch>63</pitch>
+            <tpc>11</tpc>
             </Note>
           <Note>
-            <pitch>108</pitch>
-            <tpc>14</tpc>
-            </Note>
-          </Chord>
-        <Chord>
-          <durationType>quarter</durationType>
-          <Note>
-            <pitch>62</pitch>
-            <tpc>16</tpc>
+            <pitch>67</pitch>
+            <tpc>15</tpc>
             </Note>
           <Note>
             <Accidental>
-              <subtype>natural</subtype>
+              <subtype>flat</subtype>
               </Accidental>
-            <pitch>72</pitch>
-            <tpc>14</tpc>
+            <pitch>70</pitch>
+            <tpc>12</tpc>
             </Note>
           <Note>
-            <pitch>108</pitch>
-            <tpc>14</tpc>
-            </Note>
-          </Chord>
-        <Chord>
-          <durationType>quarter</durationType>
-          <Note>
-            <pitch>64</pitch>
-            <tpc>18</tpc>
+            <pitch>74</pitch>
+            <tpc>16</tpc>
             </Note>
           <Note>
             <Accidental>
               <subtype>sharp</subtype>
               </Accidental>
-            <pitch>73</pitch>
-            <tpc>21</tpc>
+            <pitch>78</pitch>
+            <tpc>20</tpc>
+            </Note>
+          <Note>
+            <Accidental>
+              <subtype>sharp</subtype>
+              </Accidental>
+            <pitch>82</pitch>
+            <tpc>24</tpc>
             </Note>
           </Chord>
         <BarLine>
