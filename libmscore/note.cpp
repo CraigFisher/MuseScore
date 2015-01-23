@@ -446,13 +446,8 @@ SymId Note::noteHead() const
             }
       if (_headType != NoteHead::Type::HEAD_AUTO)
             ht = _headType;
-      //cc
-      SymId t;
-      if(noteMappings())
-            t = noteHead(up, noteMappings()->tpc2HeadGroup(_tpc[0]), ht);
-      else
-            t = noteHead(up, _headGroup, ht);
 
+      SymId t = noteHead(up, _headGroup, ht);
       if (t == SymId::noSym) {
             qDebug("invalid note head %hhd/%hhd", _headGroup, ht);
             t = noteHead(up, NoteHead::Group::HEAD_NORMAL, ht);
@@ -1682,6 +1677,17 @@ void Note::setDotY(MScore::Direction pos)
 
 void Note::layout()
       {
+      if (noteMappings()) { //cc
+            setColor(noteMappings()->tpc2Color(tpc()));
+            _headGroup = noteMappings()->tpc2HeadGroup(tpc());
+            _alternativeState = true;
+            }
+      else if (_alternativeState) { //cc TODO: CONFIRM
+            setColor(MScore::defaultColor);
+            _headGroup = NoteHead::Group::HEAD_NORMAL;
+            _alternativeState = false;
+      }
+      
       bool useTablature = staff() && staff()->isTabStaff();
       if (useTablature) {
             StaffType* tab = staff()->staffType();

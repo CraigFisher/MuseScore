@@ -233,6 +233,8 @@ class Note : public Element {
       NoteEventList _playEvents;
       QList<Spanner*> _spannerFor;
       QList<Spanner*> _spannerBack;
+      
+      bool _alternativeState = false; //cc
 
       virtual QRectF drag(EditData*) override;
       void endDrag();

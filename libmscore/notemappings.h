@@ -33,11 +33,13 @@ class NoteMappings {
     private:
         std::array<int, 35> _notePositions;
         std::array<NoteHead::Group, 35> _noteHeads;
+        std::array<QColor, 35> _noteColors;
         std::map<ClefType, int> _clefOffsets;
         int _octaveDistance = 7;
         bool _showAccidentals = true;
     
-        static const NoteHead::Group defaultHg = NoteHead::Group::HEAD_NORMAL;
+        static const NoteHead::Group defaultH = NoteHead::Group::HEAD_NORMAL;
+        static const QColor defaultC;
         void setTraditionalClefOffsets();
 
         void writeMappings(Xml&) const;
@@ -55,12 +57,14 @@ class NoteMappings {
       
         void setNotePosition(int tpc, int pos)                { _notePositions[tpc + 1] = pos;   }
         void setNoteHeadGroup(int tpc, NoteHead::Group group) { _noteHeads    [tpc + 1] = group; }
+        void setNoteColor(int tpc, QColor color)              { _noteColors   [tpc + 1] = color; }
         void setClefOffset(ClefType ct, int offset)           { _clefOffsets[ct] = offset;       }
         void setShowAccidentals(bool val)                     { _showAccidentals = val;          }
         void setOctaveDistance(int val)                       { _octaveDistance = val;           }
       
         int tpc2Position(int tpc) const              { return _notePositions[tpc + 1]; }
         NoteHead::Group tpc2HeadGroup(int tpc) const { return     _noteHeads[tpc + 1]; }
+        QColor tpc2Color(int tpc) const              { return    _noteColors[tpc + 1]; }
         int clefOffset(ClefType ct) const            { return   _clefOffsets.at(ct);   }
         int octaveDistance() const { return _octaveDistance; }
         bool showAccidentals() const { return _showAccidentals; }

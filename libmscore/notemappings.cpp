@@ -21,16 +21,26 @@ namespace Ms {
 //          For alternative notations.
 //---------------------------------------------------------
 
-NoteMappings::NoteMappings() : _notePositions { 3, 0, 4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3,
-                                                0, 4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3, 0,
-                                                4, 1, 6, 2, 6 }, //traditional positions
-                               _noteHeads { defaultHg, defaultHg, defaultHg, defaultHg, defaultHg,
-                                            defaultHg, defaultHg, defaultHg, defaultHg, defaultHg,
-                                            defaultHg, defaultHg, defaultHg, defaultHg, defaultHg,
-                                            defaultHg, defaultHg, defaultHg, defaultHg, defaultHg,
-                                            defaultHg, defaultHg, defaultHg, defaultHg, defaultHg,
-                                            defaultHg, defaultHg, defaultHg, defaultHg, defaultHg,
-                                            defaultHg, defaultHg, defaultHg, defaultHg, defaultHg }
+const QColor NoteMappings::defaultC = MScore::defaultColor;
+
+NoteMappings::NoteMappings() :
+      _notePositions { {3, 0, 4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3,
+                        0, 4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3, 0,
+                        4, 1, 6, 2, 6} }, //traditional positions
+      _noteHeads  { {defaultH, defaultH, defaultH, defaultH, defaultH,
+                     defaultH, defaultH, defaultH, defaultH, defaultH,
+                     defaultH, defaultH, defaultH, defaultH, defaultH,
+                     defaultH, defaultH, defaultH, defaultH, defaultH,
+                     defaultH, defaultH, defaultH, defaultH, defaultH,
+                     defaultH, defaultH, defaultH, defaultH, defaultH,
+                     defaultH, defaultH, defaultH, defaultH, defaultH} },
+      _noteColors { {defaultC, defaultC, defaultC, defaultC, defaultC,
+                     defaultC, defaultC, defaultC, defaultC, defaultC,
+                     defaultC, defaultC, defaultC, defaultC, defaultC,
+                     defaultC, defaultC, defaultC, defaultC, defaultC,
+                     defaultC, defaultC, defaultC, defaultC, defaultC,
+                     defaultC, defaultC, defaultC, defaultC, defaultC,
+                     defaultC, defaultC, defaultC, defaultC, defaultC} }
       {
       setTraditionalClefOffsets();
       }
@@ -83,7 +93,8 @@ void NoteMappings::writeMappings(Xml& xml) const
             
             xml.stag(QString("note name=\"%1\" tpc=\"%2\"").arg(name).arg(tpc));
             xml.tag("line-offset", _notePositions[tpc + 1]);
-            
+            xml.tag("note-color", QString::number(_noteColors[tpc + 1].rgb()));
+
             QString groupName;
             NoteHead::Group group = _noteHeads[tpc + 1];
             if (group == NoteHead::Group::HEAD_NORMAL)
@@ -134,6 +145,10 @@ void NoteMappings::readMappings(XmlReader& e)
                   if (tag == "line-offset") {
                         int offset = e.readInt();
                         _notePositions[tpc + 1] = offset;
+                        }
+                  if (tag == "note-color") {
+                        QRgb rgb = e.readElementText().toUInt();
+                        _noteColors[tpc + 1] = QColor(rgb);
                         }
                   else if (tag == "notehead-group") {
                         QString text = e.readElementText();
