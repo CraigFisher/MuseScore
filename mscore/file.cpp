@@ -914,7 +914,7 @@ void MuseScore::saveScoreDialogFilterSelected(const QString& s)
 
 QString MuseScore::getStaffTypeFilename(bool open)
       {
-      if (preferences.nativeDialogs) {
+      if (false && /*//cc_temp*/preferences.nativeDialogs) {
             QString fn;
             if (open) {
                   fn = QFileDialog::getOpenFileName(
@@ -941,7 +941,7 @@ QString MuseScore::getStaffTypeFilename(bool open)
       urls.append(QUrl::fromLocalFile(QDir::currentPath()));
 
       if (open) {
-            if (loadStyleDialog == 0) {
+            if (loadStaffTypeDialog == 0) {
                   loadStaffTypeDialog = new QFileDialog(this);
                   loadStaffTypeDialog->setFileMode(QFileDialog::ExistingFile);
                   loadStaffTypeDialog->setOption(QFileDialog::DontUseNativeDialog, true);
@@ -954,10 +954,10 @@ QString MuseScore::getStaffTypeFilename(bool open)
                   loadStaffTypeDialog->setAcceptMode(QFileDialog::AcceptOpen);
                   }
             urls.append(QUrl::fromLocalFile(mscoreGlobalShare+"/styles"));
-            dialog = loadStyleDialog;
+            dialog = loadStaffTypeDialog;
             }
       else {
-            if (saveStyleDialog == 0) {
+            if (saveStaffTypeDialog == 0) {
                   saveStaffTypeDialog = new QFileDialog(this);
                   saveStaffTypeDialog->setAcceptMode(QFileDialog::AcceptSave);
                   saveStaffTypeDialog->setFileMode(QFileDialog::AnyFile);

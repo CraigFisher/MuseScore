@@ -27,30 +27,32 @@
 
 namespace Ms {
 
-const int StaffTypeTemplatesDialog::tpcLookup[7][5] = { { 0,  7,  14, 21, 28},
-                                                  { 2,  9,  16, 23, 30},
-                                                  { 4,  11, 18, 25, 32},
-                                                  { -1, 6,  13, 20, 27},
-                                                  { 1,  8,  15, 22, 29},
-                                                  { 3,  10, 17, 24, 31},
-                                                  { 5,  12, 19, 26, 33} };
+const int StaffTypeTemplatesDialog::tpcLookup[7][5] = {
+      { 0,  7,  14, 21, 28},
+      { 2,  9,  16, 23, 30},
+      { 4,  11, 18, 25, 32},
+      { -1, 6,  13, 20, 27},
+      { 1,  8,  15, 22, 29},
+      { 3,  10, 17, 24, 31},
+      { 5,  12, 19, 26, 33}
+      };
       
 const NoteHead::Group StaffTypeTemplatesDialog::noteheadLookup[14] = {
-            NoteHead::Group::HEAD_NORMAL,
-            NoteHead::Group::HEAD_CROSS,
-            NoteHead::Group::HEAD_DIAMOND,
-            NoteHead::Group::HEAD_TRIANGLE,
-            NoteHead::Group::HEAD_SLASH,
-            NoteHead::Group::HEAD_XCIRCLE,
-            NoteHead::Group::HEAD_DO,
-            NoteHead::Group::HEAD_RE,
-            NoteHead::Group::HEAD_MI,
-            NoteHead::Group::HEAD_FA,
-            NoteHead::Group::HEAD_SOL,
-            NoteHead::Group::HEAD_LA,
-            NoteHead::Group::HEAD_TI,
-            NoteHead::Group::HEAD_BREVIS_ALT
-            };
+      NoteHead::Group::HEAD_NORMAL,
+      NoteHead::Group::HEAD_CROSS,
+      NoteHead::Group::HEAD_DIAMOND,
+      NoteHead::Group::HEAD_TRIANGLE,
+      NoteHead::Group::HEAD_SLASH,
+      NoteHead::Group::HEAD_XCIRCLE,
+      NoteHead::Group::HEAD_DO,
+      NoteHead::Group::HEAD_RE,
+      NoteHead::Group::HEAD_MI,
+      NoteHead::Group::HEAD_FA,
+      NoteHead::Group::HEAD_SOL,
+      NoteHead::Group::HEAD_LA,
+      NoteHead::Group::HEAD_TI,
+      NoteHead::Group::HEAD_BREVIS_ALT
+      };
       
 const ClefType StaffTypeTemplatesDialog::clefLookup[17] = {
       ClefType::G,
@@ -70,7 +72,7 @@ const ClefType StaffTypeTemplatesDialog::clefLookup[17] = {
       ClefType::G4,
       ClefType::F_8VA,
       ClefType::F_15MA
-};
+      };
 
 extern Score::FileError readScore(Score* score, QString name, bool ignoreVersionError);
 
@@ -85,6 +87,25 @@ StaffTypeTemplatesDialog::StaffTypeTemplatesDialog(QWidget *parent) :
       setupUi(this);
       innerLedgerWidget = new InnerLedgerWidget(staffLineEditorContainer); //TODO: correct name
       innerLedgerWidget->show();
+      
+      QSize colorButtonSize = doubleFlatColor->size();
+      doubleFlatColorIcon = new QPixmap(colorButtonSize);
+      flatColorIcon = new QPixmap(colorButtonSize);
+      naturalColorIcon = new QPixmap(colorButtonSize);
+      sharpColorIcon = new QPixmap(colorButtonSize);
+      doubleSharpColorIcon = new QPixmap(colorButtonSize);
+      
+      doubleFlatColorIcon->fill(Qt::black);
+      flatColorIcon->fill(Qt::black);
+      naturalColorIcon->fill(Qt::black);
+      sharpColorIcon->fill(Qt::black);
+      doubleSharpColorIcon->fill(Qt::black);
+
+      doubleFlatColor->setIcon(*doubleFlatColorIcon);
+      flatColor->setIcon(*flatColorIcon);
+      naturalColor->setIcon(*naturalColorIcon);
+      sharpColor->setIcon(*sharpColorIcon);
+      doubleSharpColor->setIcon(*doubleSharpColorIcon);
       
 //TODO: PROPERLY DESTROY OBJECTS
       
@@ -783,6 +804,15 @@ void StaffTypeTemplatesDialog::updatePreview() const
             preview->update();
             }
       }
+      
+//cc_temp
+void StaffTypeTemplatesDialog::openColorDialog()
+{
+      QColorDialog colorDialog(this);
+//      colorDialog.setWindowFlags(colorDialog.windowFlags() |
+//                                  Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint); //Qt::WindowStaysOnTopHint
+      colorDialog.exec();
+}
       
 int StaffTypeTemplatesDialog::noteheadIndex(NoteHead::Group group) const
       {

@@ -44,6 +44,12 @@ class StaffTypeTemplatesDialog : public QDialog, private Ui::StaffTypeTemplatesD
       
       std::list<QStandardItem*> InnerLedgerWidgetItems;
       
+      QPixmap* doubleFlatColorIcon;
+      QPixmap* flatColorIcon;
+      QPixmap* naturalColorIcon;
+      QPixmap* sharpColorIcon;
+      QPixmap* doubleSharpColorIcon;
+      
       void setValues() const;
       void enableInput(bool) const;
       void connectInput() const;
@@ -102,6 +108,9 @@ class StaffTypeTemplatesDialog : public QDialog, private Ui::StaffTypeTemplatesD
       void setInnerLedgers(std::map<qreal, std::vector<qreal>>&);
       void updateStaffLines();
       void updateTemplateName(const QString&);
+      
+//cc_temp
+void openColorDialog();
 };
 
 }

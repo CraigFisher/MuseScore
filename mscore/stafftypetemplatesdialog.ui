@@ -117,130 +117,16 @@
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>248</width>
+      <width>251</width>
       <height>238</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="5" column="1">
-      <widget class="QSpinBox" name="doubleSharpOffset"/>
-     </item>
-     <item row="0" column="0">
-      <widget class="QComboBox" name="noteComboBox">
-       <item>
-        <property name="text">
-         <string>C</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>D</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>E</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>F</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>G</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>A</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>B</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="3" column="2">
-      <widget class="QComboBox" name="naturalNotehead">
-       <item>
-        <property name="text">
-         <string>normal</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>cross</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>diamond</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>triangle</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>slash</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>xcircle</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>do</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>re</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>mi</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>fa</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>sol</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>la</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>ti</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>brevis_alt</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>groups</string>
-        </property>
-       </item>
+     <item row="0" column="3">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Color</string>
+       </property>
       </widget>
      </item>
      <item row="4" column="2">
@@ -322,6 +208,163 @@
        </item>
       </widget>
      </item>
+     <item row="1" column="1">
+      <widget class="QSpinBox" name="doubleFlatOffset"/>
+     </item>
+     <item row="2" column="2">
+      <widget class="QComboBox" name="flatNotehead">
+       <item>
+        <property name="text">
+         <string>normal</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>cross</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>diamond</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>triangle</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>slash</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>xcircle</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>do</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>re</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>mi</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>fa</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>sol</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>la</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>ti</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>brevis_alt</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>groups</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Offset</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="doubleFlatLabel">
+       <property name="text">
+        <string>Cbb</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QComboBox" name="noteComboBox">
+       <item>
+        <property name="text">
+         <string>C</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>D</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>E</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>F</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>G</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>A</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>B</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QSpinBox" name="doubleSharpOffset"/>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="doubleSharpLabel">
+       <property name="text">
+        <string>C##</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QSpinBox" name="sharpOffset"/>
+     </item>
      <item row="4" column="0">
       <widget class="QLabel" name="sharpLabel">
        <property name="text">
@@ -342,29 +385,13 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="QSpinBox" name="doubleFlatOffset"/>
-     </item>
      <item row="3" column="1">
       <widget class="QSpinBox" name="naturalOffset"/>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="naturalLabel">
-       <property name="text">
-        <string>C</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QSpinBox" name="flatOffset"/>
      </item>
      <item row="0" column="2">
       <widget class="QLabel" name="label_7">
        <property name="text">
-        <string>Notehead Group</string>
+        <string>Notehead</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -529,31 +556,21 @@
        </item>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="doubleFlatLabel">
+     <item row="2" column="1">
+      <widget class="QSpinBox" name="flatOffset"/>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="naturalLabel">
        <property name="text">
-        <string>Cbb</string>
+        <string>C</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="doubleSharpLabel">
-       <property name="text">
-        <string>C##</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QSpinBox" name="sharpOffset"/>
-     </item>
-     <item row="2" column="2">
-      <widget class="QComboBox" name="flatNotehead">
+     <item row="3" column="2">
+      <widget class="QComboBox" name="naturalNotehead">
        <item>
         <property name="text">
          <string>normal</string>
@@ -631,13 +648,38 @@
        </item>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QLabel" name="label_6">
+     <item row="1" column="3">
+      <widget class="QPushButton" name="doubleFlatColor">
        <property name="text">
-        <string>Offset</string>
+        <string/>
        </property>
-       <property name="alignment">
-        <set>Qt::AlignCenter</set>
+      </widget>
+     </item>
+     <item row="2" column="3">
+      <widget class="QPushButton" name="flatColor">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="3">
+      <widget class="QPushButton" name="naturalColor">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="3">
+      <widget class="QPushButton" name="sharpColor">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="3">
+      <widget class="QPushButton" name="doubleSharpColor">
+       <property name="text">
+        <string/>
        </property>
       </widget>
      </item>

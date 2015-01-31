@@ -1677,7 +1677,7 @@ void Note::setDotY(MScore::Direction pos)
 
 void Note::layout()
       {
-      if (noteMappings()) { //cc
+      if (noteMappings()) { //ccn
             setColor(noteMappings()->tpc2Color(tpc()));
             _headGroup = noteMappings()->tpc2HeadGroup(tpc());
             _alternativeState = true;
