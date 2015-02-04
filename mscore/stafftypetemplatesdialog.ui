@@ -649,35 +649,35 @@
       </widget>
      </item>
      <item row="1" column="3">
-      <widget class="QPushButton" name="doubleFlatColor">
+      <widget class="QPushButton" name="doubleFlatColorButton">
        <property name="text">
         <string/>
        </property>
       </widget>
      </item>
      <item row="2" column="3">
-      <widget class="QPushButton" name="flatColor">
+      <widget class="QPushButton" name="flatColorButton">
        <property name="text">
         <string/>
        </property>
       </widget>
      </item>
      <item row="3" column="3">
-      <widget class="QPushButton" name="naturalColor">
+      <widget class="QPushButton" name="naturalColorButton">
        <property name="text">
         <string/>
        </property>
       </widget>
      </item>
      <item row="4" column="3">
-      <widget class="QPushButton" name="sharpColor">
+      <widget class="QPushButton" name="sharpColorButton">
        <property name="text">
         <string/>
        </property>
       </widget>
      </item>
      <item row="5" column="3">
-      <widget class="QPushButton" name="doubleSharpColor">
+      <widget class="QPushButton" name="doubleSharpColorButton">
        <property name="text">
         <string/>
        </property>

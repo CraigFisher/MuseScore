@@ -41,8 +41,7 @@ class StaffTypeTemplatesDialog : public QDialog, private Ui::StaffTypeTemplatesD
       int newTemplateNameIndex = 0;
       StaffTypeTemplate* curTemplate;
       std::vector<StaffTypeTemplate> localTemplates; //local copy of userTemplates
-      
-      std::list<QStandardItem*> InnerLedgerWidgetItems;
+      Score* previewScore;
       
       QPixmap* doubleFlatColorIcon;
       QPixmap* flatColorIcon;
@@ -54,10 +53,14 @@ class StaffTypeTemplatesDialog : public QDialog, private Ui::StaffTypeTemplatesD
       void enableInput(bool) const;
       void connectInput() const;
       void disconnectInput() const;
+      void initColorButtons();
       
       void markTemplateDirty(StaffTypeTemplate* stt, bool val);
       StaffTypeTemplate* templateByItem(QListWidgetItem*);
       QListWidgetItem* itemByTemplate(StaffTypeTemplate*);
+
+      static int customColorIdx;
+      static QVector<QColor> colorHistory;
 
       const static int tpcLookup[7][5];
       const static NoteHead::Group noteheadLookup[14];
@@ -70,6 +73,7 @@ class StaffTypeTemplatesDialog : public QDialog, private Ui::StaffTypeTemplatesD
       void debugLocals();
       
       void updatePreview() const;
+      void updateColorHistory() const;
 
     signals:
       void closed(bool);
@@ -92,6 +96,7 @@ class StaffTypeTemplatesDialog : public QDialog, private Ui::StaffTypeTemplatesD
       void setClefOffset(int clefOffset);
       void setOffset(int idx, int offset);
       void setNotehead(int idx, int headIdx);
+      void pickNoteColor(int idx);
       
       void setDoubleFlatOffset(int offset) { setOffset(0, offset); }
       void setFlatOffset(int offset) { setOffset(1, offset); }
@@ -105,14 +110,17 @@ class StaffTypeTemplatesDialog : public QDialog, private Ui::StaffTypeTemplatesD
       void setSharpNotehead(int headIdx) { setNotehead(3, headIdx); }
       void setDoubleSharpNotehead(int headIdx) { setNotehead(4, headIdx); }
       
+      void pickDoubleFlatColor() { pickNoteColor(0); }
+      void pickFlatColor() { pickNoteColor(1); }
+      void pickNaturalColor() { pickNoteColor(2); }
+      void pickSharpColor() { pickNoteColor(3); }
+      void pickDoubleSharpColor() { pickNoteColor(4); }
+      
       void setInnerLedgers(std::map<qreal, std::vector<qreal>>&);
       void updateStaffLines();
       void updateTemplateName(const QString&);
-      
-//cc_temp
-void openColorDialog();
-};
+      };
 
-}
+}     // namespace Ms
 
-#endif // STAFFTYPETEMPLATESDIALOG_H
+#endif   // STAFFTYPETEMPLATESDIALOG_H

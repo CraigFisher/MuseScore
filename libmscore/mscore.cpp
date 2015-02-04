@@ -218,6 +218,16 @@ void MScore::init()
       initScoreFonts();
       StaffType::initStaffTypes();
       StaffTypeTemplate::initUserTemplates(); //cc
+      
+      //restore custom colors for QColorDialog so they are available for StafftypeTemplatesDialog
+      QSettings settings;
+      for (int i = 0; i < QColorDialog::customCount(); i++) {
+            QRgb rgb = settings.value(QString("qcolordialog-colors-%1").arg(i),"").toString().toUInt();
+            QColor color(rgb);
+            if (color != Qt::black && color != Qt::white)
+                  QColorDialog::setCustomColor(i, color);
+      }
+            
       initDrumset();
       FiguredBass::readConfigFile(0);
       }

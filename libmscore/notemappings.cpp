@@ -49,6 +49,7 @@ bool NoteMappings::operator==(const NoteMappings& n) const
       {
       return n._notePositions == _notePositions
              && n._noteHeads == _noteHeads
+             && n._noteColors == _noteColors
              && n._clefOffsets == _clefOffsets
              && n._octaveDistance == _octaveDistance
              && n._showAccidentals == _showAccidentals;

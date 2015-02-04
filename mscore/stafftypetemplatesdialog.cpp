@@ -87,30 +87,10 @@ StaffTypeTemplatesDialog::StaffTypeTemplatesDialog(QWidget *parent) :
       setupUi(this);
       innerLedgerWidget = new InnerLedgerWidget(staffLineEditorContainer); //TODO: correct name
       innerLedgerWidget->show();
+      initColorButtons();
       
-      QSize colorButtonSize = doubleFlatColor->size();
-      doubleFlatColorIcon = new QPixmap(colorButtonSize);
-      flatColorIcon = new QPixmap(colorButtonSize);
-      naturalColorIcon = new QPixmap(colorButtonSize);
-      sharpColorIcon = new QPixmap(colorButtonSize);
-      doubleSharpColorIcon = new QPixmap(colorButtonSize);
-      
-      doubleFlatColorIcon->fill(Qt::black);
-      flatColorIcon->fill(Qt::black);
-      naturalColorIcon->fill(Qt::black);
-      sharpColorIcon->fill(Qt::black);
-      doubleSharpColorIcon->fill(Qt::black);
-
-      doubleFlatColor->setIcon(*doubleFlatColorIcon);
-      flatColor->setIcon(*flatColorIcon);
-      naturalColor->setIcon(*naturalColorIcon);
-      sharpColor->setIcon(*sharpColorIcon);
-      doubleSharpColor->setIcon(*doubleSharpColorIcon);
-      
-//TODO: PROPERLY DESTROY OBJECTS
-      
-      /* retrieve STT::userTemplates and
-         use them to populate localTemplates */
+      // retrieve STT::userTemplates and
+      // use them to populate localTemplates
       for (const StaffTypeTemplate& st : StaffTypeTemplate::userTemplates()) {
             Q_ASSERT(st.hasFile() && !st.dirty());
             
@@ -140,13 +120,13 @@ StaffTypeTemplatesDialog::StaffTypeTemplatesDialog(QWidget *parent) :
       connect(duplicateStaffTypeButton, SIGNAL(clicked()), this, SLOT(duplicate()));
       connect(saveStaffTypesButton, SIGNAL(clicked()), SLOT(save()));
 
-      doubleFlatOffset->setMinimum(-24); //TODO: determine if there are more logical values here
+      doubleFlatOffset->setMinimum(-24);
       flatOffset->setMinimum(-24);
       naturalOffset->setMinimum(-24);
       sharpOffset->setMinimum(-24);
       doubleSharpOffset->setMinimum(-24);
             
-      Score* previewScore = new Score(MScore::defaultStyle());
+      previewScore = new Score(MScore::defaultStyle());
       if (readScore(previewScore, QString(":/data/stafftype_templates_sample.mscx"), false) == Score::FileError::FILE_NO_ERROR)
             preview->setScore(previewScore);
       
@@ -162,6 +142,20 @@ StaffTypeTemplatesDialog::StaffTypeTemplatesDialog(QWidget *parent) :
 
 StaffTypeTemplatesDialog::~StaffTypeTemplatesDialog()
       {
+      disconnectInput();
+      disconnect(staffTypeSelector, SIGNAL(currentRowChanged(int)), 0, 0);
+      while (staffTypeSelector->count() != 0) {
+            QListWidgetItem* item = staffTypeSelector->takeItem(0);
+            delete item;
+            }
+      preview->removeScore();
+      delete previewScore;
+      delete doubleFlatColorIcon;
+      delete flatColorIcon;
+      delete naturalColorIcon;
+      delete sharpColorIcon;
+      delete doubleSharpColorIcon;
+      delete innerLedgerWidget;
       delete ui;
 	}
       
@@ -192,6 +186,12 @@ void StaffTypeTemplatesDialog::connectInput() const
       connect(innerLedgerWidget, SIGNAL(innerLedgersChanged(std::map<qreal, std::vector<qreal>>&)), this, SLOT(setInnerLedgers(std::map<qreal, std::vector<qreal>>&)));
       connect(staffLineWidget, SIGNAL(editingFinished()), SLOT(updateStaffLines()));
       connect(templateNameForm, SIGNAL(textEdited(const QString&)), SLOT(updateTemplateName(const QString&)));
+      
+      connect(doubleFlatColorButton, SIGNAL(clicked()), SLOT(pickDoubleFlatColor()));
+      connect(flatColorButton, SIGNAL(clicked()), SLOT(pickFlatColor()));
+      connect(naturalColorButton, SIGNAL(clicked()), SLOT(pickNaturalColor()));
+      connect(sharpColorButton, SIGNAL(clicked()), SLOT(pickSharpColor()));
+      connect(doubleSharpColorButton, SIGNAL(clicked()), SLOT(pickDoubleSharpColor()));
       }
 
 //---------------------------------------------------------
@@ -221,6 +221,12 @@ void StaffTypeTemplatesDialog::disconnectInput() const
       disconnect(innerLedgerWidget, SIGNAL(innerLedgersChanged(std::map<qreal, std::vector<qreal>>&)), 0, 0);
       disconnect(staffLineWidget, SIGNAL(editingFinished()), 0, 0);
       disconnect(templateNameForm, SIGNAL(textEdited(const QString&)), 0, 0);
+      
+      disconnect(doubleFlatColorButton, SIGNAL(clicked()), 0, 0);
+      disconnect(flatColorButton, SIGNAL(clicked()), 0, 0);
+      disconnect(naturalColorButton, SIGNAL(clicked()), 0, 0);
+      disconnect(sharpColorButton, SIGNAL(clicked()), 0, 0);
+      disconnect(doubleSharpColorButton, SIGNAL(clicked()), 0, 0);
       }
       
 //---------------------------------------------------------
@@ -253,6 +259,19 @@ void StaffTypeTemplatesDialog::setValues() const
       naturalNotehead->    setCurrentIndex(noteheadIndex(mappings->tpc2HeadGroup(nTpc)));
       sharpNotehead->      setCurrentIndex(noteheadIndex(mappings->tpc2HeadGroup(sTpc)));
       doubleSharpNotehead->setCurrentIndex(noteheadIndex(mappings->tpc2HeadGroup(ssTpc)));
+
+      //SET NOTEHEAD COLORS
+      doubleFlatColorIcon->fill(mappings->tpc2Color(bbTpc));
+      flatColorIcon->fill(mappings->tpc2Color(bTpc));
+      naturalColorIcon->fill(mappings->tpc2Color(nTpc));
+      sharpColorIcon->fill(mappings->tpc2Color(sTpc));
+      doubleSharpColorIcon->fill(mappings->tpc2Color(ssTpc));
+      
+      doubleFlatColorButton->setIcon(*doubleFlatColorIcon);
+      flatColorButton->setIcon(*flatColorIcon);
+      naturalColorButton->setIcon(*naturalColorIcon);
+      sharpColorButton->setIcon(*sharpColorIcon);
+      doubleSharpColorButton->setIcon(*doubleSharpColorIcon);
       
       //SET INNERLEDGERS
       innerLedgerWidget->setData(curTemplate->innerLedgers());
@@ -271,6 +290,28 @@ void StaffTypeTemplatesDialog::setValues() const
       templateNameForm->setText(curTemplate->name());
       
       updatePreview();
+      }
+      
+void StaffTypeTemplatesDialog::initColorButtons()
+      {
+      QSize colorButtonSize = doubleFlatColorButton->size();
+      doubleFlatColorIcon = new QPixmap(colorButtonSize);
+      flatColorIcon = new QPixmap(colorButtonSize);
+      naturalColorIcon = new QPixmap(colorButtonSize);
+      sharpColorIcon = new QPixmap(colorButtonSize);
+      doubleSharpColorIcon = new QPixmap(colorButtonSize);
+      
+      doubleFlatColorIcon->fill(Qt::black);
+      flatColorIcon->fill(Qt::black);
+      naturalColorIcon->fill(Qt::black);
+      sharpColorIcon->fill(Qt::black);
+      doubleSharpColorIcon->fill(Qt::black);
+
+      doubleFlatColorButton->setIcon(*doubleFlatColorIcon);
+      flatColorButton->setIcon(*flatColorIcon);
+      naturalColorButton->setIcon(*naturalColorIcon);
+      sharpColorButton->setIcon(*sharpColorIcon);
+      doubleSharpColorButton->setIcon(*doubleSharpColorIcon);
       }
       
 //---------------------------------------------------------
@@ -327,6 +368,7 @@ void StaffTypeTemplatesDialog::load()
       staffTypeSelector->setCurrentItem(item);
       if (!inputEnabled)
             enableInput(true);
+      updateColorHistory();
       }
       
 //---------------------------------------------------------
@@ -536,6 +578,9 @@ void StaffTypeTemplatesDialog::handleExitButton()
       close(); //all dirty and unsaved templates resolved
       }
 
+int StaffTypeTemplatesDialog::customColorIdx = 0;
+QVector<QColor> StaffTypeTemplatesDialog::colorHistory(QColorDialog::customCount(), Qt::white);
+
 //---------------------------------------------------------
 //   handleTemplateSwitch
 //---------------------------------------------------------
@@ -603,7 +648,7 @@ void StaffTypeTemplatesDialog::markTemplateDirty(StaffTypeTemplate* stt, bool di
 //   enableInput
 //---------------------------------------------------------
       
-void StaffTypeTemplatesDialog::enableInput(bool enable) const //TODO: rename to "enableEditorForms" or something
+void StaffTypeTemplatesDialog::enableInput(bool enable) const
       {
       inputEnabled = enable;
       
@@ -627,6 +672,11 @@ void StaffTypeTemplatesDialog::enableInput(bool enable) const //TODO: rename to 
       staffLineEditorContainer->setEnabled(enable);
       staffLineWidget->setEnabled(enable);
       templateNameForm->setEnabled(enable);
+      doubleFlatColorButton->setEnabled(enable);
+      flatColorButton->setEnabled(enable);
+      naturalColorButton->setEnabled(enable);
+      sharpColorButton->setEnabled(enable);
+      doubleSharpColorButton->setEnabled(enable);
       }
       
 //---------------------------------------------------------
@@ -722,6 +772,49 @@ void StaffTypeTemplatesDialog::setNotehead(int accidentalIdx, int headIdx)
       updatePreview();
       }
       
+void StaffTypeTemplatesDialog::pickNoteColor(int accidentalIdx)
+      {
+      int tpc = tpcLookup[noteLetterIdx][accidentalIdx];
+      QColor color = QColorDialog::getColor(curTemplate->noteMappings()->tpc2Color(tpc), this, "Pick a note color",
+                              QColorDialog::DontUseNativeDialog); //allows dialog to remember custom colors
+      
+      if (color.isValid()) {
+            switch (accidentalIdx) {
+                  case 0 :
+                        doubleFlatColorIcon->fill(color);
+                        doubleFlatColorButton->setIcon(*doubleFlatColorIcon);
+                        break;
+                  case 1 :
+                        flatColorIcon->fill(color);
+                        flatColorButton->setIcon(*flatColorIcon);
+                        break;
+                  case 2 :
+                        naturalColorIcon->fill(color);
+                        naturalColorButton->setIcon(*naturalColorIcon);
+                        break;
+                  case 3 :
+                        sharpColorIcon->fill(color);
+                        sharpColorButton->setIcon(*sharpColorIcon);
+                        break;
+                  case 4 :
+                        doubleSharpColorIcon->fill(color);
+                        doubleSharpColorButton->setIcon(*doubleSharpColorIcon);
+                        break;
+                  }
+            if (!colorHistory.contains(color)) {
+                  customColorIdx = (customColorIdx + 1) % QColorDialog::customCount();
+                  colorHistory.replace(customColorIdx, color);
+                  QColorDialog::setCustomColor(customColorIdx, color);
+                  QSettings settings;
+                  settings.setValue(QString("qcolordialog-colors-%1").arg(customColorIdx), QString::number(color.rgb()));
+                  }
+
+            curTemplate->noteMappings()->setNoteColor(tpc, color);
+            markTemplateDirty(curTemplate, true);
+            updatePreview();
+            }
+      }
+      
 void StaffTypeTemplatesDialog::setClefOffset(int clefOffset)
       {
       ClefType curClef = clefLookup[clefIdx];
@@ -805,15 +898,29 @@ void StaffTypeTemplatesDialog::updatePreview() const
             }
       }
       
-//cc_temp
-void StaffTypeTemplatesDialog::openColorDialog()
-{
-      QColorDialog colorDialog(this);
-//      colorDialog.setWindowFlags(colorDialog.windowFlags() |
-//                                  Qt::WindowStaysOnTopHint | Qt::X11BypassWindowManagerHint); //Qt::WindowStaysOnTopHint
-      colorDialog.exec();
-}
+void StaffTypeTemplatesDialog::updateColorHistory() const
+      {
+      int colorSize = QColorDialog::customCount();
       
+      NoteMappings* mappings = curTemplate->noteMappings();
+      for (int i = -1; i <= 34; i++) {
+            QColor color = mappings->tpc2Color(i);
+            if (!colorHistory.contains(color)) {
+                  customColorIdx = (customColorIdx + 1) % colorSize;
+                  colorHistory.replace(customColorIdx, color);
+                  }
+            }
+      for (int i = 0; i < QColorDialog::customCount(); i++) {
+            QColor color = colorHistory[i];
+            if (color != Qt::black && color != Qt::white)
+                  QColorDialog::setCustomColor(i, color);
+            }
+            
+      QSettings settings;
+      for (int i = 0; i < colorSize; i++)
+            settings.setValue(QString("qcolordialog-colors-%1").arg(i), QString::number(colorHistory[i].rgb()));
+      }
+
 int StaffTypeTemplatesDialog::noteheadIndex(NoteHead::Group group) const
       {
       for (int i = 0; i < 14; i++) {

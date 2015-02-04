@@ -914,7 +914,7 @@ void MuseScore::saveScoreDialogFilterSelected(const QString& s)
 
 QString MuseScore::getStaffTypeFilename(bool open)
       {
-      if (false && /*//cc_temp*/preferences.nativeDialogs) {
+      if (preferences.nativeDialogs) {
             QString fn;
             if (open) {
                   fn = QFileDialog::getOpenFileName(
