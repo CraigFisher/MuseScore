@@ -50,7 +50,7 @@ add_library (
       rendermidi.cpp repeat.cpp repeatlist.cpp rest.cpp
       score.cpp segment.cpp select.cpp shadownote.cpp slur.cpp tie.cpp
       spacer.cpp spanner.cpp staff.cpp staffstate.cpp
-      stafftext.cpp stafftype.cpp stem.cpp style.cpp symbol.cpp
+      stafftext.cpp stafftype.cpp stem.cpp style.cpp symbol.cpp notemappings.cpp
       sym.cpp system.cpp stringdata.cpp tempotext.cpp text.cpp
       textframe.cpp textline.cpp timesig.cpp
       tremolobar.cpp tremolo.cpp trill.cpp tuplet.cpp

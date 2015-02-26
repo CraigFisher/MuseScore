@@ -891,7 +891,6 @@ void StaffTypeTemplatesDialog::updatePreview() const
       if (preview) {
             StaffType* st = static_cast<StaffType*>(curTemplate);
             preview->score()->staff(0)->setStaffType(st);
-            preview->score()->cmdUpdateNotes();
             preview->score()->doLayout();
             preview->updateAll();
             preview->update();
