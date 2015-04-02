@@ -434,7 +434,28 @@ int Note::transposeTpc(int tpc)
 
 SymId Note::noteHead() const
       {
-      int up;
+      bool up;
+      //cc
+      NoteMappings* altMappings = noteMappings();
+      if (altMappings) {
+            TDuration duration;
+            if (chord()) {
+                  up = chord()->up();
+                  duration = chord()->durationType();
+                  }
+            else {
+                  up = 1;
+                  duration = TDuration(TDuration::DurationType::V_QUARTER);
+                  }
+            NoteHead::Type ht = altMappings->headType(duration, tpc());
+            if (ht == NoteHead::Type::HEAD_FILLED_WHOLE)
+                  return SymId::noteheadWholeFilled;
+            else {
+                  SymId t = noteHead(up, altMappings->tpc2HeadGroup(tpc()), ht);
+                  return t;
+                  }
+            }
+
       NoteHead::Type ht;
       if (chord()) {
             up = chord()->up();
@@ -1677,14 +1698,12 @@ void Note::setDotY(MScore::Direction pos)
 
 void Note::layout()
       {
-      if (noteMappings()) { //ccn
+      if (noteMappings()) { //cc
             setColor(noteMappings()->tpc2Color(tpc()));
-            _headGroup = noteMappings()->tpc2HeadGroup(tpc());
             _alternativeState = true;
             }
       else if (_alternativeState) { //cc TODO: CONFIRM
             setColor(MScore::defaultColor);
-            _headGroup = NoteHead::Group::HEAD_NORMAL;
             _alternativeState = false;
       }
       

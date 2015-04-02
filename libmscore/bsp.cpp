@@ -15,6 +15,7 @@
 
 #include "bsp.h"
 #include "element.h"
+#include "note.h" //cc_temp
 
 namespace Ms {
 

@@ -74,6 +74,7 @@ class NoteHead : public Symbol {
             HEAD_INVALID = -1
             };
       enum class Type : signed char {
+            HEAD_FILLED_WHOLE = -2, //cc
             HEAD_AUTO    = -1,
             HEAD_WHOLE   = 0,
             HEAD_HALF    = 1,

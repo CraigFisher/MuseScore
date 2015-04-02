@@ -883,7 +883,7 @@ void StaffTypeTemplatesDialog::updateStaffLines()
             }
             
       curTemplate->setAlternativeStaffLines(staffLines);
-      markTemplateDirty(curTemplate, true);
+      markTemplateDirty(curTemplate, true); 
       }
       
 void StaffTypeTemplatesDialog::updatePreview() const

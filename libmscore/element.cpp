@@ -1736,7 +1736,11 @@ void Element::scriptSetUserOff(const QPointF& o)
 
 void Element::drawSymbol(SymId id, QPainter* p, const QPointF& o) const
       {
-      score()->scoreFont()->draw(id, p, magS(), o);
+      if (id == SymId::noteheadWholeFilled) //cc
+            ScoreFont::fallbackFont()->draw(id, p, magS(), o);
+      else
+            score()->scoreFont()->draw(id, p, magS(), o);
+//      score()->scoreFont()->draw(id, p, magS(), o);
       }
 
 void Element::drawSymbol(SymId id, QPainter* p, const QPointF& o, int n) const
@@ -1755,7 +1759,10 @@ void Element::drawSymbols(const QList<SymId>& s, QPainter* p, const QPointF& o) 
 
 qreal Element::symHeight(SymId id) const
       {
-      return score()->scoreFont()->height(id, magS());
+      if (id == SymId::noteheadWholeFilled) //cc
+            return ScoreFont::fallbackFont()->height(id, magS());
+      else
+            return score()->scoreFont()->height(id, magS());
       }
 
 //---------------------------------------------------------
@@ -1764,7 +1771,10 @@ qreal Element::symHeight(SymId id) const
 
 qreal Element::symWidth(SymId id) const
       {
-      return score()->scoreFont()->width(id, magS());
+      if (id == SymId::noteheadWholeFilled) //cc
+            return ScoreFont::fallbackFont()->width(id, magS());
+      else
+            return score()->scoreFont()->width(id, magS());
       }
 qreal Element::symWidth(const QList<SymId>& s) const
       {
@@ -1786,7 +1796,10 @@ qreal Element::symAdvance(SymId id) const
 
 QRectF Element::symBbox(SymId id) const
       {
-      return score()->scoreFont()->bbox(id, magS());
+      if (id == SymId::noteheadWholeFilled) //cc
+            return ScoreFont::fallbackFont()->bbox(id, magS());
+      else
+            return score()->scoreFont()->bbox(id, magS());
       }
 
 QRectF Element::symBbox(const QList<SymId>& s) const

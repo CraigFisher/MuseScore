@@ -10,7 +10,8 @@
 //  the file LICENCE.GPL
 //=============================================================================
 
-#include "NoteMappings.h"
+#include "notemappings.h"
+#include "sym.h"
 #include "xml.h"
 
 //cc
@@ -22,6 +23,7 @@ namespace Ms {
 //---------------------------------------------------------
 
 const QColor NoteMappings::defaultC = MScore::defaultColor;
+const NoteMappings::FillType NoteMappings::defaultF = NoteMappings::FillType::TRADITIONAL;
 
 NoteMappings::NoteMappings() :
       _notePositions { {3, 0, 4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3,
@@ -40,7 +42,14 @@ NoteMappings::NoteMappings() :
                      defaultC, defaultC, defaultC, defaultC, defaultC,
                      defaultC, defaultC, defaultC, defaultC, defaultC,
                      defaultC, defaultC, defaultC, defaultC, defaultC,
-                     defaultC, defaultC, defaultC, defaultC, defaultC} }
+                     defaultC, defaultC, defaultC, defaultC, defaultC} },
+      _fillTypes  { {defaultF, defaultF, defaultF, defaultF, defaultF,
+                     defaultF, defaultF, defaultF, defaultF, defaultF,
+                     defaultF, defaultF, defaultF, defaultF, defaultF,
+                     defaultF, defaultF, defaultF, defaultF, defaultF,
+                     defaultF, defaultF, defaultF, defaultF, defaultF,
+                     defaultF, defaultF, defaultF, defaultF, defaultF,
+                     defaultF, defaultF, defaultF, defaultF, defaultF} }
       {
       setTraditionalClefOffsets();
       }
@@ -300,7 +309,8 @@ inline int positive_modulo(int i, int n) {
 }
 
 //TODO: implement key-aware decisions
-int NoteMappings::getTpc(int position, int accidental) {
+int NoteMappings::getTpc(int position, int accidental)
+      {
       int tpc = getTpc(position);
       int adjustedTpc = (tpc + (accidental * 7)) % 35;     //check if an accidental-adjusted value gives same tpc
       if (_notePositions[adjustedTpc + 1] == position)     //    if so, choose it instead
@@ -311,7 +321,8 @@ int NoteMappings::getTpc(int position, int accidental) {
 
 //TODO: implement key-aware decisions
 //      find simpler way to write this function
-int NoteMappings::getTpc(int position) {
+int NoteMappings::getTpc(int position)
+      {
       position = positive_modulo(position, 12);
 
       //check for tpc's without sharps or flats
@@ -343,7 +354,27 @@ int NoteMappings::getTpc(int position) {
       qFatal("position is not mapped by any tpc");
       }
 
-void NoteMappings::setTraditionalClefOffsets() {
+NoteHead::Type NoteMappings::headType(TDuration duration, int tpc)
+      {
+      FillType fill = tpc2FillType(tpc);
+      switch (fill) {
+            case FillType::TRADITIONAL:
+                  return duration.headType();
+            case FillType::FILLED:
+                  if (duration == TDuration::DurationType::V_WHOLE)
+                        return NoteHead::Type::HEAD_FILLED_WHOLE;
+                  else
+                        return NoteHead::Type::HEAD_QUARTER;
+            case FillType::HOLLOW:
+                  if (duration == TDuration::DurationType::V_WHOLE)
+                        return NoteHead::Type::HEAD_WHOLE;
+                  else
+                        return NoteHead::Type::HEAD_HALF;
+            }
+      }
+
+void NoteMappings::setTraditionalClefOffsets()
+      {
       _clefOffsets[ClefType::G] = 45;
       _clefOffsets[ClefType::G1] = 52;
       _clefOffsets[ClefType::G2] = 59;
@@ -363,7 +394,8 @@ void NoteMappings::setTraditionalClefOffsets() {
       _clefOffsets[ClefType::F_15MA] = 47;
       }
       
-int NoteMappings::getPitch(int tpc, int step) {
+int NoteMappings::getPitch(int tpc, int step)
+      {
       static const int pitches[12] = { 10, 5, 0, 7, 2, 9, 4, 11, 6, 1, 8, 3 };
       
       int octave = (step - _notePositions[tpc + 1]) / _octaveDistance;

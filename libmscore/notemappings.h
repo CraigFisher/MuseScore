@@ -14,6 +14,7 @@
  #define __NOTEMAPPINGS_H__
 
 #include "note.h"
+#include "durationtype.h"
 #include <map>
 #include <array>
 #include <vector>
@@ -30,15 +31,24 @@ class Xml;
 class XmlReader;
 
 class NoteMappings {      
+    public:
+        enum class FillType : signed char {
+            TRADITIONAL = 0,
+            FILLED,
+            HOLLOW,
+            };
+
     private:
         std::array<int, 35> _notePositions;
         std::array<NoteHead::Group, 35> _noteHeads;
+        std::array<FillType, 35> _fillTypes;
         std::array<QColor, 35> _noteColors;
         std::map<ClefType, int> _clefOffsets;
         int _octaveDistance = 7;
         bool _showAccidentals = true;
     
         static const NoteHead::Group defaultH = NoteHead::Group::HEAD_NORMAL;
+        static const FillType defaultF;
         static const QColor defaultC;
         void setTraditionalClefOffsets();
 
@@ -63,9 +73,12 @@ class NoteMappings {
         void setOctaveDistance(int val)                       { _octaveDistance = val;           }
       
         int tpc2Position(int tpc) const              { return _notePositions[tpc + 1]; }
+        FillType tpc2FillType(int tpc) const         { return     _fillTypes[tpc + 1]; }
         NoteHead::Group tpc2HeadGroup(int tpc) const { return     _noteHeads[tpc + 1]; }
         QColor tpc2Color(int tpc) const              { return    _noteColors[tpc + 1]; }
         int clefOffset(ClefType ct) const            { return   _clefOffsets.at(ct);   }
+        NoteHead::Type headType(TDuration duration, int tpc);
+      
         int octaveDistance() const { return _octaveDistance; }
         bool showAccidentals() const { return _showAccidentals; }
 
