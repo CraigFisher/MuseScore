@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>742</width>
+    <width>894</width>
     <height>728</height>
    </rect>
   </property>
@@ -37,7 +37,7 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>80</x>
      <y>680</y>
      <width>391</width>
      <height>32</height>
@@ -77,7 +77,7 @@
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>510</x>
+     <x>570</x>
      <y>680</y>
      <width>211</width>
      <height>32</height>
@@ -105,7 +105,7 @@
     <rect>
      <x>170</x>
      <y>80</y>
-     <width>351</width>
+     <width>421</width>
      <height>321</height>
     </rect>
    </property>
@@ -153,7 +153,7 @@
      <rect>
       <x>10</x>
       <y>30</y>
-      <width>373</width>
+      <width>391</width>
       <height>231</height>
      </rect>
     </property>
@@ -829,7 +829,7 @@
     <rect>
      <x>170</x>
      <y>400</y>
-     <width>351</width>
+     <width>411</width>
      <height>71</height>
     </rect>
    </property>
@@ -944,9 +944,9 @@
   <widget class="QGroupBox" name="groupBox_3">
    <property name="geometry">
     <rect>
-     <x>530</x>
+     <x>590</x>
      <y>80</y>
-     <width>191</width>
+     <width>281</width>
      <height>251</height>
     </rect>
    </property>
@@ -956,7 +956,7 @@
    <widget class="QWidget" name="staffLineEditorContainer" native="true">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>70</x>
       <y>30</y>
       <width>191</width>
       <height>211</height>
@@ -993,9 +993,9 @@
   <widget class="QGroupBox" name="groupBox_4">
    <property name="geometry">
     <rect>
-     <x>529</x>
+     <x>589</x>
      <y>329</y>
-     <width>191</width>
+     <width>281</width>
      <height>141</height>
     </rect>
    </property>
@@ -1005,7 +1005,7 @@
    <widget class="QLineEdit" name="staffLineWidget">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>70</x>
       <y>30</y>
       <width>191</width>
       <height>31</height>
@@ -1021,7 +1021,7 @@
     <rect>
      <x>19</x>
      <y>469</y>
-     <width>701</width>
+     <width>841</width>
      <height>201</height>
     </rect>
    </property>

@@ -56,13 +56,15 @@ NoteMappings::NoteMappings() :
       
 bool NoteMappings::operator==(const NoteMappings& n) const
       {
-      return n._notePositions == _notePositions
+      bool b = n._notePositions == _notePositions
              && n._noteHeads == _noteHeads
+             && n._fillTypes == _fillTypes
              && n._noteColors == _noteColors
              && n._clefOffsets == _clefOffsets
              && n._octaveDistance == _octaveDistance
              && n._showAccidentals == _showAccidentals
              && n._fillTypes == _fillTypes;
+      return b;
       }
 
 
@@ -137,9 +139,19 @@ void NoteMappings::writeMappings(Xml& xml) const
             else if (group == NoteHead::Group::HEAD_BREVIS_ALT)
                   groupName = "brevis_alt";
             else if (group == NoteHead::Group::HEAD_GROUPS)
-                  groupName = "groups";
-            
+                  groupName = "groups";            
             xml.tag("notehead-group", groupName);
+
+            QString fillName;
+            FillType fillType = _fillTypes[tpc + 1];
+            if (fillType == FillType::TRADITIONAL)
+                  fillName = "traditional";
+            if (fillType == FillType::FILLED)
+                  fillName = "filled";
+            if (fillType == FillType::HOLLOW)
+                  fillName = "hollow";
+            xml.tag("notehead-fill", fillName);
+
             xml.etag();
             }
             
@@ -198,6 +210,20 @@ void NoteMappings::readMappings(XmlReader& e)
                               throw (QObject::tr("file includes an unrecognized notehead group: %1").arg(text));
 
                         _noteHeads[tpc + 1] = group;
+                        }
+                  else if (tag == "notehead-fill") {
+                        QString text = e.readElementText();
+                        FillType fillType;
+                        if (text == "traditional")
+                              fillType = FillType::TRADITIONAL;
+                        else if (text == "filled")
+                              fillType = FillType::FILLED;
+                        else if (text == "hollow")
+                              fillType = FillType::HOLLOW;
+                        else
+                              throw (QObject::tr("file includes an unrecognized notehead fill: %1").arg(text));
+
+                        _fillTypes[tpc + 1] = fillType;
                         }
                   }
             }
