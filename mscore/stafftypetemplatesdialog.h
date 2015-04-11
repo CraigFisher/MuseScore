@@ -64,12 +64,14 @@ class StaffTypeTemplatesDialog : public QDialog, private Ui::StaffTypeTemplatesD
 
       const static int tpcLookup[7][5];
       const static NoteHead::Group noteheadLookup[14];
+      const static NoteMappings::FillType filltypeLookup[3];
       const static ClefType clefLookup[17];
       
       int noteLetterIdx; //index of a note's letter, used in tpcLookup
       int clefIdx;       //index of a clef, used in clefLookup
       int noteheadIndex(NoteHead::Group) const;
       int clefIndex(ClefType) const;
+      int filltypeIndex(NoteMappings::FillType) const;
       void debugLocals();
       
       void updatePreview() const;
@@ -96,6 +98,7 @@ class StaffTypeTemplatesDialog : public QDialog, private Ui::StaffTypeTemplatesD
       void setClefOffset(int clefOffset);
       void setOffset(int idx, int offset);
       void setNotehead(int idx, int headIdx);
+      void setFilltype(int idx, int fillIdx);
       void pickNoteColor(int idx);
       
       void setDoubleFlatOffset(int offset) { setOffset(0, offset); }
@@ -110,6 +113,12 @@ class StaffTypeTemplatesDialog : public QDialog, private Ui::StaffTypeTemplatesD
       void setSharpNotehead(int headIdx) { setNotehead(3, headIdx); }
       void setDoubleSharpNotehead(int headIdx) { setNotehead(4, headIdx); }
       
+      void setDoubleFlatFilltype(int fillIdx) { setFilltype(0, fillIdx); }
+      void setFlatFilltype(int fillIdx) { setFilltype(1, fillIdx); }
+      void setNaturalFilltype(int fillIdx) { setFilltype(2, fillIdx); }
+      void setSharpFilltype(int fillIdx) { setFilltype(3, fillIdx); }
+      void setDoubleSharpFilltype(int fillIdx) { setFilltype(4, fillIdx); }
+
       void pickDoubleFlatColor() { pickNoteColor(0); }
       void pickFlatColor() { pickNoteColor(1); }
       void pickNaturalColor() { pickNoteColor(2); }

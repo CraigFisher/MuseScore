@@ -42,29 +42,15 @@ NoteMappings::NoteMappings() :
                      defaultC, defaultC, defaultC, defaultC, defaultC,
                      defaultC, defaultC, defaultC, defaultC, defaultC,
                      defaultC, defaultC, defaultC, defaultC, defaultC,
-                     defaultC, defaultC, defaultC, defaultC, defaultC} }
-//      _fillTypes  { {defaultF, defaultF, defaultF, defaultF, defaultF, //cc_temp
-//                     defaultF, defaultF, defaultF, defaultF, defaultF,
-//                     defaultF, defaultF, defaultF, defaultF, defaultF,
-//                     defaultF, defaultF, defaultF, defaultF, defaultF,
-//                     defaultF, defaultF, defaultF, defaultF, defaultF,
-//                     defaultF, defaultF, defaultF, defaultF, defaultF,
-//                     defaultF, defaultF, defaultF, defaultF, defaultF} }
+                     defaultC, defaultC, defaultC, defaultC, defaultC} },
+      _fillTypes  { {defaultF, defaultF, defaultF, defaultF, defaultF, //cc_temp
+                     defaultF, defaultF, defaultF, defaultF, defaultF,
+                     defaultF, defaultF, defaultF, defaultF, defaultF,
+                     defaultF, defaultF, defaultF, defaultF, defaultF,
+                     defaultF, defaultF, defaultF, defaultF, defaultF,
+                     defaultF, defaultF, defaultF, defaultF, defaultF,
+                     defaultF, defaultF, defaultF, defaultF, defaultF} }
       {
-//cc_temp
-_fillTypes[31 + 1]= NoteMappings::FillType::HOLLOW; _fillTypes[19 + 1]= NoteMappings::FillType::HOLLOW; _fillTypes[7 + 1]  = NoteMappings::FillType::HOLLOW;
-_fillTypes[24 + 1]= NoteMappings::FillType::FILLED; _fillTypes[12 + 1]= NoteMappings::FillType::FILLED; _fillTypes[0 + 1]  = NoteMappings::FillType::FILLED;
-_fillTypes[29 + 1]= NoteMappings::FillType::HOLLOW; _fillTypes[17 + 1]= NoteMappings::FillType::HOLLOW; _fillTypes[5 + 1]  = NoteMappings::FillType::HOLLOW;
-_fillTypes[22 + 1]= NoteMappings::FillType::FILLED; _fillTypes[10 + 1]                     = NoteMappings::FillType::FILLED;
-_fillTypes[27 + 1]= NoteMappings::FillType::HOLLOW; _fillTypes[15 + 1]= NoteMappings::FillType::HOLLOW; _fillTypes[3 + 1]  = NoteMappings::FillType::HOLLOW;
-_fillTypes[32 + 1]= NoteMappings::FillType::FILLED; _fillTypes[20 + 1]= NoteMappings::FillType::FILLED; _fillTypes[8 + 1]  = NoteMappings::FillType::FILLED;
-_fillTypes[25 + 1]= NoteMappings::FillType::HOLLOW; _fillTypes[13 + 1]= NoteMappings::FillType::HOLLOW; _fillTypes[1 + 1]  = NoteMappings::FillType::HOLLOW;
-_fillTypes[30 + 1]= NoteMappings::FillType::FILLED; _fillTypes[18 + 1]= NoteMappings::FillType::FILLED; _fillTypes[6 + 1]  = NoteMappings::FillType::FILLED;
-_fillTypes[23 + 1]= NoteMappings::FillType::HOLLOW; _fillTypes[11 + 1]= NoteMappings::FillType::HOLLOW; _fillTypes[-1+ 1]  = NoteMappings::FillType::HOLLOW;
-_fillTypes[28 + 1]= NoteMappings::FillType::FILLED; _fillTypes[16 + 1]= NoteMappings::FillType::FILLED; _fillTypes[4 + 1]  = NoteMappings::FillType::FILLED;
-_fillTypes[33 + 1]= NoteMappings::FillType::HOLLOW; _fillTypes[21 + 1]= NoteMappings::FillType::HOLLOW; _fillTypes[9 + 1]  = NoteMappings::FillType::HOLLOW;
-_fillTypes[26 + 1]= NoteMappings::FillType::FILLED; _fillTypes[14 + 1]= NoteMappings::FillType::FILLED; _fillTypes[2 + 1]  = NoteMappings::FillType::FILLED;
-      
       setTraditionalClefOffsets();
       }
       
@@ -75,7 +61,8 @@ bool NoteMappings::operator==(const NoteMappings& n) const
              && n._noteColors == _noteColors
              && n._clefOffsets == _clefOffsets
              && n._octaveDistance == _octaveDistance
-             && n._showAccidentals == _showAccidentals;
+             && n._showAccidentals == _showAccidentals
+             && n._fillTypes == _fillTypes;
       }
 
 

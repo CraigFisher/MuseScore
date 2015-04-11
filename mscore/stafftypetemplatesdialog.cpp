@@ -74,6 +74,12 @@ const ClefType StaffTypeTemplatesDialog::clefLookup[17] = {
       ClefType::F_15MA
       };
 
+const NoteMappings::FillType StaffTypeTemplatesDialog::filltypeLookup[3] = {
+      NoteMappings::FillType::TRADITIONAL,
+      NoteMappings::FillType::FILLED,
+      NoteMappings::FillType::HOLLOW
+      };
+
 extern Score::FileError readScore(Score* score, QString name, bool ignoreVersionError);
 
 //---------------------------------------------------------
@@ -183,6 +189,12 @@ void StaffTypeTemplatesDialog::connectInput() const
       connect(sharpNotehead, SIGNAL(currentIndexChanged(int)), SLOT(setSharpNotehead(int)));
       connect(doubleSharpNotehead, SIGNAL(currentIndexChanged(int)), SLOT(setDoubleSharpNotehead(int)));
       
+      connect(doubleFlatFillType, SIGNAL(currentIndexChanged(int)), SLOT(setDoubleFlatFilltype(int)));
+      connect(flatFillType, SIGNAL(currentIndexChanged(int)), SLOT(setFlatFilltype(int)));
+      connect(naturalFillType, SIGNAL(currentIndexChanged(int)), SLOT(setNaturalFilltype(int)));
+      connect(sharpFillType, SIGNAL(currentIndexChanged(int)), SLOT(setSharpFilltype(int)));
+      connect(doubleSharpFillType, SIGNAL(currentIndexChanged(int)), SLOT(setDoubleSharpFilltype(int)));
+
       connect(innerLedgerWidget, SIGNAL(innerLedgersChanged(std::map<qreal, std::vector<qreal>>&)), this, SLOT(setInnerLedgers(std::map<qreal, std::vector<qreal>>&)));
       connect(staffLineWidget, SIGNAL(editingFinished()), SLOT(updateStaffLines()));
       connect(templateNameForm, SIGNAL(textEdited(const QString&)), SLOT(updateTemplateName(const QString&)));
@@ -218,6 +230,12 @@ void StaffTypeTemplatesDialog::disconnectInput() const
       disconnect(sharpNotehead, SIGNAL(currentIndexChanged(int)), 0, 0);
       disconnect(doubleSharpNotehead, SIGNAL(currentIndexChanged(int)), 0, 0);
       
+      disconnect(doubleFlatFillType, SIGNAL(currentIndexChanged(int)), 0, 0);
+      disconnect(flatFillType, SIGNAL(currentIndexChanged(int)), 0, 0);
+      disconnect(naturalFillType, SIGNAL(currentIndexChanged(int)), 0, 0);
+      disconnect(sharpFillType, SIGNAL(currentIndexChanged(int)), 0, 0);
+      disconnect(doubleSharpFillType, SIGNAL(currentIndexChanged(int)), 0, 0);
+
       disconnect(innerLedgerWidget, SIGNAL(innerLedgersChanged(std::map<qreal, std::vector<qreal>>&)), 0, 0);
       disconnect(staffLineWidget, SIGNAL(editingFinished()), 0, 0);
       disconnect(templateNameForm, SIGNAL(textEdited(const QString&)), 0, 0);
@@ -259,6 +277,13 @@ void StaffTypeTemplatesDialog::setValues() const
       naturalNotehead->    setCurrentIndex(noteheadIndex(mappings->tpc2HeadGroup(nTpc)));
       sharpNotehead->      setCurrentIndex(noteheadIndex(mappings->tpc2HeadGroup(sTpc)));
       doubleSharpNotehead->setCurrentIndex(noteheadIndex(mappings->tpc2HeadGroup(ssTpc)));
+
+      //SET FILLTYPES
+      doubleFlatFillType-> setCurrentIndex(filltypeIndex(mappings->tpc2FillType(bbTpc)));
+      flatFillType->       setCurrentIndex(filltypeIndex(mappings->tpc2FillType(bTpc)));
+      naturalFillType->    setCurrentIndex(filltypeIndex(mappings->tpc2FillType(nTpc)));
+      sharpFillType->      setCurrentIndex(filltypeIndex(mappings->tpc2FillType(sTpc)));
+      doubleSharpFillType->setCurrentIndex(filltypeIndex(mappings->tpc2FillType(ssTpc)));
 
       //SET NOTEHEAD COLORS
       doubleFlatColorIcon->fill(mappings->tpc2Color(bbTpc));
@@ -652,16 +677,24 @@ void StaffTypeTemplatesDialog::enableInput(bool enable) const
       {
       inputEnabled = enable;
       
-      doubleSharpOffset->setEnabled(enable);
-      sharpNotehead->setEnabled(enable);
       doubleFlatOffset->setEnabled(enable);
-      naturalOffset->setEnabled(enable);
       flatOffset->setEnabled(enable);
-      doubleSharpNotehead->setEnabled(enable);
-      doubleFlatNotehead->setEnabled(enable);
+      naturalOffset->setEnabled(enable);
       sharpOffset->setEnabled(enable);
+      doubleSharpOffset->setEnabled(enable);
+
+      doubleFlatNotehead->setEnabled(enable);      
       flatNotehead->setEnabled(enable);
       naturalNotehead->setEnabled(enable);
+      sharpNotehead->setEnabled(enable);
+      doubleSharpNotehead->setEnabled(enable);
+
+      doubleFlatFillType->setEnabled(enable);
+      flatFillType->setEnabled(enable);
+      naturalFillType->setEnabled(enable);
+      sharpFillType->setEnabled(enable);
+      doubleSharpFillType->setEnabled(enable);
+
       noteComboBox->setEnabled(enable);
       groupBox_2->setEnabled(enable);
       clefComboBox->setEnabled(enable);
@@ -772,6 +805,14 @@ void StaffTypeTemplatesDialog::setNotehead(int accidentalIdx, int headIdx)
       updatePreview();
       }
       
+void StaffTypeTemplatesDialog::setFilltype(int accidentalIdx, int fillIdx)
+      {
+      int tpc = tpcLookup[noteLetterIdx][accidentalIdx];
+      curTemplate->noteMappings()->setNoteFill(tpc, filltypeLookup[fillIdx]);//setNoteFill(tpc, NoteMappings::FillType::HOLLOW);
+      markTemplateDirty(curTemplate, true);
+      updatePreview();
+      }
+
 void StaffTypeTemplatesDialog::pickNoteColor(int accidentalIdx)
       {
       int tpc = tpcLookup[noteLetterIdx][accidentalIdx];
@@ -924,6 +965,15 @@ int StaffTypeTemplatesDialog::noteheadIndex(NoteHead::Group group) const
       {
       for (int i = 0; i < 14; i++) {
             if (noteheadLookup[i] == group)
+                  return i;
+            }
+      return -1;
+      }
+
+int StaffTypeTemplatesDialog::filltypeIndex(NoteMappings::FillType filltype) const
+      {
+      for (int i = 0; i < 3; i++) {
+            if (filltypeLookup[i] == filltype)
                   return i;
             }
       return -1;

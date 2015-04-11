@@ -65,12 +65,13 @@ class NoteMappings {
         void write(Xml&) const;
         void read(XmlReader&);
       
-        void setNotePosition(int tpc, int pos)                { _notePositions[tpc + 1] = pos;   }
-        void setNoteHeadGroup(int tpc, NoteHead::Group group) { _noteHeads    [tpc + 1] = group; }
-        void setNoteColor(int tpc, QColor color)              { _noteColors   [tpc + 1] = color; }
-        void setClefOffset(ClefType ct, int offset)           { _clefOffsets[ct] = offset;       }
-        void setShowAccidentals(bool val)                     { _showAccidentals = val;          }
-        void setOctaveDistance(int val)                       { _octaveDistance = val;           }
+        void setNotePosition(int tpc, int pos)                { _notePositions[tpc + 1] = pos;      }
+        void setNoteHeadGroup(int tpc, NoteHead::Group group) { _noteHeads    [tpc + 1] = group;    }
+        void setNoteColor(int tpc, QColor color)              { _noteColors   [tpc + 1] = color;    }
+        void setNoteFill(int tpc, FillType filltype)          { _fillTypes    [tpc + 1] = filltype; }
+        void setClefOffset(ClefType ct, int offset)           { _clefOffsets[ct] = offset;          }
+        void setShowAccidentals(bool val)                     { _showAccidentals = val;             }
+        void setOctaveDistance(int val)                       { _octaveDistance = val;              }
       
         int tpc2Position(int tpc) const              { return _notePositions[tpc + 1]; }
         FillType tpc2FillType(int tpc) const         { return     _fillTypes[tpc + 1]; }

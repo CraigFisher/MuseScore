@@ -770,6 +770,15 @@ void Note::draw(QPainter* painter) const
             // warn if pitch extends usable range of instrument
             // by coloring the note head
             //
+            //cc
+            if (noteMappings() && noteMappings()->tpc2FillType(tpc()) == NoteMappings::FillType::HOLLOW) {
+                  qreal d  = spatium() * .1; //cc_temp
+                  StaffType* st = staff()->staffType();
+                  QRectF bb = QRectF(bbox().x(), st->fretMaskY()*magS() + d, bbox().width(), st->fretMaskH()*magS() - (2 * d));
+                  foreach(MuseScoreView* view, score()->getViewer())
+                        view->drawBackground(painter, bb);
+                  }
+
             if (chord() && chord()->segment() && staff() && !selected()
                && !score()->printing() && MScore::warnPitchRange) {
                   const Instrument* in = part()->instrument();

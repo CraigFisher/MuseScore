@@ -118,7 +118,7 @@
       <x>10</x>
       <y>260</y>
       <width>181</width>
-      <height>54</height>
+      <height>59</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -153,7 +153,7 @@
      <rect>
       <x>10</x>
       <y>30</y>
-      <width>331</width>
+      <width>373</width>
       <height>231</height>
      </rect>
     </property>
@@ -507,17 +507,17 @@
       <widget class="QComboBox" name="flatFillType">
        <item>
         <property name="text">
+         <string>Traditional</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>Filled</string>
         </property>
        </item>
        <item>
         <property name="text">
          <string>Hollow</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Traditional</string>
         </property>
        </item>
       </widget>
@@ -526,17 +526,17 @@
       <widget class="QComboBox" name="doubleFlatFillType">
        <item>
         <property name="text">
+         <string>Traditional</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>Filled</string>
         </property>
        </item>
        <item>
         <property name="text">
          <string>Hollow</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Traditional</string>
         </property>
        </item>
       </widget>
@@ -716,17 +716,17 @@
       <widget class="QComboBox" name="sharpFillType">
        <item>
         <property name="text">
+         <string>Traditional</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>Filled</string>
         </property>
        </item>
        <item>
         <property name="text">
          <string>Hollow</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Traditional</string>
         </property>
        </item>
       </widget>
@@ -742,17 +742,17 @@
       <widget class="QComboBox" name="doubleSharpFillType">
        <item>
         <property name="text">
+         <string>Traditional</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>Filled</string>
         </property>
        </item>
        <item>
         <property name="text">
          <string>Hollow</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Traditional</string>
         </property>
        </item>
       </widget>
@@ -761,17 +761,17 @@
       <widget class="QComboBox" name="naturalFillType">
        <item>
         <property name="text">
+         <string>Traditional</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string>Filled</string>
         </property>
        </item>
        <item>
         <property name="text">
          <string>Hollow</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Traditional</string>
         </property>
        </item>
       </widget>
