@@ -670,8 +670,8 @@ void Chord::addLedgerLines(int move)
       
       //cc
       bool useInnerLedgers = this->useInnerLedgers();
+      bool useAlternateOuterLedgers = this->useAlternateOuterLedgers();
       const std::map<qreal, std::vector<qreal>>* ledgerMap;
-      
       if (useInnerLedgers)
             ledgerMap = &staff()->staffType()->innerLedgers();
       
@@ -767,8 +767,21 @@ void Chord::addLedgerLines(int move)
 
                   // check if note vert. pos. is outside current range
                   // and, in case, add data for new line(s)
-                  if (l < minLine) {
-                        for (int i = l; i < minLine; i += 2) {
+                  
+                  //TODO: CLAIRNOTE: USE AN ACTUAL INTERNAL PROPERTY(S) OF NOTEMAPPINGS()
+                  //                 INSTEAD OF JUST REFERENCING NOTEMAPPINGS()
+                  //cc
+                  int ledgerInterval = 2;
+                  int ledgerOffset = 0;
+                  if (useAlternateOuterLedgers) {
+                        StaffType* st = staff()->staffType();
+                        ledgerInterval = st->ledgerInterval();
+                        ledgerOffset = st->ledgerOffset();
+                        l = note->line();
+                        }
+
+                  if (l < minLine) { //cc
+                        for (int i = minLine - ledgerInterval; i >= l - ledgerOffset; i -= ledgerInterval) { //cc
                               lld.line = i;
                               lld.minX = minX;
                               lld.maxX = maxX;
@@ -779,7 +792,7 @@ void Chord::addLedgerLines(int move)
                         minLine = l;
                         }
                   if (l > maxLine) {
-                        for (int i = maxLine+2; i <= l; i += 2) {
+                        for (int i = maxLine + ledgerInterval; i <= l + ledgerOffset; i += ledgerInterval) { //cc
                               lld.line = i;
                               lld.minX = minX;
                               lld.maxX = maxX;
@@ -2464,6 +2477,15 @@ void Chord::layoutArpeggio2()
 bool Chord::useInnerLedgers() const {
       return staff() ? staff()->staffType()->useInnerLedgers() : false;
       }
+      
+//-----------------------------------------------------//cc
+//   useAlternateOuterLedgers
+//---------------------------------------------------------
+      
+bool Chord::useAlternateOuterLedgers() const {
+      return staff() ? staff()->staffType()->useAlternateOuterLedgers() : false;
+      }
+      
 
 //---------------------------------------------------------
 //   findNote

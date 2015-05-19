@@ -776,7 +776,6 @@ void Score::layoutChords3(QList<Note*>& notes, Staff* staff, Segment* segment)
       QList<AcEl> aclist;     // accidentals
       // track columns of octave-separated accidentals
       int columnBottom[7] = { -1, -1, -1, -1, -1, -1, -1 };
-
       qreal sp           = staff->spatium();
       qreal stepDistance = sp * .5;
       int stepOffset     = staff->staffType()->stepOffset();

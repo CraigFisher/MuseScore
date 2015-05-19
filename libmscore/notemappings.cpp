@@ -43,7 +43,7 @@ NoteMappings::NoteMappings() :
                      defaultC, defaultC, defaultC, defaultC, defaultC,
                      defaultC, defaultC, defaultC, defaultC, defaultC,
                      defaultC, defaultC, defaultC, defaultC, defaultC} },
-      _fillTypes  { {defaultF, defaultF, defaultF, defaultF, defaultF, //cc_temp
+      _fillTypes  { {defaultF, defaultF, defaultF, defaultF, defaultF,
                      defaultF, defaultF, defaultF, defaultF, defaultF,
                      defaultF, defaultF, defaultF, defaultF, defaultF,
                      defaultF, defaultF, defaultF, defaultF, defaultF,
@@ -381,7 +381,7 @@ int NoteMappings::getTpc(int position)
       qFatal("position is not mapped by any tpc");
       }
 
-NoteHead::Type NoteMappings::headType(TDuration duration, int tpc)
+NoteHead::Type NoteMappings::headType(TDuration duration, int tpc) const
       {
       FillType fill = tpc2FillType(tpc);
       NoteHead::Type t;

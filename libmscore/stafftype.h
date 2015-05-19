@@ -269,8 +269,10 @@ class StaffType {
       
       //cc
       bool useInnerLedgers() const { return !_innerLedgers.empty(); }
+      bool useAlternateOuterLedgers() const { return false; } //cc //TODO: CLAIRNOTE
       bool useAlternateNoteMappings() const { return _altNoteMappings != NULL; }
       bool useAlternateStaffLines() const { return !_alternativeStaffLines.empty(); }
+      bool useAlternateNoteSpacing() const { return false; } //cc TODO: CLAIRNOTE
 
       //cc
       void setAlternativeStaffLines(std::vector<qreal>&);
@@ -278,8 +280,12 @@ class StaffType {
       void clearInnerLedgers() { _innerLedgers.clear(); }
       const std::vector<qreal>& alternativeStaffLines() { return _alternativeStaffLines; }
       const std::map<qreal, std::vector<qreal>>& innerLedgers() { return _innerLedgers; }
+      int ledgerInterval() { return 4; } //cc TODO: CLAIRNOTE
+      int ledgerOffset() { return 1; } //cc TODO: CLAIRNOTE
+      qreal alternateNoteSpacing() const { return .7; } //cc TODO: CLAIRNOTE
       
       //cc
+      const NoteMappings* noteMappings() const { return _altNoteMappings; }
       NoteMappings* noteMappings() { return _altNoteMappings; }
 
       // static function to deal with presets

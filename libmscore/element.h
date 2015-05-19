@@ -442,7 +442,10 @@ class Element : public QObject, public ScoreElement {
       void setVoice(int v)                    { _track = (_track / VOICES) * VOICES + v; }
       Staff* staff() const;
       Part* part() const;
-      NoteMappings* noteMappings() const; //cc
+
+      //cc
+      NoteMappings* noteMappings();
+      const NoteMappings* noteMappings() const;
 
       virtual void add(Element*);
       virtual void remove(Element*);

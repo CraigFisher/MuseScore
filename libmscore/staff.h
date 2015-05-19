@@ -261,7 +261,8 @@ class Staff : public QObject, public ScoreElement {
 #endif
       
       //cc
-      NoteMappings* noteMappings() { return staffType()->noteMappings(); } //cc
+      const NoteMappings* noteMappings() const { const StaffType* st = staffType(); return st->noteMappings(); }
+      NoteMappings* noteMappings() { return staffType()->noteMappings(); }
       };
 
 }     // namespace Ms

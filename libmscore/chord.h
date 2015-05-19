@@ -65,7 +65,7 @@ class Chord : public ChordRest {
       Q_OBJECT
 
       struct LedgerLineData {
-            int   line;
+            qreal   line; //cc
             qreal minX, maxX;
             bool  visible;
             bool  accidental;
@@ -107,6 +107,7 @@ class Chord : public ChordRest {
       void layoutPitched();
       void layoutTablature();
       bool useInnerLedgers() const; //cc
+      bool useAlternateOuterLedgers() const; //cc
 
    public:
       Chord(Score* s = 0);

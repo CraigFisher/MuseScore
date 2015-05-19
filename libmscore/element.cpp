@@ -397,7 +397,16 @@ Part* Element::part() const
 //   noteMappings
 //-----------------------------------------------------//cc
 
-NoteMappings* Element::noteMappings() const
+const NoteMappings* Element::noteMappings() const
+      {
+      return staff() && staff()->staffType() ? staff()->staffType()->noteMappings() : 0;
+      }
+
+//---------------------------------------------------------
+//   noteMappings
+//-----------------------------------------------------//cc
+
+NoteMappings* Element::noteMappings()
       {
       return staff() && staff()->staffType() ? staff()->staffType()->noteMappings() : 0;
       }

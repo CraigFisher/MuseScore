@@ -436,7 +436,7 @@ SymId Note::noteHead() const
       {
       bool up;
       //cc
-      NoteMappings* altMappings = noteMappings();
+      const NoteMappings* altMappings = noteMappings();
       if (altMappings) {
             TDuration duration;
             if (chord()) {
@@ -772,9 +772,9 @@ void Note::draw(QPainter* painter) const
             //
             //cc
             if (noteMappings() && noteMappings()->tpc2FillType(tpc()) == NoteMappings::FillType::HOLLOW) {
-                  qreal d  = spatium() * .1; //cc_temp
+                  qreal d  = spatium() * .1;
                   StaffType* st = staff()->staffType();
-                  QRectF bb = QRectF(bbox().x(), st->fretMaskY()*magS() + d, bbox().width(), st->fretMaskH()*magS() - (2 * d));
+                  QRectF bb = QRectF(bbox().x()+d, st->fretMaskY()*magS() + (2.5 * d), bbox().width() - (2*d), st->fretMaskH()*magS() - (5 * d));
                   foreach(MuseScoreView* view, score()->getViewer())
                         view->drawBackground(painter, bb);
                   }

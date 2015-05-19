@@ -78,7 +78,7 @@ class NoteMappings {
         NoteHead::Group tpc2HeadGroup(int tpc) const { return     _noteHeads[tpc + 1]; }
         QColor tpc2Color(int tpc) const              { return    _noteColors[tpc + 1]; }
         int clefOffset(ClefType ct) const            { return   _clefOffsets.at(ct);   }
-        NoteHead::Type headType(TDuration duration, int tpc);
+        NoteHead::Type headType (TDuration duration, int tpc) const;
       
         int octaveDistance() const { return _octaveDistance; }
         bool showAccidentals() const { return _showAccidentals; }

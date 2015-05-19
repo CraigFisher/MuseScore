@@ -592,7 +592,7 @@ void StaffType::readStaffLines(XmlReader& e)
       qreal max = 0.0;
       while (e.readNextStartElement()) {
             if (e.name().toString() == "line") {
-                  cur = e.readInt();
+                  cur = e.readDouble();
                   if (cur >= max)
                         max = cur;
                   _alternativeStaffLines.push_back(cur);
