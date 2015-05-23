@@ -767,13 +767,11 @@ void Chord::addLedgerLines(int move)
 
                   // check if note vert. pos. is outside current range
                   // and, in case, add data for new line(s)
-                  
-                  //TODO: CLAIRNOTE: USE AN ACTUAL INTERNAL PROPERTY(S) OF NOTEMAPPINGS()
-                  //                 INSTEAD OF JUST REFERENCING NOTEMAPPINGS()
+
                   //cc
                   int ledgerInterval = 2;
                   int ledgerOffset = 0;
-                  if (useAlternateOuterLedgers) {
+                  if (noteMappings()) {
                         StaffType* st = staff()->staffType();
                         ledgerInterval = st->ledgerInterval();
                         ledgerOffset = st->ledgerOffset();
