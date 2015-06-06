@@ -1345,9 +1345,9 @@ void GuitarPro2::read(QFile* fp)
             }
 
             Channel* ch = instr->channel(0);
-            if (midiChannel == int(StaffTypes::PERC_DEFAULT)) {
-                  ch->program = 0;
-                  ch->bank    = 128;
+            if (midiChannel == StaffType::defaultPreset[int(StaffGroup::PERCUSSION)]) { //cc SG::Standard   => 0
+                  ch->program = 0;                                                      //   SG::Percussion => 3
+                  ch->bank    = 128;                                                    //   SG::Tab        => 5
                   }
             else {
                   ch->program = patch;
@@ -2394,7 +2394,7 @@ Score::FileError importGTP(Score* score, const QString& name)
                   p->setStaves(2);
                   Staff* s1 = p->staff(1);
 
-                  StaffType st = *StaffType::preset(StaffTypes::TAB_DEFAULT);
+                  StaffType st = *StaffType::getDefaultPreset(StaffGroup::TAB); //cc TODO: CONFIRM
                   st.setSlashStyle(true);
                   s1->setStaffType(&st);
                   s1->setLines(staff->part()->instrument()->stringData()->strings());
@@ -2412,7 +2412,7 @@ Score::FileError importGTP(Score* score, const QString& name)
 
             if (staff->part()->instrument()->stringData()->strings() > 0 && part->staves()->front()->staffType()->group() == StaffGroup::STANDARD) {
                   Staff* staff2 = pscore->staff(1);
-                  staff2->setStaffType(StaffType::preset(StaffTypes::TAB_DEFAULT));
+                  staff2->setStaffType(StaffType::getDefaultPreset(StaffGroup::TAB)); //cc TODO: CONFIRM
                   staff2->setLines(staff->part()->instrument()->stringData()->strings());
             }
 

@@ -311,7 +311,7 @@ class Note : public Element {
       void undoSetTpc2(int tpc)      { undoChangeProperty(P_ID::TPC2, tpc); }
       int transposeTpc(int tpc);
 
-      Accidental* accidental() const      { return _accidental; }
+      Q_INVOKABLE Ms::Accidental* accidental() const; //cc
       void setAccidental(Accidental* a)   { _accidental = a;    }
 
       AccidentalType accidentalType() const;

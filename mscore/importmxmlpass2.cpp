@@ -413,7 +413,7 @@ static void setStaffTypePercussion(Part* part, Drumset* drumset)
       {
       for (int j = 0; j < part->nstaves(); ++j)
             if (part->staff(j)->lines() == 5 && !part->staff(j)->isDrumStaff())
-                  part->staff(j)->setStaffType(StaffType::preset(StaffTypes::PERC_DEFAULT));
+                  part->staff(j)->setStaffType(StaffType::getDefaultPreset(StaffGroup::PERCUSSION)); //cc TODO: CONFIRM
       // set drumset for instrument
       part->instrument()->setDrumset(drumset);
       part->instrument()->channel(0)->bank = 128;
@@ -1814,7 +1814,7 @@ static void markUserAccidentals(const int firstStaff,
                   foreach (Note* nt, chord->notes()) {
                         if (alterMap.contains(nt)) {
                               int alter = alterMap.value(nt);
-                              int ln  = absStep(nt->tpc(), nt->pitch());
+                              int ln  = absStep(nt->tpc(), nt->pitch(), nt->noteMappings());
                               AccidentalVal currAccVal = currAcc.accidentalVal(ln);
                               if ((alter == -1
                                    && currAccVal == AccidentalVal::FLAT
@@ -3316,7 +3316,7 @@ void MusicXMLParserPass2::clef(const QString& partId, Measure* measure, const in
       clefno--;
 
       ClefType clef   = ClefType::G;
-      StaffTypes st = StaffTypes::STANDARD;
+      StaffGroup st = StaffGroup::STANDARD; //cc
 
       QString c;
       int i = 0;
@@ -3385,11 +3385,11 @@ void MusicXMLParserPass2::clef(const QString& partId, Measure* measure, const in
             }
       else if (c == "percussion") {
             clef = ClefType::PERC;
-            st = StaffTypes::PERC_DEFAULT;
+            st = StaffGroup::PERCUSSION; //cc
             }
       else if (c == "TAB") {
             clef = ClefType::TAB;
-            st= StaffTypes::TAB_DEFAULT;
+            st= StaffGroup::TAB; //cc
             }
       else
             qDebug("clef: unknown clef <sign=%s line=%d oct ch=%d>", qPrintable(c), line, i);  // TODO
@@ -3412,8 +3412,8 @@ void MusicXMLParserPass2::clef(const QString& partId, Measure* measure, const in
       // also note that clef handling should probably done in pass1
       int staffIdx = _score->staffIdx(part);
       int lines = _score->staff(staffIdx)->lines();
-      if (st == StaffTypes::TAB_DEFAULT || (_hasDrumset && st == StaffTypes::PERC_DEFAULT)) {
-            _score->staff(staffIdx)->setStaffType(StaffType::preset(st));
+      if (st == StaffGroup::TAB || (_hasDrumset && st == StaffGroup::PERCUSSION)) { //cc
+            _score->staff(staffIdx)->setStaffType(StaffType::getDefaultPreset(st)); //cc TODO: CONFIRM
             _score->staff(staffIdx)->setLines(lines);
             _score->staff(staffIdx)->setBarLineTo((lines - 1) * 2);
             }
@@ -4163,7 +4163,7 @@ Note* MusicXMLParserPass2::note(const QString& partId,
                   ClefType clef = c->staff()->clef(noteStartTime.ticks());
                   int po = ClefInfo::pitchOffset(clef);
                   int pitch = MusicXMLStepAltOct2Pitch(displayStep, 0, displayOctave);
-                  int line = po - absStep(pitch);
+                  int line = po - absStep(pitch, NULL); //cc
 
                   // correct for number of staff lines
                   // see ExportMusicXml::unpitch2xml for explanation

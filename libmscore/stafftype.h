@@ -301,7 +301,7 @@ class StaffType {
       static const StaffType* getDefaultPreset(StaffGroup grp);
       static const StaffType* preset(int idx); //cc
       static const StaffType* presetFromXmlName(QString& xmlName);
-      static const int _defaultPreset[STAFF_GROUP_MAX]; //cc
+      static const int defaultPreset[STAFF_GROUP_MAX]; //cc
 
       void setGenKeysig(bool val)              { _genKeysig = val;          }
       bool genKeysig() const                   { return _genKeysig;         }

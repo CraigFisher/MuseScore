@@ -1259,7 +1259,7 @@ bool StaffType::fontData(bool bDuration, int nIdx, QString* pFamily, QString* pD
 //
 //=========================================================
 
-const int StaffType::_defaultPreset[] =
+const int StaffType::defaultPreset[] =
       { 0,              // default pitched preset is "stdNormal"
         3,              // default percussion preset is "perc5lines"
         5               // default tab preset is "tab6StrCommon"
@@ -1298,7 +1298,7 @@ const StaffType* StaffType::presetFromName(QString& name)
 #endif
 const StaffType* StaffType::getDefaultPreset(StaffGroup grp)
       {
-      int _idx = _defaultPreset[int(grp)];
+      int _idx = defaultPreset[int(grp)];
       return &_presets[_idx];
       }
 

@@ -392,6 +392,7 @@ Part* Element::part() const
       {
       Staff* s = staff();
       return s ? s->part() : 0;
+      }
 
 //---------------------------------------------------------
 //   noteMappings

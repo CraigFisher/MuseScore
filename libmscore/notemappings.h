@@ -15,6 +15,7 @@
 
 #include "note.h"
 #include "durationtype.h"
+#include "clef.h"
 #include <map>
 #include <array>
 #include <vector>

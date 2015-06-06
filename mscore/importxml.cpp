@@ -2221,7 +2221,7 @@ void MusicXml::xmlPart(QDomElement e, QString id)
             // but may be incorrect for a percussion staff that does not use a percussion clef
             for (int j = 0; j < part->nstaves(); ++j)
                   if (part->staff(j)->lines() == 5 && !part->staff(j)->isDrumStaff())
-                        part->staff(j)->setStaffType(StaffType::preset(StaffTypes::PERC_DEFAULT));
+                        part->staff(j)->setStaffType(StaffType::getDefaultPreset(StaffGroup::PERCUSSION)); //cc TODO: CONFIRM
             // set drumset for instrument
             part->instrument()->setDrumset(drumset);
             part->instrument()->channel(0)->bank = 128;
@@ -2785,7 +2785,7 @@ Measure* MusicXml::xmlMeasure(Part* part, QDomElement e, int number, Fraction me
                          int i = courtAccNotes.indexOf(nt);
                          if(i > -1){
                                int alter = alterList.value(i);
-                               int ln  = absStep(nt->tpc(), nt->pitch());
+                               int ln  = absStep(nt->tpc(), nt->pitch(), nt->noteMappings()); //cc
                                AccidentalVal currAccVal = currAcc.accidentalVal(ln);
                                if ((alter == -1 && currAccVal == AccidentalVal::FLAT && nt->accidental()->accidentalType() == AccidentalType::FLAT    && !accTmp.value(ln))
                                      || (alter ==  0 && currAccVal == AccidentalVal::NATURAL && nt->accidental()->accidentalType() == AccidentalType::NATURAL && !accTmp.value(ln))
@@ -3991,15 +3991,15 @@ void MusicXml::xmlAttributes(Measure* measure, int staff, QDomElement e, KeySig*
                         }
                   }
             else if (e.tagName() == "clef") {
-                  StaffTypes st = xmlClef(e, staff, measure);
+                  StaffGroup st = xmlClef(e, staff, measure);
                   int number = e.attribute(QString("number"), "-1").toInt();
                   int staffIdx = staff;
                   if (number != -1)
                         staffIdx += number - 1;
                   // qDebug("xmlAttributes clef score->staff(0) %p staffIdx %d score->staff(%d) %p",
                   //       score->staff(0), staffIdx, staffIdx, score->staff(staffIdx));
-                  if (st == StaffTypes::TAB_DEFAULT || (hasDrumset && st == StaffTypes::PERC_DEFAULT))
-                        score->staff(staffIdx)->setStaffType(StaffType::preset(st));
+                  if (st == StaffGroup::TAB || (hasDrumset && st == StaffGroup::PERCUSSION))
+                        score->staff(staffIdx)->setStaffType(StaffType::getDefaultPreset(st)); //cc TODO: CONFIRM
                   }
             else if (e.tagName() == "staves")
                   ;  // ignore, already handled
@@ -5926,7 +5926,7 @@ Note* MusicXml::xmlNote(Measure* measure, int staff, const QString& partId, Beam
                   ClefType clef = cr->staff()->clef(loc_tick);
                   int po = ClefInfo::pitchOffset(clef);
                   int pitch = MusicXMLStepAltOct2Pitch(step[0].toLatin1(), 0, octave);
-                  int line = po - absStep(pitch);
+                  int line = po - absStep(pitch, NULL);
 
                   // correct for number of staff lines
                   // see ExportMusicXml::unpitch2xml for explanation
@@ -6227,10 +6227,10 @@ void MusicXml::xmlHarmony(QDomElement e, int tick, Measure* measure, int staff)
 //   xmlClef
 //---------------------------------------------------------
 
-StaffTypes MusicXml::xmlClef(QDomElement e, int staffIdx, Measure* measure)
+StaffGroup MusicXml::xmlClef(QDomElement e, int staffIdx, Measure* measure) //cc
       {
       ClefType clef   = ClefType::G;
-      StaffTypes res = StaffTypes::STANDARD;
+      StaffGroup res = StaffGroup::STANDARD; //cc
       int clefno = e.attribute(QString("number"), "1").toInt() - 1;
       QString c;
       int i = 0;
@@ -6298,11 +6298,11 @@ StaffTypes MusicXml::xmlClef(QDomElement e, int staffIdx, Measure* measure)
             }
       else if (c == "percussion") {
             clef = ClefType::PERC;
-            res = StaffTypes::PERC_DEFAULT;
+            res = StaffGroup::PERCUSSION; //cc
             }
       else if (c == "TAB") {
             clef = ClefType::TAB;
-            res = StaffTypes::TAB_DEFAULT;
+            res = StaffGroup::TAB; //cc
             }
       else
             qDebug("ImportMusicXML: unknown clef <sign=%s line=%d oct ch=%d>", qPrintable(c), line, i);

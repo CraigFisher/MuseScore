@@ -216,7 +216,7 @@ add_executable ( ${ExecutableName}
       scoreview.cpp editinstrument.cpp editstyle.cpp
       icons.cpp importbww.cpp
       importmxml.cpp importmxmlpass1.cpp importmxmlpass2.cpp
-      instrdialog.cpp instrwidget.cpp
+      instrdialog.cpp instrwidget.cpp innerledgerwidget.cpp
       debugger/debugger.cpp menus.cpp
       musescore.cpp navigator.cpp pagesettings.cpp palette.cpp
       mixer.cpp playpanel.cpp selectionwindow.cpp preferences.cpp measureproperties.cpp
@@ -227,11 +227,7 @@ add_executable ( ${ExecutableName}
       timesigproperties.cpp newwizard.cpp transposedialog.cpp
       excerptsdialog.cpp metaedit.cpp magbox.cpp
       capella.cpp capxml.cpp exportaudio.cpp palettebox.cpp
-<<<<<<< HEAD
-      textproperties.cpp synthcontrol.cpp drumroll.cpp pianoroll.cpp piano.cpp
-=======
       textproperties.cpp synthcontrol.cpp drumroll.cpp pianoroll.cpp piano.cpp stafftypetemplatesdialog.cpp
->>>>>>> rename StaffTypeTemplates as StaffTypeTemplatesDialog
       pianoview.cpp drumview.cpp scoretab.cpp keyedit.cpp harmonyedit.cpp
       updatechecker.cpp importove.cpp ove.cpp ruler.cpp
       importgtp.cpp importgtp-gp4.cpp importgtp-gp5.cpp importgtp-gp6.cpp fotomode.cpp drumtools.cpp
