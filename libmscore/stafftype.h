@@ -206,7 +206,7 @@ class StaffType {
       std::vector<qreal> _alternativeStaffLines;
       int _ledgerInterval = 2;
       int _ledgerOffset = 0;
-      qreal _noteSpacingMultiplier = 1;
+      qreal _noteSpacingMultiplier = 1.0;
       
       //cc
       static void copyUserTemplatesToPresets(std::vector<StaffTypeTemplate>&);
@@ -260,10 +260,10 @@ class StaffType {
       //cc
       void writeInnerLedgers(Xml& xml) const;
       void readInnerLedgers(XmlReader&);
-      void writeStaffLines(Xml&) const;
-      void readStaffLines(XmlReader&);
       void writeOuterLedgers(Xml&) const; //cc TODO: CLAIRNOTE
       void readOuterLedgers(XmlReader&); //cc TODO: CLAIRNOTE
+      void writeStaffLines(Xml&) const;
+      void readStaffLines(XmlReader&);
 
       void setSlashStyle(bool val)             { _slashStyle = val;       }
       bool slashStyle() const                  { return _slashStyle;      }
@@ -276,22 +276,22 @@ class StaffType {
       void setAlternativeStaffLines(std::vector<qreal>&);
       void setInnerLedgers(std::map<qreal, std::vector<qreal>>& ledgerMap) { _innerLedgers = ledgerMap; }
       void setLedgerInterval(int v)                                        { _ledgerInterval = v; }
-      void ledgerOffset(int v)                                             { _ledgerOffset = v; }
-      void setAlternateNoteSpacing(qreal v)                                { _noteSpacingMultiplier = v; }
+      void setLedgerOffset(int v)                                          { _ledgerOffset = v; }
+      void setNoteSpacing(qreal v)                                         { _noteSpacingMultiplier = v; }
       
       //cc
       const std::vector<qreal>& alternativeStaffLines() const         { return _alternativeStaffLines; }
       const std::map<qreal, std::vector<qreal>>& innerLedgers() const { return _innerLedgers; }
       int ledgerInterval() const                                      { return _ledgerInterval; }
       int ledgerOffset() const                                        { return _ledgerOffset; }
-      qreal alternateNoteSpacing() const                              { return _noteSpacingMultiplier; }
+      qreal noteSpacing() const                                       { return _noteSpacingMultiplier; }
 
       //cc
       bool useInnerLedgers() const          { return !_innerLedgers.empty(); }
-      bool useAlternateOuterLedgers() const { return _ledgerInterval != 2 || _ledgerOffset != 0; }
-      bool useAlternateNoteMappings() const { return _altNoteMappings != NULL; }
       bool useAlternateStaffLines() const   { return !_alternativeStaffLines.empty(); }
-      bool useAlternateNoteSpacing() const  { return _noteSpacingMultiplier != 1; }
+      bool useAlternateNoteMappings() const { return _altNoteMappings       != NULL; }
+      bool useAlternateNoteSpacing() const  { return _noteSpacingMultiplier != 1.0; }
+      bool useAlternateOuterLedgers() const { return _ledgerInterval        != 2 || _ledgerOffset != 0; }
       
       //cc
       const NoteMappings* noteMappings() const { return _altNoteMappings; }

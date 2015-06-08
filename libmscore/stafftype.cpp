@@ -136,7 +136,10 @@ StaffType::StaffType(const StaffType& source) :
       _fretYOffset(source._fretYOffset),
       _fretMetricsValid(source._fretMetricsValid),
       _refDPI(source._refDPI),
-      _alternativeStaffLines(source._alternativeStaffLines)
+      _alternativeStaffLines(source._alternativeStaffLines),
+      _ledgerInterval(source._ledgerInterval),              //cc
+      _ledgerOffset(source._ledgerOffset),                  //cc
+      _noteSpacingMultiplier(source._noteSpacingMultiplier) //cc
       {
       if (source._altNoteMappings) //if not NULL
             _altNoteMappings = new NoteMappings(*(source._altNoteMappings));
@@ -199,6 +202,9 @@ void swap(StaffType& first, StaffType& second)
       swap(first._altNoteMappings, second._altNoteMappings);
       swap(first._innerLedgers, second._innerLedgers);
       swap(first._alternativeStaffLines, second._alternativeStaffLines);
+      swap(first._ledgerInterval, second._ledgerInterval);
+      swap(first._ledgerOffset, second._ledgerOffset);
+      swap(first._noteSpacingMultiplier, second._noteSpacingMultiplier);
       }
       
 //-----------------------------------------------------//cc
@@ -302,19 +308,33 @@ bool StaffType::isSameStructure(const StaffType& st) const
       else if (_group == StaffGroup::STANDARD) {
             if (st.useAlternateStaffLines() == useAlternateStaffLines()
                       && st.useInnerLedgers() == useInnerLedgers()
-                      && st.useAlternateStaffLines() == useAlternateStaffLines()) {
+                      && st.useAlternateStaffLines()   == useAlternateStaffLines()
+                      && st.useAlternateOuterLedgers() == useAlternateOuterLedgers()
+                      && st.useAlternateNoteSpacing() == useAlternateNoteSpacing()) {
                   
                   bool sameMappings = true;
-                  bool sameLedgers = true;
+                  bool sameInnerLedgers = true;
+                  bool sameOuterLedgers = true;
+                  bool sameNoteSpacing = true;
                   bool sameStaffLines = true;
                   if (useAlternateNoteMappings())
                         sameMappings = *(st._altNoteMappings) == *_altNoteMappings;
                   if (useInnerLedgers())
-                        sameLedgers = st._innerLedgers == _innerLedgers;
+                        sameInnerLedgers = st._innerLedgers == _innerLedgers;
+                  if (useAlternateOuterLedgers()) {
+                        sameOuterLedgers = st._ledgerInterval == _ledgerInterval
+                                           && st._ledgerOffset == _ledgerOffset;
+                  }
                   if (useAlternateStaffLines())
                         sameStaffLines = st.useAlternateStaffLines() == useAlternateStaffLines();
+                  if (useAlternateNoteSpacing())
+                        sameNoteSpacing = st._noteSpacingMultiplier == _noteSpacingMultiplier;
                   
-                  return sameMappings && sameLedgers && sameStaffLines
+                  return sameMappings
+                         && sameInnerLedgers
+                         && sameOuterLedgers
+                         && sameStaffLines
+                         && sameNoteSpacing
                          && st._genKeysig      == _genKeysig
                          && st._showLedgerLines == _showLedgerLines;
                   }
@@ -406,11 +426,17 @@ void StaffType::write(Xml& xml) const
             if (useInnerLedgers()) {
                   writeInnerLedgers(xml);
                   }
+            if (useAlternateOuterLedgers()) {
+                  writeOuterLedgers(xml);
+                  }
             if (useAlternateNoteMappings()) {
                   _altNoteMappings->write(xml);
                   }
             if (useAlternateStaffLines()) {
                   writeStaffLines(xml);
+                  }
+            if (useAlternateNoteSpacing()) {
+                  xml.tag("notespacing", _noteSpacingMultiplier);
                   }
       else {
             xml.tag("durations",        _genDurations);
@@ -506,8 +532,12 @@ void StaffType::read(XmlReader& e)
                   setUseNumbers(e.readBool());
             else if (tag == "innerLedgers")
                   readInnerLedgers(e);            //cc
+            else if (tag == "outerLedgers")
+                  readOuterLedgers(e);            //cc
             else if (tag == "staffLines")
                   readStaffLines(e);              //cc
+            else if (tag == "notespacing")
+                  _noteSpacingMultiplier = e.readDouble(); //cc
             else if (tag == "noteMappings") {
                   _altNoteMappings = new NoteMappings();
                   _altNoteMappings->read(e); //cc
@@ -563,6 +593,32 @@ void StaffType::readInnerLedgers(XmlReader& e)
                         _innerLedgers[noteLine] = ledgers;
                         }
                   }
+            }
+      }
+
+//-----------------------------------------------------//cc
+//   writeOuterLedgers
+//---------------------------------------------------------
+
+void StaffType::writeOuterLedgers(Xml& xml) const
+      {
+      xml.stag(QString("outerLedgers"));
+      xml.tag("ledgerInterval", _ledgerInterval);
+      xml.tag("ledgerOffset", _ledgerOffset);
+      xml.etag();
+      }
+
+//-----------------------------------------------------//cc
+//   readOuterLedgers
+//---------------------------------------------------------
+
+void StaffType::readOuterLedgers(XmlReader& e)
+      {
+      while (e.readNextStartElement()) {
+            if (e.name().toString() == "ledgerInterval")
+                  _ledgerInterval = e.readInt();
+            if (e.name().toString() == "ledgerOffset")
+                  _ledgerOffset = e.readInt();
             }
       }
 

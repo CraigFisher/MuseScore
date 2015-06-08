@@ -126,6 +126,10 @@ class StaffTypeTemplatesDialog : public QDialog, private Ui::StaffTypeTemplatesD
       void pickDoubleSharpColor() { pickNoteColor(4); }
       
       void setInnerLedgers(std::map<qreal, std::vector<qreal>>&);
+      void setLedgerInterval(int interval);
+      void setLedgerOffset(int offset);
+      void setAlternateNoteSpacingPercent(qreal percent);
+
       void updateStaffLines();
       void updateTemplateName(const QString&);
       };

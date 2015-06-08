@@ -638,11 +638,7 @@ qreal Staff::height() const
 
 qreal Staff::spatium() const
       {
-      //cc
-      if (_staffType.useAlternateNoteSpacing())
-            return _score->spatium() * mag() * _staffType.alternateNoteSpacing(); //cc
-      else
-            return _score->spatium() * mag();
+      return _score->spatium() * mag() * _staffType.noteSpacing(); //cc
       }
 
 //---------------------------------------------------------

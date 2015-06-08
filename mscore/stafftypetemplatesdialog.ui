@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>894</width>
+    <width>899</width>
     <height>728</height>
    </rect>
   </property>
@@ -17,9 +17,9 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>20</y>
+     <y>10</y>
      <width>141</width>
-     <height>451</height>
+     <height>411</height>
     </rect>
    </property>
   </widget>
@@ -104,9 +104,9 @@
    <property name="geometry">
     <rect>
      <x>170</x>
-     <y>80</y>
-     <width>421</width>
-     <height>321</height>
+     <y>50</y>
+     <width>491</width>
+     <height>301</height>
     </rect>
    </property>
    <property name="title">
@@ -116,44 +116,8 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>260</y>
-      <width>181</width>
-      <height>59</height>
-     </rect>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_5">
-       <item>
-        <widget class="QSpinBox" name="octaveDistance"/>
-       </item>
-       <item>
-        <widget class="QLabel" name="octaveDistanceLabel">
-         <property name="text">
-          <string>Octave Distance </string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="showAccidentals">
-       <property name="text">
-        <string>Show Accidentals</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="layoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
       <y>30</y>
-      <width>391</width>
+      <width>461</width>
       <height>231</height>
      </rect>
     </property>
@@ -788,6 +752,9 @@
        <property name="text">
         <string>FillType</string>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
       </widget>
      </item>
      <item row="1" column="6">
@@ -809,6 +776,9 @@
        <property name="text">
         <string>Color</string>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
       </widget>
      </item>
      <item row="0" column="1">
@@ -823,13 +793,66 @@
      </item>
     </layout>
    </widget>
+   <widget class="QWidget" name="layoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>260</y>
+      <width>461</width>
+      <height>33</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_7">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <widget class="QLabel" name="octaveDistanceLabel">
+         <property name="text">
+          <string>Octave Distance </string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QSpinBox" name="octaveDistance"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
+       <item>
+        <widget class="QLabel" name="ledgerSpacingLabel">
+         <property name="text">
+          <string>   Spacing Factor</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QDoubleSpinBox" name="noteSpacing"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="showAccidentals">
+       <property name="layoutDirection">
+        <enum>Qt::RightToLeft</enum>
+       </property>
+       <property name="text">
+        <string>Show Accidentals</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <widget class="QGroupBox" name="groupBox_2">
    <property name="geometry">
     <rect>
      <x>170</x>
-     <y>400</y>
-     <width>411</width>
+     <y>350</y>
+     <width>491</width>
      <height>71</height>
     </rect>
    </property>
@@ -944,68 +967,69 @@
   <widget class="QGroupBox" name="groupBox_3">
    <property name="geometry">
     <rect>
-     <x>590</x>
-     <y>80</y>
-     <width>281</width>
-     <height>251</height>
+     <x>670</x>
+     <y>50</y>
+     <width>211</width>
+     <height>201</height>
     </rect>
    </property>
    <property name="title">
-    <string>Inner Ledger Mappings</string>
+    <string>Inner Ledger Lines</string>
+   </property>
+   <property name="checkable">
+    <bool>false</bool>
    </property>
    <widget class="QWidget" name="staffLineEditorContainer" native="true">
     <property name="geometry">
      <rect>
-      <x>70</x>
+      <x>10</x>
       <y>30</y>
       <width>191</width>
-      <height>211</height>
+      <height>161</height>
      </rect>
     </property>
    </widget>
   </widget>
-  <widget class="QLabel" name="label">
+  <widget class="QGroupBox" name="previewBox">
    <property name="geometry">
     <rect>
-     <x>230</x>
-     <y>20</y>
-     <width>62</width>
-     <height>16</height>
+     <x>19</x>
+     <y>429</y>
+     <width>861</width>
+     <height>241</height>
     </rect>
    </property>
-   <property name="text">
-    <string/>
+   <property name="title">
+    <string>Preview</string>
    </property>
-  </widget>
-  <widget class="QLineEdit" name="templateNameForm">
-   <property name="geometry">
-    <rect>
-     <x>170</x>
-     <y>20</y>
-     <width>251</width>
-     <height>31</height>
-    </rect>
+   <property name="alignment">
+    <set>Qt::AlignHCenter|Qt::AlignTop</set>
    </property>
-   <property name="text">
-    <string/>
-   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_9">
+    <item>
+     <widget class="Ms::ScoreView" name="preview" native="true"/>
+    </item>
+   </layout>
   </widget>
   <widget class="QGroupBox" name="groupBox_4">
    <property name="geometry">
     <rect>
-     <x>589</x>
-     <y>329</y>
-     <width>281</width>
-     <height>141</height>
+     <x>670</x>
+     <y>350</y>
+     <width>211</width>
+     <height>71</height>
     </rect>
    </property>
    <property name="title">
     <string>Staff Lines</string>
    </property>
+   <property name="alignment">
+    <set>Qt::AlignHCenter|Qt::AlignTop</set>
+   </property>
    <widget class="QLineEdit" name="staffLineWidget">
     <property name="geometry">
      <rect>
-      <x>70</x>
+      <x>10</x>
       <y>30</y>
       <width>191</width>
       <height>31</height>
@@ -1016,23 +1040,77 @@
     </property>
    </widget>
   </widget>
-  <widget class="QGroupBox" name="previewBox">
+  <widget class="QGroupBox" name="groupBox_5">
    <property name="geometry">
     <rect>
-     <x>19</x>
-     <y>469</y>
-     <width>841</width>
-     <height>201</height>
+     <x>670</x>
+     <y>250</y>
+     <width>211</width>
+     <height>101</height>
     </rect>
    </property>
    <property name="title">
-    <string>Preview</string>
+    <string>Outer Ledger Lines</string>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout_9">
-    <item>
-     <widget class="Ms::ScoreView" name="preview" native="true"/>
-    </item>
-   </layout>
+   <widget class="QWidget" name="gridLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>161</width>
+      <height>62</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="1" column="0">
+      <widget class="QLabel" name="ledgerIntervalLabel">
+       <property name="text">
+        <string>Interval</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <layout class="QHBoxLayout" name="horizontalLayout_8">
+       <item>
+        <widget class="QSpinBox" name="ledgerOffset"/>
+       </item>
+      </layout>
+     </item>
+     <item row="1" column="1">
+      <widget class="QSpinBox" name="ledgerInterval">
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>12</number>
+       </property>
+       <property name="value">
+        <number>4</number>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="ledgerOffsetLabel">
+       <property name="text">
+        <string>Offset</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QLineEdit" name="templateNameForm">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>10</y>
+     <width>241</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
   </widget>
   <zorder>layoutWidget</zorder>
   <zorder>staffTypeSelector</zorder>
@@ -1041,10 +1119,10 @@
   <zorder>groupBox</zorder>
   <zorder>groupBox_2</zorder>
   <zorder>groupBox_3</zorder>
-  <zorder>label</zorder>
-  <zorder>templateNameForm</zorder>
-  <zorder>groupBox_4</zorder>
   <zorder>previewBox</zorder>
+  <zorder>groupBox_4</zorder>
+  <zorder>groupBox_5</zorder>
+  <zorder>templateNameForm</zorder>
  </widget>
  <customwidgets>
   <customwidget>

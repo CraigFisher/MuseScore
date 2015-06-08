@@ -131,7 +131,11 @@ StaffTypeTemplatesDialog::StaffTypeTemplatesDialog(QWidget *parent) :
       naturalOffset->setMinimum(-24);
       sharpOffset->setMinimum(-24);
       doubleSharpOffset->setMinimum(-24);
-            
+      
+      noteSpacing->setDecimals(2);
+      noteSpacing->setSingleStep(0.1);
+      noteSpacing->setRange(0.0, 2.0);
+
       previewScore = new Score(MScore::defaultStyle());
       if (readScore(previewScore, QString(":/data/stafftype_templates_sample.mscx"), false) == Score::FileError::FILE_NO_ERROR)
             preview->setScore(previewScore);
@@ -204,6 +208,10 @@ void StaffTypeTemplatesDialog::connectInput() const
       connect(naturalColorButton, SIGNAL(clicked()), SLOT(pickNaturalColor()));
       connect(sharpColorButton, SIGNAL(clicked()), SLOT(pickSharpColor()));
       connect(doubleSharpColorButton, SIGNAL(clicked()), SLOT(pickDoubleSharpColor()));
+
+      connect(ledgerInterval, SIGNAL(valueChanged(int)), this, SLOT(setLedgerInterval(int)));
+      connect(ledgerOffset, SIGNAL(valueChanged(int)), this, SLOT(setLedgerOffset(int)));
+      connect(noteSpacing, SIGNAL(valueChanged(qreal)), this, SLOT(setAlternateNoteSpacingPercent(qreal)));
       }
 
 //---------------------------------------------------------
@@ -245,7 +253,11 @@ void StaffTypeTemplatesDialog::disconnectInput() const
       disconnect(naturalColorButton, SIGNAL(clicked()), 0, 0);
       disconnect(sharpColorButton, SIGNAL(clicked()), 0, 0);
       disconnect(doubleSharpColorButton, SIGNAL(clicked()), 0, 0);
-      }
+
+      disconnect(ledgerInterval,SIGNAL(valueChanged(int)), 0, 0);
+      disconnect(ledgerOffset,SIGNAL(valueChanged(int)), 0, 0);
+      disconnect(noteSpacing,SIGNAL(valueChanged(qreal)), 0, 0);
+}
       
 //---------------------------------------------------------
 //   setValues
@@ -301,6 +313,11 @@ void StaffTypeTemplatesDialog::setValues() const
       //SET INNERLEDGERS
       innerLedgerWidget->setData(curTemplate->innerLedgers());
       
+      //SET OUTERLEDGERS
+      ledgerInterval->setValue(curTemplate->ledgerInterval());
+      ledgerOffset->setValue(curTemplate->ledgerOffset());
+      noteSpacing->setValue(curTemplate->noteSpacing());
+
       //SET STAFFLINES
       QString staffLineStr;
       const std::vector<qreal>& staffLines = curTemplate->alternativeStaffLines();
@@ -701,7 +718,12 @@ void StaffTypeTemplatesDialog::enableInput(bool enable) const
       clefOffset->setEnabled(enable);
       showAccidentals->setEnabled(enable);
       octaveDistance->setEnabled(enable);
+
       innerLedgerWidget->setEnabled(enable);
+      ledgerInterval->setEnabled(enable);
+      ledgerOffset->setEnabled(enable);
+      noteSpacing->setEnabled(enable);
+
       staffLineEditorContainer->setEnabled(enable);
       staffLineWidget->setEnabled(enable);
       templateNameForm->setEnabled(enable);
@@ -885,6 +907,27 @@ void StaffTypeTemplatesDialog::setInnerLedgers(std::map<qreal, std::vector<qreal
       updatePreview();
       }
       
+void StaffTypeTemplatesDialog::setLedgerInterval(int interval)
+      {
+      curTemplate->setLedgerInterval(interval);
+      markTemplateDirty(curTemplate, true);
+      updatePreview();
+      }
+
+void StaffTypeTemplatesDialog::setLedgerOffset(int offset)
+      {
+      curTemplate->setLedgerOffset(offset);
+      markTemplateDirty(curTemplate, true);
+      updatePreview();
+      }
+
+void StaffTypeTemplatesDialog::setAlternateNoteSpacingPercent(qreal percent)
+      {
+      curTemplate->setNoteSpacing(percent);
+      markTemplateDirty(curTemplate, true);
+      updatePreview();
+      }
+
 void StaffTypeTemplatesDialog::updateTemplateName(const QString& newName)
       {
       curTemplate->setName(newName);
