@@ -670,10 +670,10 @@ void Chord::addLedgerLines(int move)
       
       //cc
       bool useInnerLedgers = this->useInnerLedgers();
-      bool useAlternateOuterLedgers = this->useAlternateOuterLedgers();
+      StaffType* staffType = staff()->staffType();
       const std::map<qreal, std::vector<qreal>>* ledgerMap;
       if (useInnerLedgers)
-            ledgerMap = &staff()->staffType()->innerLedgers();
+            ledgerMap = &staffType->innerLedgers();
       
       // scan chord notes, collecting visibility and x and y extrema
       // NOTE: notes are sorted from bottom to top (line no. decreasing)
@@ -722,16 +722,19 @@ void Chord::addLedgerLines(int move)
                                     }
                               }
                         }
+
                                                               // if 1st pass and note not below staff
-                  if ((j && l < lineBelow) || (j && l >= 0)) { // or 2nd pass and note not above staff
+                  if ( (!j && l < lineBelow) || (j && l >= 0) ) { // or 2nd pass and note not above staff
                         if (useInnerLedgers) //cc
                               continue; //if using innerledgers, there may be more positions to check
                         else
                               break;    //otherwise, stop this pass
                         }
                   // round line number to even number toward 0
-                  if (l < 0)        l = (l+1) & ~ 1;
-                  else              l = l & ~ 1;
+                  if (l < 0)
+                        l = (l+1) & ~ 1;
+                  else
+                        l = l & ~ 1;
 
                   if (note->visible())          // if one note is visible,
                         visible = true;         // all lines between it and the staff are visible
@@ -769,17 +772,16 @@ void Chord::addLedgerLines(int move)
                   // and, in case, add data for new line(s)
 
                   //cc
-                  int ledgerInterval = 2;
-                  int ledgerOffset = 0;
-                  if (noteMappings()) {
-                        StaffType* st = staff()->staffType();
-                        ledgerInterval = st->ledgerInterval();
-                        ledgerOffset = st->ledgerOffset();
+                  int ledgerInterval = staffType->ledgerInterval();
+                  int ledgerOffset = staffType->ledgerOffset();
+                  if (noteMappings())
                         l = note->line();
-                        }
 
                   if (l < minLine) { //cc
-                        for (int i = minLine - ledgerInterval; i >= l - ledgerOffset; i -= ledgerInterval) { //cc
+                        if (minLine == 0) //cc
+                              minLine = minLine - ledgerInterval;
+                  
+                        for (int i = minLine; i >= l - ledgerOffset; i -= ledgerInterval) { //cc
                               lld.line = i;
                               lld.minX = minX;
                               lld.maxX = maxX;
@@ -787,10 +789,17 @@ void Chord::addLedgerLines(int move)
                               lld.accidental = false;
                               vecLines.push_back(lld);
                               }
-                        minLine = l;
+//cc_temp
+// TEST THIS....................!!!!!!!!!!!!
+                        
+                        
+                        minLine = lld.line; //cc
                         }
                   if (l > maxLine) {
-                        for (int i = maxLine + ledgerInterval; i <= l + ledgerOffset; i += ledgerInterval) { //cc
+                        if (maxLine == lineBelow) //cc
+                              maxLine = maxLine + ledgerInterval;
+                  
+                        for (int i = maxLine; i <= l + ledgerOffset; i += ledgerInterval) { //cc
                               lld.line = i;
                               lld.minX = minX;
                               lld.maxX = maxX;
@@ -798,7 +807,11 @@ void Chord::addLedgerLines(int move)
                               lld.accidental = false;
                               vecLines.push_back(lld);
                               }
-                        maxLine = l;
+//cc_temp
+// TEST THIS....................!!!!!!!!!!!!
+
+
+                        maxLine = lld.line; //cc
                         }
                   }
             if (minLine < 0 || maxLine > lineBelow || useInnerLedgers) //cc

@@ -57,18 +57,24 @@ void ShadowNote::draw(QPainter* painter) const
 
       drawSymbol(sym, painter);
 
-      qreal ms = spatium();
+      qreal ms = _currentStaff->spatium(); //cc
 
       qreal x1 = symWidth(sym) * .5 - (ms * mag());
       qreal x2 = x1 + 2 * ms * mag();
 
       ms *= .5;
       if (_line < 100 && _line > -100 && !ps.rest()) {
-            for (int i = -2; i >= _line; i -= 2) {
+            //cc
+            int ledgerInterval = _currentStaff->staffType()->ledgerInterval();
+            int ledgerOffset = _currentStaff->staffType()->ledgerOffset();
+            int minLine = 0;
+            int maxLine = (_currentStaff->lines()-1) * 2;
+            
+            for (int i = minLine - ledgerInterval; i >= _line - ledgerOffset; i -= ledgerInterval) { //cc
                   qreal y = ms * mag() * (i - _line);
                   painter->drawLine(QLineF(x1, y, x2, y));
                   }
-            for (int i = 10; i <= _line; i += 2) {
+            for (int i = maxLine + ledgerInterval; i <= _line + ledgerOffset; i += ledgerInterval) { //cc
                   qreal y = ms * mag() * (i - _line);
                   painter->drawLine(QLineF(x1, y, x2, y));
                   }
@@ -87,7 +93,7 @@ void ShadowNote::layout()
             return;
             }
       QRectF b(symBbox(sym));
-      qreal _spatium = spatium();
+      qreal _spatium = _currentStaff->spatium(); //cc
       qreal lw = point(score()->styleS(StyleIdx::ledgerLineWidth));
 
       qreal x1 = symWidth(sym) * .5 - (_spatium * mag()) - lw * .5;
@@ -95,10 +101,17 @@ void ShadowNote::layout()
 
       InputState ps = score()->inputState();
       QRectF r(x1, -lw * .5, x2 - x1, lw);
+
       if (_line < 100 && _line > -100 && !ps.rest()) {
-            for (int i = -2; i >= _line; i -= 2)
+            //cc
+            int ledgerInterval = _currentStaff->staffType()->ledgerInterval();
+            int ledgerOffset = _currentStaff->staffType()->ledgerOffset();
+            int minLine = 0;
+            int maxLine = (_currentStaff->lines()-1) * 2;
+
+            for (int i = minLine - ledgerInterval; i >= _line - ledgerOffset; i -= ledgerInterval) //cc
                   b |= r.translated(QPointF(0, _spatium * .5 * (i - _line)));
-            for (int i = 10; i <= _line; i += 2)
+            for (int i = maxLine + ledgerInterval; i <= _line + ledgerOffset; i += ledgerInterval) //cc
                   b |= r.translated(QPointF(0, _spatium * .5 * (i - _line)));
             }
       setbbox(b);

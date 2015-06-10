@@ -14,6 +14,7 @@
 #define __SHADOWNOTE_H__
 
 #include "element.h"
+#include "staff.h" //cc
 
 class QPainter;
 
@@ -32,6 +33,7 @@ class ShadowNote : public Element {
       Q_OBJECT
 
       int _line;
+      Staff* _currentStaff;
       SymId sym;
 
    public:
@@ -39,8 +41,9 @@ class ShadowNote : public Element {
       virtual ShadowNote* clone() const  { return new ShadowNote(*this); }
       virtual Element::Type type() const { return Element::Type::SHADOW_NOTE; }
       virtual void layout();
-      int line() const                   { return _line;   }
-      void setLine(int n)                { _line = n;      }
+      int line() const                   { return _line;          }
+      void setLine(int n)                { _line = n;             }
+      void setCurrentStaff(Staff* staff) { _currentStaff = staff; } //cc
       virtual void draw(QPainter*) const;
       void setSym(SymId id)              { sym = id;     }
       };
