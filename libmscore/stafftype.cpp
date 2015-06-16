@@ -1372,7 +1372,7 @@ void StaffType::copyUserTemplatesToPresets(std::vector<StaffTypeTemplate>& userT
       if (start != stop) //,prevents undefined erase behavior
             _presets.erase(start, stop);
       
-      //upcast StaffTypeTemplatesDialog to StaffTypes and append to _presets
+      //upcast StaffTypeTemplate to StaffTypes and append to _presets
       for (int i = 0; i < int(userTemplates.size()); i++) {
             StaffType* st = static_cast<StaffType*>(&userTemplates[i]);
             _presets.push_back(*st);
