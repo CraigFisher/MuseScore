@@ -5052,7 +5052,7 @@ void ScoreView::cmdAddPitch(int note, bool addFlag)
             
       //cc
       int step;
-      NoteMappings* altMappings = score()->staff(is.track() / VOICES)->noteMappings();
+      AltNoteMappings* altMappings = score()->staff(is.track() / VOICES)->altNoteMappings();
       if (altMappings) {
             static const int noteToTpc[7] = { 14, 16, 18, 13, 15, 17, 19 };
             int tpc = noteToTpc[note];

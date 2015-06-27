@@ -142,7 +142,7 @@ StaffType::StaffType(const StaffType& source) :
       _noteSpacingMultiplier(source._noteSpacingMultiplier) //cc
       {
       if (source._altNoteMappings) //if not NULL
-            _altNoteMappings = new NoteMappings(*(source._altNoteMappings));
+            _altNoteMappings = new AltNoteMappings(*(source._altNoteMappings));
       else
             _altNoteMappings = source._altNoteMappings;
       
@@ -539,7 +539,7 @@ void StaffType::read(XmlReader& e)
             else if (tag == "notespacing")
                   _noteSpacingMultiplier = e.readDouble(); //cc
             else if (tag == "noteMappings") {
-                  _altNoteMappings = new NoteMappings();
+                  _altNoteMappings = new AltNoteMappings();
                   _altNoteMappings->read(e); //cc
                   }
             else if (tag == "StaffType") //cc
@@ -1425,7 +1425,7 @@ void StaffType::initStaffTypes()
 StaffTypeTemplate::StaffTypeTemplate() :
       StaffType(StaffGroup::STANDARD, "", QObject::tr(""), 5, 1, true, true, false, true, true, true)
       {      
-      _altNoteMappings = new NoteMappings();
+      _altNoteMappings = new AltNoteMappings();
       _alternativeStaffLines.push_back(0);
       _alternativeStaffLines.push_back(1);
       _alternativeStaffLines.push_back(2);

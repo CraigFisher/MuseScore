@@ -2785,7 +2785,7 @@ Measure* MusicXml::xmlMeasure(Part* part, QDomElement e, int number, Fraction me
                          int i = courtAccNotes.indexOf(nt);
                          if(i > -1){
                                int alter = alterList.value(i);
-                               int ln  = absStep(nt->tpc(), nt->pitch(), nt->noteMappings()); //cc
+                               int ln  = absStep(nt->tpc(), nt->pitch(), nt->altNoteMappings()); //cc
                                AccidentalVal currAccVal = currAcc.accidentalVal(ln);
                                if ((alter == -1 && currAccVal == AccidentalVal::FLAT && nt->accidental()->accidentalType() == AccidentalType::FLAT    && !accTmp.value(ln))
                                      || (alter ==  0 && currAccVal == AccidentalVal::NATURAL && nt->accidental()->accidentalType() == AccidentalType::NATURAL && !accTmp.value(ln))

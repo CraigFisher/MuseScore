@@ -18,7 +18,7 @@
 #include "mscore.h"
 #include "durationtype.h"
 #include <list>
-#include "notemappings.h" //cc
+#include "altnotemappings.h" //cc
 
 namespace Ms {
 
@@ -201,7 +201,7 @@ class StaffType {
 
    protected: //members accessible by StaffTypeTemplate
       //cc
-      NoteMappings* _altNoteMappings = 0;
+      AltNoteMappings* _altNoteMappings = 0;
       std::map<qreal, std::vector<qreal>> _innerLedgers;
       std::vector<qreal> _alternativeStaffLines;
       int _ledgerInterval = 2;
@@ -294,8 +294,8 @@ class StaffType {
       bool useAlternateOuterLedgers() const { return _ledgerInterval        != 2 || _ledgerOffset != 0; }
       
       //cc
-      const NoteMappings* noteMappings() const { return _altNoteMappings; }
-      NoteMappings* noteMappings()             { return _altNoteMappings; }
+      const AltNoteMappings* altNoteMappings() const { return _altNoteMappings; }
+      AltNoteMappings* altNoteMappings()             { return _altNoteMappings; }
 
       // static function to deal with presets
       static const StaffType* getDefaultPreset(StaffGroup grp);

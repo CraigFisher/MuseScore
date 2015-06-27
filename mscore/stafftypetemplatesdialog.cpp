@@ -74,10 +74,10 @@ const ClefType StaffTypeTemplatesDialog::clefLookup[17] = {
       ClefType::F_15MA
       };
 
-const NoteMappings::FillType StaffTypeTemplatesDialog::filltypeLookup[3] = {
-      NoteMappings::FillType::TRADITIONAL,
-      NoteMappings::FillType::FILLED,
-      NoteMappings::FillType::HOLLOW
+const AltNoteMappings::FillType StaffTypeTemplatesDialog::filltypeLookup[3] = {
+      AltNoteMappings::FillType::TRADITIONAL,
+      AltNoteMappings::FillType::FILLED,
+      AltNoteMappings::FillType::HOLLOW
       };
 
 extern Score::FileError readScore(Score* score, QString name, bool ignoreVersionError);
@@ -269,7 +269,7 @@ void StaffTypeTemplatesDialog::setValues() const
       if (curTemplate == NULL)
             return;
       
-      const NoteMappings* mappings = curTemplate->noteMappings();
+      const AltNoteMappings* mappings = curTemplate->altNoteMappings();
       int bbTpc = tpcLookup[noteLetterIdx][0]; //current bb      note
       int bTpc  = tpcLookup[noteLetterIdx][1]; //current b       note
       int nTpc  = tpcLookup[noteLetterIdx][2]; //current natural note
@@ -661,7 +661,7 @@ void StaffTypeTemplatesDialog::switchClef(const QString& text)
       {
       clefIdx = clefComboBox->currentIndex();
       ClefType curClef = clefLookup[clefIdx];
-      const NoteMappings* mappings = curTemplate->noteMappings();
+      const AltNoteMappings* mappings = curTemplate->altNoteMappings();
       
       disconnectInput();
       clefOffset->setValue(mappings->clefOffset(curClef));
@@ -814,7 +814,7 @@ QListWidgetItem* StaffTypeTemplatesDialog::itemByTemplate(StaffTypeTemplate* stt
 void StaffTypeTemplatesDialog::setOffset(int accidentalIdx, int offset)
       {
       int tpc = tpcLookup[noteLetterIdx][accidentalIdx];
-      curTemplate->noteMappings()->setNotePosition(tpc, offset);
+      curTemplate->altNoteMappings()->setNotePosition(tpc, offset);
       markTemplateDirty(curTemplate, true);
       updatePreview();
       }
@@ -822,7 +822,7 @@ void StaffTypeTemplatesDialog::setOffset(int accidentalIdx, int offset)
 void StaffTypeTemplatesDialog::setNotehead(int accidentalIdx, int headIdx)
       {
       int tpc = tpcLookup[noteLetterIdx][accidentalIdx];
-      curTemplate->noteMappings()->setNoteHeadGroup(tpc, noteheadLookup[headIdx]);
+      curTemplate->altNoteMappings()->setNoteHeadGroup(tpc, noteheadLookup[headIdx]);
       markTemplateDirty(curTemplate, true);
       updatePreview();
       }
@@ -830,7 +830,7 @@ void StaffTypeTemplatesDialog::setNotehead(int accidentalIdx, int headIdx)
 void StaffTypeTemplatesDialog::setFilltype(int accidentalIdx, int fillIdx)
       {
       int tpc = tpcLookup[noteLetterIdx][accidentalIdx];
-      curTemplate->noteMappings()->setNoteFill(tpc, filltypeLookup[fillIdx]);//setNoteFill(tpc, NoteMappings::FillType::HOLLOW);
+      curTemplate->altNoteMappings()->setNoteFill(tpc, filltypeLookup[fillIdx]);//setNoteFill(tpc, AltNoteMappings::FillType::HOLLOW);
       markTemplateDirty(curTemplate, true);
       updatePreview();
       }
@@ -838,7 +838,7 @@ void StaffTypeTemplatesDialog::setFilltype(int accidentalIdx, int fillIdx)
 void StaffTypeTemplatesDialog::pickNoteColor(int accidentalIdx)
       {
       int tpc = tpcLookup[noteLetterIdx][accidentalIdx];
-      QColor color = QColorDialog::getColor(curTemplate->noteMappings()->tpc2Color(tpc), this, "Pick a note color",
+      QColor color = QColorDialog::getColor(curTemplate->altNoteMappings()->tpc2Color(tpc), this, "Pick a note color",
                               QColorDialog::DontUseNativeDialog); //allows dialog to remember custom colors
       
       if (color.isValid()) {
@@ -872,7 +872,7 @@ void StaffTypeTemplatesDialog::pickNoteColor(int accidentalIdx)
                   settings.setValue(QString("qcolordialog-colors-%1").arg(customColorIdx), QString::number(color.rgb()));
                   }
 
-            curTemplate->noteMappings()->setNoteColor(tpc, color);
+            curTemplate->altNoteMappings()->setNoteColor(tpc, color);
             markTemplateDirty(curTemplate, true);
             updatePreview();
             }
@@ -881,21 +881,21 @@ void StaffTypeTemplatesDialog::pickNoteColor(int accidentalIdx)
 void StaffTypeTemplatesDialog::setClefOffset(int clefOffset)
       {
       ClefType curClef = clefLookup[clefIdx];
-      curTemplate->noteMappings()->setClefOffset(curClef, clefOffset);
+      curTemplate->altNoteMappings()->setClefOffset(curClef, clefOffset);
       markTemplateDirty(curTemplate, true);
       updatePreview();
       }
       
 void StaffTypeTemplatesDialog::setShowAccidental(bool val)
       {
-      curTemplate->noteMappings()->setShowAccidentals(val);
+      curTemplate->altNoteMappings()->setShowAccidentals(val);
       markTemplateDirty(curTemplate, true);
       updatePreview();
       }
       
 void StaffTypeTemplatesDialog::setOctaveDistance(int val)
       {
-      curTemplate->noteMappings()->setOctaveDistance(val);
+      curTemplate->altNoteMappings()->setOctaveDistance(val);
       markTemplateDirty(curTemplate, true);
       updatePreview();
       }
@@ -985,7 +985,7 @@ void StaffTypeTemplatesDialog::updateColorHistory() const
       {
       int colorSize = QColorDialog::customCount();
       
-      NoteMappings* mappings = curTemplate->noteMappings();
+      AltNoteMappings* mappings = curTemplate->altNoteMappings();
       for (int i = -1; i <= 34; i++) {
             QColor color = mappings->tpc2Color(i);
             if (!colorHistory.contains(color)) {
@@ -1013,7 +1013,7 @@ int StaffTypeTemplatesDialog::noteheadIndex(NoteHead::Group group) const
       return -1;
       }
 
-int StaffTypeTemplatesDialog::filltypeIndex(NoteMappings::FillType filltype) const
+int StaffTypeTemplatesDialog::filltypeIndex(AltNoteMappings::FillType filltype) const
       {
       for (int i = 0; i < 3; i++) {
             if (filltypeLookup[i] == filltype)

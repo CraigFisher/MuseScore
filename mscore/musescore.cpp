@@ -105,7 +105,7 @@
 #include "startcenter.h"
 #include "help.h"
 #include "awl/aslider.h"
-#include "libmscore/notemappings.h" //cc
+#include "libmscore/altnotemappings.h" //cc
 #include "stafftypetemplatesdialog.h"           //cc
 
 #ifdef AEOLUS

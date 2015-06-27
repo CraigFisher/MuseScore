@@ -51,7 +51,7 @@
 #include "sym.h"
 #include "stringdata.h"
 #include "beam.h"
-#include "notemappings.h" //cc
+#include "altnotemappings.h" //cc
 
 namespace Ms {
 
@@ -774,7 +774,7 @@ void Chord::addLedgerLines(int move)
                   //cc
                   int ledgerInterval = staffType->ledgerInterval();
                   int ledgerOffset = staffType->ledgerOffset();
-                  if (noteMappings())
+                  if (altNoteMappings())
                         l = note->line();
 
                   if (l < minLine) { //cc

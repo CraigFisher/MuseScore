@@ -64,14 +64,14 @@ class StaffTypeTemplatesDialog : public QDialog, private Ui::StaffTypeTemplatesD
 
       const static int tpcLookup[7][5];
       const static NoteHead::Group noteheadLookup[14];
-      const static NoteMappings::FillType filltypeLookup[3];
+      const static AltNoteMappings::FillType filltypeLookup[3];
       const static ClefType clefLookup[17];
       
       int noteLetterIdx; //index of a note's letter, used in tpcLookup
       int clefIdx;       //index of a clef, used in clefLookup
       int noteheadIndex(NoteHead::Group) const;
       int clefIndex(ClefType) const;
-      int filltypeIndex(NoteMappings::FillType) const;
+      int filltypeIndex(AltNoteMappings::FillType) const;
       void debugLocals();
       
       void updatePreview() const;

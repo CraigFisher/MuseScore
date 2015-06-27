@@ -23,7 +23,7 @@
 
 /**
  \file
- Definition of class NoteMappings
+ Definition of class AltNoteMappings
 */
 
 namespace Ms {
@@ -31,7 +31,7 @@ namespace Ms {
 class Xml;
 class XmlReader;
 
-class NoteMappings {      
+class AltNoteMappings {      
     public:
         enum class FillType : signed char {
             TRADITIONAL = 0,
@@ -59,9 +59,9 @@ class NoteMappings {
         void readClefOffsets(XmlReader& e);
 
     public:
-        NoteMappings();
-        explicit NoteMappings(const QString&);
-        bool operator==(const NoteMappings& st) const;
+        AltNoteMappings();
+        explicit AltNoteMappings(const QString&);
+        bool operator==(const AltNoteMappings& st) const;
       
         void write(Xml&) const;
         void read(XmlReader&);

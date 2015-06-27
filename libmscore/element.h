@@ -38,7 +38,7 @@ class MuseScoreView;
 class Segment;
 class TextStyle;
 class Element;
-class NoteMappings;
+class AltNoteMappings;
 enum class SymId;
 
 //---------------------------------------------------------
@@ -444,8 +444,8 @@ class Element : public QObject, public ScoreElement {
       Part* part() const;
 
       //cc
-      NoteMappings* noteMappings();
-      const NoteMappings* noteMappings() const;
+      AltNoteMappings* altNoteMappings();
+      const AltNoteMappings* altNoteMappings() const;
 
       virtual void add(Element*);
       virtual void remove(Element*);

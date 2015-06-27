@@ -1231,7 +1231,7 @@ bool Score::getPosition(Position* pos, const QPointF& p, int voice) const
                   pos->line = s->lines() - 1;
             }
       else {
-            NoteMappings* notation = s->noteMappings(); //cc
+            AltNoteMappings* notation = s->altNoteMappings(); //cc
             int minLine   = absStep(0, notation);             //cc
             ClefType clef = s->clef(pos->segment->tick());
             minLine       = relStep(minLine, clef, notation); //cc

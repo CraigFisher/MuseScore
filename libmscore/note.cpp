@@ -55,7 +55,7 @@
 #include "glissando.h"
 #include "bagpembell.h"
 #include "hairpin.h"
-#include "notemappings.h" //cc
+#include "altnotemappings.h" //cc
 
 namespace Ms {
 
@@ -436,7 +436,7 @@ SymId Note::noteHead() const
       {
       bool up;
       //cc
-      const NoteMappings* altMappings = noteMappings();
+      const AltNoteMappings* altMappings = altNoteMappings();
       if (altMappings) {
             TDuration duration;
             if (chord()) {
@@ -771,7 +771,7 @@ void Note::draw(QPainter* painter) const
             // by coloring the note head
             //
             //cc
-            if (noteMappings() && noteMappings()->tpc2FillType(tpc()) == NoteMappings::FillType::HOLLOW) {
+            if (altNoteMappings() && altNoteMappings()->tpc2FillType(tpc()) == AltNoteMappings::FillType::HOLLOW) {
                   qreal d  = spatium() * .1;
                   StaffType* st = staff()->staffType();
                   QRectF bb = QRectF(bbox().x()+d, st->fretMaskY()*magS() + (2.5 * d), bbox().width() - (2*d), st->fretMaskH()*magS() - (5 * d));
@@ -1287,8 +1287,8 @@ void Note::endDrag()
             int nPitch;
             int tpc1;
             int tpc2;
-            NoteMappings* altNotation = noteMappings();
-            if (noteMappings()) { //cc
+            AltNoteMappings* altNotation = altNoteMappings();
+            if (altNoteMappings()) { //cc
                   //   note: This may cause incorrect note placement
                   //   if a distance-7 octave is not traditionally mapped
                   //   If users ever require non-traditinal distance-7 octaves,
@@ -1707,8 +1707,8 @@ void Note::setDotY(MScore::Direction pos)
 
 void Note::layout()
       {
-      if (noteMappings()) { //cc
-            setColor(noteMappings()->tpc2Color(tpc()));
+      if (altNoteMappings()) { //cc
+            setColor(altNoteMappings()->tpc2Color(tpc()));
             _alternativeState = true;
             }
       else if (_alternativeState) { //cc TODO: CONFIRM
@@ -1828,7 +1828,7 @@ bool Note::dotIsUp() const
 
 void Note::updateAccidental(AccidentalState* as)
       {
-      int relLine = absStep(tpc(), epitch(), noteMappings()); //cc
+      int relLine = absStep(tpc(), epitch(), altNoteMappings()); //cc
 
       // don't touch accidentals that don't concern tpc such as
       // quarter tones
@@ -1910,7 +1910,7 @@ NoteType Note::noteType() const
 
 Q_INVOKABLE Ms::Accidental* Note::accidental() const
       {
-      if(noteMappings() && !noteMappings()->showAccidentals()) //cc
+      if(altNoteMappings() && !altNoteMappings()->showAccidentals()) //cc
             return NULL;
       else
             return _accidental;
@@ -1983,7 +1983,7 @@ void Note::scanElements(void* data, void (*func)(void*, Element*), bool all)
             sp->scanElements(data, func, all);
 
       if (!dragMode && _accidental)
-            if (!noteMappings() || noteMappings()->showAccidentals()) //cc
+            if (!altNoteMappings() || altNoteMappings()->showAccidentals()) //cc
                   func(data, _accidental);
       if (chord()) {
             for (int i = 0; i < chord()->dots(); ++i) {
@@ -2171,7 +2171,7 @@ void Note::updateRelLine(int relLine, bool undoable)
 
       Staff* s = score()->staff(staffIdx() + chord()->staffMove());
       ClefType clef = s->clef(chord()->tick());
-      int line = relStep(relLine, clef, staff()->noteMappings());
+      int line = relStep(relLine, clef, staff()->altNoteMappings());
       if (line != _line) {
             if (undoable)
                   undoChangeProperty(P_ID::LINE, line);
@@ -2186,7 +2186,7 @@ void Note::updateRelLine(int relLine, bool undoable)
 
 void Note::updateLine()
       {
-      int relLine = absStep(tpc(), epitch(), noteMappings()); //cc
+      int relLine = absStep(tpc(), epitch(), altNoteMappings()); //cc
       updateRelLine(relLine, false);
       }
 

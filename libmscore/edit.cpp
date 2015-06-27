@@ -924,7 +924,7 @@ void Score::addPitch(int step, bool addFlag)
                   pos.segment   = selectedNote->chord()->segment();
                   pos.staffIdx  = selectedNote->track() / VOICES;
                   ClefType clef = staff(pos.staffIdx)->clef(pos.segment->tick());
-                  pos.line      = relStep(step, clef, staff(pos.staffIdx)->noteMappings()); //cc
+                  pos.line      = relStep(step, clef, staff(pos.staffIdx)->altNoteMappings()); //cc
                   Chord* chord = static_cast<Note*>(el)->chord();
                   bool error;
                   NoteVal nval = noteValForPosition(pos, error);
@@ -939,7 +939,7 @@ void Score::addPitch(int step, bool addFlag)
       pos.segment   = inputState().segment();
       pos.staffIdx  = inputState().track() / VOICES;
       ClefType clef = staff(pos.staffIdx)->clef(pos.segment->tick());
-      pos.line      = relStep(step, clef, staff(pos.staffIdx)->noteMappings()); //cc
+      pos.line      = relStep(step, clef, staff(pos.staffIdx)->altNoteMappings()); //cc
       
       if (inputState().repitchMode())
             repitchNote(pos, !addFlag);
@@ -1007,7 +1007,7 @@ NoteVal Score::noteValForPosition(Position pos, bool &error)
                   }
 
             case StaffGroup::STANDARD: {
-                  if (!st->noteMappings()) {
+                  if (!st->altNoteMappings()) {
                         AccidentalVal acci = s->measure()->findAccidental(s, staffIdx, line);
                         int step           = absStep(line, clef, NULL);
                         int octave         = step/7;
@@ -1027,7 +1027,7 @@ NoteVal Score::noteValForPosition(Position pos, bool &error)
                   else {
                         //cc
                         AccidentalVal acci;
-                        NoteMappings* altNotation = st->noteMappings();
+                        AltNoteMappings* altNotation = st->altNoteMappings();
                         int octaveDistance = altNotation->octaveDistance();
                         
                         //for allowing traditional sharps/flats system to work.
@@ -1341,7 +1341,7 @@ void Score::repitchNote(const Position& p, bool replace)
 
       NoteVal nval;
       AccidentalVal acci = s->measure()->findAccidental(s, p.staffIdx, p.line);
-      int step   = absStep(p.line, clef, st->noteMappings()); //cc
+      int step   = absStep(p.line, clef, st->altNoteMappings()); //cc
       int octave = step / 7;
       nval.pitch = step2pitch(step) + octave * 12 + int(acci); //cc TODO: FIX: IMPROVED STEP2PITCH WILL MAKE THIS ACCIDENTAL EXTRANEOUS
 

@@ -1814,7 +1814,7 @@ static void markUserAccidentals(const int firstStaff,
                   foreach (Note* nt, chord->notes()) {
                         if (alterMap.contains(nt)) {
                               int alter = alterMap.value(nt);
-                              int ln  = absStep(nt->tpc(), nt->pitch(), nt->noteMappings());
+                              int ln  = absStep(nt->tpc(), nt->pitch(), nt->altNoteMappings());
                               AccidentalVal currAccVal = currAcc.accidentalVal(ln);
                               if ((alter == -1
                                    && currAccVal == AccidentalVal::FLAT

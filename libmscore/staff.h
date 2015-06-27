@@ -26,7 +26,7 @@
 #include "stafftype.h"
 #include "groups.h"
 #include "scoreElement.h"
-#include "notemappings.h"
+#include "altnotemappings.h"
 
 namespace Ms {
 
@@ -261,8 +261,8 @@ class Staff : public QObject, public ScoreElement {
 #endif
       
       //cc
-      const NoteMappings* noteMappings() const { const StaffType* st = staffType(); return st->noteMappings(); }
-      NoteMappings* noteMappings() { return staffType()->noteMappings(); }
+      const AltNoteMappings* altNoteMappings() const { const StaffType* st = staffType(); return st->altNoteMappings(); }
+      AltNoteMappings* altNoteMappings() { return staffType()->altNoteMappings(); }
       };
 
 }     // namespace Ms

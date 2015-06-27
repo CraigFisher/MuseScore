@@ -10,7 +10,7 @@
 //  the file LICENCE.GPL
 //=============================================================================
 
-#include "notemappings.h"
+#include "altnotemappings.h"
 #include "sym.h"
 #include "xml.h"
 
@@ -18,14 +18,14 @@
 namespace Ms {
 
 //---------------------------------------------------------
-//   NoteMappings
+//   AltNoteMappings
 //          For alternative notations.
 //---------------------------------------------------------
 
-const QColor NoteMappings::defaultC = MScore::defaultColor;
-const NoteMappings::FillType NoteMappings::defaultF = NoteMappings::FillType::TRADITIONAL;
+const QColor AltNoteMappings::defaultC = MScore::defaultColor;
+const AltNoteMappings::FillType AltNoteMappings::defaultF = AltNoteMappings::FillType::TRADITIONAL;
 
-NoteMappings::NoteMappings() :
+AltNoteMappings::AltNoteMappings() :
       _notePositions { {3, 0, 4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3,
                         0, 4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3, 0,
                         4, 1, 6, 2, 6} }, //traditional positions
@@ -54,7 +54,7 @@ NoteMappings::NoteMappings() :
       setTraditionalClefOffsets();
       }
       
-bool NoteMappings::operator==(const NoteMappings& n) const
+bool AltNoteMappings::operator==(const AltNoteMappings& n) const
       {
       bool b = n._notePositions == _notePositions
              && n._noteHeads == _noteHeads
@@ -70,7 +70,7 @@ bool NoteMappings::operator==(const NoteMappings& n) const
 
 //TODO: method headers
       
-void NoteMappings::write(Xml& xml) const
+void AltNoteMappings::write(Xml& xml) const
       {
       xml.stag(QString("noteMappings"));
       writeMappings(xml);
@@ -80,7 +80,7 @@ void NoteMappings::write(Xml& xml) const
       xml.etag();
       }
       
-void NoteMappings::read(XmlReader& e)
+void AltNoteMappings::read(XmlReader& e)
       {
       while (e.readNextStartElement()) {
             QString tag = e.name().toString();
@@ -97,7 +97,7 @@ void NoteMappings::read(XmlReader& e)
             }
       }
 
-void NoteMappings::writeMappings(Xml& xml) const
+void AltNoteMappings::writeMappings(Xml& xml) const
       {
       xml.stag("mappings");
             
@@ -158,7 +158,7 @@ void NoteMappings::writeMappings(Xml& xml) const
       xml.etag();
       }
 
-void NoteMappings::readMappings(XmlReader& e)
+void AltNoteMappings::readMappings(XmlReader& e)
       {
       while (e.readNextStartElement() && (e.name().toString() == "note")) {
             int tpc = e.attribute("tpc", "-2").toInt();
@@ -229,7 +229,7 @@ void NoteMappings::readMappings(XmlReader& e)
             }
       }
       
-void NoteMappings::writeClefOffsets(Xml& xml) const
+void AltNoteMappings::writeClefOffsets(Xml& xml) const
       {
       xml.stag("clefOffsets");
       
@@ -282,7 +282,7 @@ void NoteMappings::writeClefOffsets(Xml& xml) const
       xml.etag();
       }
 
-void NoteMappings::readClefOffsets(XmlReader& e)
+void AltNoteMappings::readClefOffsets(XmlReader& e)
       {
       while (e.readNextStartElement() && (e.name().toString() == "clef")) {
             QString name = e.attribute("name", "");
@@ -336,7 +336,7 @@ inline int positive_modulo(int i, int n) {
 }
 
 //TODO: implement key-aware decisions
-int NoteMappings::getTpc(int position, int accidental)
+int AltNoteMappings::getTpc(int position, int accidental)
       {
       int tpc = getTpc(position);
       int adjustedTpc = (tpc + (accidental * 7)) % 35;     //check if an accidental-adjusted value gives same tpc
@@ -348,7 +348,7 @@ int NoteMappings::getTpc(int position, int accidental)
 
 //TODO: implement key-aware decisions
 //      find simpler way to write this function
-int NoteMappings::getTpc(int position)
+int AltNoteMappings::getTpc(int position)
       {
       position = positive_modulo(position, 12);
 
@@ -381,7 +381,7 @@ int NoteMappings::getTpc(int position)
       qFatal("position is not mapped by any tpc");
       }
 
-NoteHead::Type NoteMappings::headType(TDuration duration, int tpc) const
+NoteHead::Type AltNoteMappings::headType(TDuration duration, int tpc) const
       {
       FillType fill = tpc2FillType(tpc);
       NoteHead::Type t;
@@ -405,7 +405,7 @@ NoteHead::Type NoteMappings::headType(TDuration duration, int tpc) const
       return t;
       }
 
-void NoteMappings::setTraditionalClefOffsets()
+void AltNoteMappings::setTraditionalClefOffsets()
       {
       _clefOffsets[ClefType::G] = 45;
       _clefOffsets[ClefType::G1] = 52;
@@ -426,7 +426,7 @@ void NoteMappings::setTraditionalClefOffsets()
       _clefOffsets[ClefType::F_15MA] = 47;
       }
       
-int NoteMappings::getPitch(int tpc, int step)
+int AltNoteMappings::getPitch(int tpc, int step)
       {
       static const int pitches[12] = { 10, 5, 0, 7, 2, 9, 4, 11, 6, 1, 8, 3 };
       

@@ -83,7 +83,7 @@
 #include "utils.h"
 #include "volta.h"
 #include "xml.h"
-#include "notemappings.h" //cc
+#include "altnotemappings.h" //cc
 
 namespace Ms {
 
@@ -395,21 +395,21 @@ Part* Element::part() const
       }
 
 //---------------------------------------------------------
-//   noteMappings
+//   altNoteMappings
 //-----------------------------------------------------//cc
 
-const NoteMappings* Element::noteMappings() const
+const AltNoteMappings* Element::altNoteMappings() const
       {
-      return staff() && staff()->staffType() ? staff()->staffType()->noteMappings() : 0;
+      return staff() && staff()->staffType() ? staff()->staffType()->altNoteMappings() : 0;
       }
 
 //---------------------------------------------------------
-//   noteMappings
+//   altNoteMappings
 //-----------------------------------------------------//cc
 
-NoteMappings* Element::noteMappings()
+AltNoteMappings* Element::altNoteMappings()
       {
-      return staff() && staff()->staffType() ? staff()->staffType()->noteMappings() : 0;
+      return staff() && staff()->staffType() ? staff()->staffType()->altNoteMappings() : 0;
       }
 
 //---------------------------------------------------------

@@ -92,7 +92,7 @@ class ImportMidiPanel;
 class Startcenter;
 class HelpBrowser;
 class StaffTypeTemplatesDialog; //cc
-class NoteMappings;
+class AltNoteMappings;
 
 struct PluginDescription;
 enum class SelState : char;
