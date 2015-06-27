@@ -201,7 +201,7 @@ class StaffType {
 
    protected: //members accessible by StaffTypeTemplate
       //cc
-      AltNoteMappings* _altNoteMappings = 0;
+      AltNoteMappings _altNoteMappings = AltNoteMappings(false); //By default, alternative note mappings are not active
       std::map<qreal, std::vector<qreal>> _innerLedgers;
       std::vector<qreal> _alternativeStaffLines;
       int _ledgerInterval = 2;
@@ -223,17 +223,10 @@ class StaffType {
                   bool linesThrough, TablatureMinimStyle minimStyle, bool onLines, bool showRests,
                   bool stemsDown, bool stemThrough, bool upsideDown, bool useNumbers);
 
-      virtual ~StaffType();
-      //cc
-      StaffType(const StaffType&);
-      friend void swap(StaffType& first, StaffType& second); //for copy and swap idiom
-      StaffType& operator=(StaffType other);
-      StaffType(StaffType&& other);
-      
+      virtual ~StaffType() {}
       bool operator==(const StaffType&) const;
       bool operator!=(const StaffType&) const; //cc
       bool isSameStructure(const StaffType&) const;
-      
 
       StaffGroup group() const                 { return _group;           }
       const QString& name() const              { return _name;            }
@@ -287,15 +280,15 @@ class StaffType {
       qreal noteSpacing() const                                       { return _noteSpacingMultiplier; }
 
       //cc
-      bool useInnerLedgers() const          { return !_innerLedgers.empty(); }
+      bool useInnerLedgers() const          { return !_innerLedgers.empty();          }
       bool useAlternateStaffLines() const   { return !_alternativeStaffLines.empty(); }
-      bool useAlternateNoteMappings() const { return _altNoteMappings       != NULL; }
-      bool useAlternateNoteSpacing() const  { return _noteSpacingMultiplier != 1.0; }
+      bool useAlternateNoteMappings() const { return _altNoteMappings.active();       }
+      bool useAlternateNoteSpacing() const  { return _noteSpacingMultiplier != 1.0;   }
       bool useAlternateOuterLedgers() const { return _ledgerInterval        != 2 || _ledgerOffset != 0; }
       
       //cc
-      const AltNoteMappings* altNoteMappings() const { return _altNoteMappings; }
-      AltNoteMappings* altNoteMappings()             { return _altNoteMappings; }
+      const AltNoteMappings* altNoteMappings() const { return _altNoteMappings.active() ? &_altNoteMappings : NULL; }
+      AltNoteMappings* altNoteMappings()             { return _altNoteMappings.active() ? &_altNoteMappings : NULL; }
 
       // static function to deal with presets
       static const StaffType* getDefaultPreset(StaffGroup grp);

@@ -40,6 +40,9 @@ class AltNoteMappings {
             };
 
     private:
+        bool _activated   = false;
+        bool _initialized = false;
+    
         std::array<int, 35> _notePositions;
         std::array<NoteHead::Group, 35> _noteHeads;
         std::array<FillType, 35> _fillTypes;
@@ -59,9 +62,13 @@ class AltNoteMappings {
         void readClefOffsets(XmlReader& e);
 
     public:
-        AltNoteMappings();
+        AltNoteMappings(bool setActive);
         explicit AltNoteMappings(const QString&);
         bool operator==(const AltNoteMappings& st) const;
+      
+        void activate();
+        void deActivate()    { _activated = false; }
+        bool active() const  {  return _activated; }
       
         void write(Xml&) const;
         void read(XmlReader&);

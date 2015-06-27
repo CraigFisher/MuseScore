@@ -93,147 +93,6 @@ StaffType::StaffType(StaffGroup sg, const QString& xml, const QString& name, int
       setUseNumbers(useNumbers);
       }
 
-//-----------------------------------------------------//cc
-//   StaffType (copy constructor)
-//---------------------------------------------------------
-
-StaffType::StaffType(const StaffType& source) : 
-      _group(source._group),
-      _xmlName(source._xmlName),
-      _name(source._name),
-      _lines(source._lines),
-      _stepOffset(source._stepOffset),
-      _lineDistance(source._lineDistance),
-      _genClef(source._genClef),
-      _showBarlines(source._showBarlines),
-      _slashStyle(source._slashStyle),
-      _genTimesig(source._genTimesig),
-      _genKeysig(source._genKeysig),
-      _showLedgerLines(source._showLedgerLines),
-      _durationFontSize(source._durationFontSize),
-      _durationFontUserY(source._durationFontUserY),
-      _fretFontSize(source._fretFontSize),
-      _fretFontUserY(source._fretFontUserY),
-      _genDurations(source._genDurations),
-      _linesThrough(source._linesThrough),
-      _minimStyle(source._minimStyle),
-      _onLines(source._onLines),
-      _showRests(source._showRests),
-      _stemsDown(source._stemsDown),
-      _stemsThrough(source._stemsThrough),
-      _upsideDown(source._upsideDown),
-      _useNumbers(source._useNumbers),
-      _durationBoxH(source._durationBoxH),
-      _durationBoxY(source._durationBoxY),
-      _durationFont(source._durationFont),
-      _durationFontIdx(source._durationFontIdx),
-      _durationYOffset(source._durationYOffset),
-      _durationMetricsValid(source._durationMetricsValid),
-      _fretBoxH(source._fretBoxH),
-      _fretBoxY(source._fretBoxY),
-      _fretFont(source._fretFont),
-      _fretFontIdx(source._fretFontIdx),
-      _fretYOffset(source._fretYOffset),
-      _fretMetricsValid(source._fretMetricsValid),
-      _refDPI(source._refDPI),
-      _alternativeStaffLines(source._alternativeStaffLines),
-      _ledgerInterval(source._ledgerInterval),              //cc
-      _ledgerOffset(source._ledgerOffset),                  //cc
-      _noteSpacingMultiplier(source._noteSpacingMultiplier) //cc
-      {
-      if (source._altNoteMappings) //if not NULL
-            _altNoteMappings = new AltNoteMappings(*(source._altNoteMappings));
-      else
-            _altNoteMappings = source._altNoteMappings;
-      
-      std::map<qreal, std::vector<qreal>>::const_iterator itr = source._innerLedgers.begin();
-      while(itr != source._innerLedgers.end()) {
-            std::vector<qreal> innerVector = itr->second;
-            _innerLedgers[itr->first] = innerVector;
-            itr++;
-            }
-      }
-
-//-----------------------------------------------------//cc
-//   swap
-//---------------------------------------------------------
-      
-void swap(StaffType& first, StaffType& second)
-      {
-      using std::swap;
-      swap(first._group, second._group);
-      swap(first._xmlName, second._xmlName);
-      swap(first._name, second._name);
-      swap(first._lines, second._lines);
-      swap(first._stepOffset, second._stepOffset);
-      swap(first._lineDistance, second._lineDistance);
-      swap(first._genClef, second._genClef);
-      swap(first._showBarlines, second._showBarlines);
-      swap(first._slashStyle, second._slashStyle);
-      swap(first._genTimesig, second._genTimesig);
-      swap(first._genKeysig, second._genKeysig);
-      swap(first._showLedgerLines, second._showLedgerLines);
-      swap(first._durationFontSize, second._durationFontSize);
-      swap(first._durationFontUserY, second._durationFontUserY);
-      swap(first._fretFontSize, second._fretFontSize);
-      swap(first._fretFontUserY, second._fretFontUserY);
-      swap(first._genDurations, second._genDurations);
-      swap(first._linesThrough, second._linesThrough);
-      swap(first._minimStyle, second._minimStyle);
-      swap(first._onLines, second._onLines);
-      swap(first._showRests, second._showRests);
-      swap(first._stemsDown, second._stemsDown);
-      swap(first._stemsThrough, second._stemsThrough);
-      swap(first._upsideDown, second._upsideDown);
-      swap(first._useNumbers, second._useNumbers);
-      swap(first._durationBoxH, second._durationBoxH);
-      swap(first._durationBoxY, second._durationBoxY);
-      swap(first._durationFont, second._durationFont);
-      swap(first._durationFontIdx, second._durationFontIdx);
-      swap(first._durationYOffset, second._durationYOffset);
-      swap(first._durationMetricsValid, second._durationMetricsValid);
-      swap(first._fretBoxH, second._fretBoxH);
-      swap(first._fretBoxY, second._fretBoxY);
-      swap(first._fretFont, second._fretFont);
-      swap(first._fretFontIdx, second._fretFontIdx);
-      swap(first._fretYOffset, second._fretYOffset);
-      swap(first._fretMetricsValid, second._fretMetricsValid);
-      swap(first._refDPI, second._refDPI);
-      swap(first._altNoteMappings, second._altNoteMappings);
-      swap(first._innerLedgers, second._innerLedgers);
-      swap(first._alternativeStaffLines, second._alternativeStaffLines);
-      swap(first._ledgerInterval, second._ledgerInterval);
-      swap(first._ledgerOffset, second._ledgerOffset);
-      swap(first._noteSpacingMultiplier, second._noteSpacingMultiplier);
-      }
-      
-//-----------------------------------------------------//cc
-//   operator=
-//---------------------------------------------------------
-      
-StaffType& StaffType::operator=(StaffType other)
-      {
-      swap(*this, other);
-      return *this;
-      }
-      
-//-----------------------------------------------------//cc
-//   StaffType (move constructor)
-//---------------------------------------------------------
-
-StaffType::StaffType(StaffType&& other) : StaffType()
-      {
-      swap(*this, other);
-      }
-
-//-----------------------------------------------------//cc
-//   ~StaffType
-//---------------------------------------------------------
-
-StaffType::~StaffType() {
-      delete _altNoteMappings;
-      }
-
 //---------------------------------------------------------
 //   groupName
 //---------------------------------------------------------
@@ -272,7 +131,7 @@ bool StaffType::operator==(const StaffType& st) const
       return true;
       }
       
-//-----------------------------------------------------//cc
+//---------------------------------------------------------
 //   operator!=
 //---------------------------------------------------------
 
@@ -318,7 +177,7 @@ bool StaffType::isSameStructure(const StaffType& st) const
                   bool sameNoteSpacing = true;
                   bool sameStaffLines = true;
                   if (useAlternateNoteMappings())
-                        sameMappings = *(st._altNoteMappings) == *_altNoteMappings;
+                        sameMappings = st._altNoteMappings == _altNoteMappings;
                   if (useInnerLedgers())
                         sameInnerLedgers = st._innerLedgers == _innerLedgers;
                   if (useAlternateOuterLedgers()) {
@@ -430,7 +289,7 @@ void StaffType::write(Xml& xml) const
                   writeOuterLedgers(xml);
                   }
             if (useAlternateNoteMappings()) {
-                  _altNoteMappings->write(xml);
+                  _altNoteMappings.write(xml);
                   }
             if (useAlternateStaffLines()) {
                   writeStaffLines(xml);
@@ -539,8 +398,8 @@ void StaffType::read(XmlReader& e)
             else if (tag == "notespacing")
                   _noteSpacingMultiplier = e.readDouble(); //cc
             else if (tag == "noteMappings") {
-                  _altNoteMappings = new AltNoteMappings();
-                  _altNoteMappings->read(e); //cc
+                  _altNoteMappings = new AltNoteMappings(true);
+                  _altNoteMappings.read(e); //cc
                   }
             else if (tag == "StaffType") //cc
                   continue;
@@ -1425,7 +1284,7 @@ void StaffType::initStaffTypes()
 StaffTypeTemplate::StaffTypeTemplate() :
       StaffType(StaffGroup::STANDARD, "", QObject::tr(""), 5, 1, true, true, false, true, true, true)
       {      
-      _altNoteMappings = new AltNoteMappings();
+      _altNoteMappings = new AltNoteMappings(true);
       _alternativeStaffLines.push_back(0);
       _alternativeStaffLines.push_back(1);
       _alternativeStaffLines.push_back(2);

@@ -22,36 +22,26 @@ namespace Ms {
 //          For alternative notations.
 //---------------------------------------------------------
 
-const QColor AltNoteMappings::defaultC = MScore::defaultColor;
-const AltNoteMappings::FillType AltNoteMappings::defaultF = AltNoteMappings::FillType::TRADITIONAL;
-
-AltNoteMappings::AltNoteMappings() :
-      _notePositions { {3, 0, 4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3,
-                        0, 4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3, 0,
-                        4, 1, 6, 2, 6} }, //traditional positions
-      _noteHeads  { {defaultH, defaultH, defaultH, defaultH, defaultH,
-                     defaultH, defaultH, defaultH, defaultH, defaultH,
-                     defaultH, defaultH, defaultH, defaultH, defaultH,
-                     defaultH, defaultH, defaultH, defaultH, defaultH,
-                     defaultH, defaultH, defaultH, defaultH, defaultH,
-                     defaultH, defaultH, defaultH, defaultH, defaultH,
-                     defaultH, defaultH, defaultH, defaultH, defaultH} },
-      _noteColors { {defaultC, defaultC, defaultC, defaultC, defaultC,
-                     defaultC, defaultC, defaultC, defaultC, defaultC,
-                     defaultC, defaultC, defaultC, defaultC, defaultC,
-                     defaultC, defaultC, defaultC, defaultC, defaultC,
-                     defaultC, defaultC, defaultC, defaultC, defaultC,
-                     defaultC, defaultC, defaultC, defaultC, defaultC,
-                     defaultC, defaultC, defaultC, defaultC, defaultC} },
-      _fillTypes  { {defaultF, defaultF, defaultF, defaultF, defaultF,
-                     defaultF, defaultF, defaultF, defaultF, defaultF,
-                     defaultF, defaultF, defaultF, defaultF, defaultF,
-                     defaultF, defaultF, defaultF, defaultF, defaultF,
-                     defaultF, defaultF, defaultF, defaultF, defaultF,
-                     defaultF, defaultF, defaultF, defaultF, defaultF,
-                     defaultF, defaultF, defaultF, defaultF, defaultF} }
+AltNoteMappings::AltNoteMappings(bool setActive)
       {
-      setTraditionalClefOffsets();
+      if (setActive)
+            activate();
+      }
+      
+void AltNoteMappings::activate()
+      {
+      _activated = true;
+      if (!_initialized) {
+            for (int i = 0; i < 35; i++) {
+                  _noteHeads[i]  = NoteHead::Group::HEAD_NORMAL;
+                  _fillTypes[i]  = AltNoteMappings::FillType::TRADITIONAL;
+                  _noteColors[i] = MScore::defaultColor;
+                  }
+            _notePositions = { {3, 0, 4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3,
+                                0, 4, 1, 5, 2, 6, 3, 0, 4, 1, 5, 2, 6, 3, 0,
+                                4, 1, 6, 2, 6} };
+            setTraditionalClefOffsets();
+            }
       }
       
 bool AltNoteMappings::operator==(const AltNoteMappings& n) const
