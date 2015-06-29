@@ -684,8 +684,11 @@ void Chord::addLedgerLines(int move)
             int from, delta;
             vector<LedgerLineData> vecLines;
             minX  = maxX = 0;
-            minLine = 0;
-            maxLine = lineBelow;
+            
+            int ledgerInterval = staffType->ledgerInterval(); //cc
+            minLine = 0 - ledgerInterval;
+            maxLine = lineBelow + ledgerInterval;
+            
             if (j == 0) {                       // ...once from lowest up...
                   from  = 0;
                   delta = +1;
@@ -777,10 +780,7 @@ void Chord::addLedgerLines(int move)
                   if (altNoteMappings())
                         l = note->line();
 
-                  if (l < minLine) { //cc
-                        if (minLine == 0) //cc
-                              minLine = minLine - ledgerInterval;
-                  
+                  if (l - ledgerOffset <= minLine) { //cc
                         for (int i = minLine; i >= l - ledgerOffset; i -= ledgerInterval) { //cc
                               lld.line = i;
                               lld.minX = minX;
@@ -789,16 +789,9 @@ void Chord::addLedgerLines(int move)
                               lld.accidental = false;
                               vecLines.push_back(lld);
                               }
-//cc_temp
-// TEST THIS....................!!!!!!!!!!!!
-                        
-                        
                         minLine = lld.line; //cc
                         }
-                  if (l > maxLine) {
-                        if (maxLine == lineBelow) //cc
-                              maxLine = maxLine + ledgerInterval;
-                  
+                  if (l + ledgerOffset >= maxLine) {
                         for (int i = maxLine; i <= l + ledgerOffset; i += ledgerInterval) { //cc
                               lld.line = i;
                               lld.minX = minX;
@@ -807,10 +800,6 @@ void Chord::addLedgerLines(int move)
                               lld.accidental = false;
                               vecLines.push_back(lld);
                               }
-//cc_temp
-// TEST THIS....................!!!!!!!!!!!!
-
-
                         maxLine = lld.line; //cc
                         }
                   }

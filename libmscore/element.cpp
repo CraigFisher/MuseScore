@@ -400,7 +400,7 @@ Part* Element::part() const
 
 const AltNoteMappings* Element::altNoteMappings() const
       {
-      return staff() && staff()->staffType() ? staff()->staffType()->altNoteMappings() : 0;
+      return staff() && staff()->staffType() ? staff()->staffType()->altNoteMappings() : NULL;
       }
 
 //---------------------------------------------------------
@@ -409,7 +409,7 @@ const AltNoteMappings* Element::altNoteMappings() const
 
 AltNoteMappings* Element::altNoteMappings()
       {
-      return staff() && staff()->staffType() ? staff()->staffType()->altNoteMappings() : 0;
+      return staff() && staff()->staffType() ? staff()->staffType()->altNoteMappings() : NULL;
       }
 
 //---------------------------------------------------------

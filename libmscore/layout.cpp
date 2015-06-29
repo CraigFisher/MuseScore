@@ -561,6 +561,14 @@ qreal Score::layoutChords2(QList<Note*>& notes, bool up)
                                     // to track mirror status of previous note
       bool isLeft   = notes[startIdx]->chord()->up();             // is note head on left?
       int lmove     = notes[startIdx]->chord()->staffMove();      // staff offset of last note (for cross-staff beaming)
+      
+      //cc
+      int mirrorThreshold;
+      qreal noteSpacing = notes[startIdx]->staff()->staffType()->noteSpacing();
+      if (noteSpacing < 1.0)
+            mirrorThreshold = 3;
+      else
+            mirrorThreshold = 2;
 
       for (int idx = startIdx; idx != endIdx; idx += incIdx) {
 
@@ -572,7 +580,7 @@ qreal Score::layoutChords2(QList<Note*>& notes, bool up)
             // there is a conflict
             // if this is same or adjacent line as previous note (and chords are on same staff!)
             // but no need to do anything about it if either note is invisible
-            bool conflict = (qAbs(ll - line) < 2) && (lmove == move) && note->visible() && lvisible;
+            bool conflict = (qAbs(ll - line) < mirrorThreshold) && (lmove == move) && note->visible() && lvisible; //cc
 
             // this note is on opposite side of stem as previous note
             // if there is a conflict
